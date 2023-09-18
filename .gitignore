@@ -34,3 +34,4 @@ classes/
 # Visual Studio Code
 .vscode
 pg2600.txt
+Tmp*.scala
