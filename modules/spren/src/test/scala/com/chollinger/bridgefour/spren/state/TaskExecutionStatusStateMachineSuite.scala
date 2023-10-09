@@ -1,8 +1,8 @@
-package com.chollinger.bridgefour.rock.state
+package com.chollinger.bridgefour.spren.state
 
 import cats.effect.IO
-import com.chollinger.bridgefour.rock.TestUtils.slotIdTuple
-import com.chollinger.bridgefour.rock.TestUtils.taskIdTuple
+import com.chollinger.bridgefour.spren.TestUtils.slotIdTuple
+import com.chollinger.bridgefour.spren.TestUtils.taskIdTuple
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.BackgroundWorkerResult
 import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
 import com.chollinger.bridgefour.shared.models.IDs.SlotTaskIdTuple

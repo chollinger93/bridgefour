@@ -1,4 +1,4 @@
-package com.chollinger.bridgefour.rock.programs
+package com.chollinger.bridgefour.spren.programs
 
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
@@ -6,10 +6,10 @@ import scala.language.postfixOps
 import cats.effect.kernel.Fiber
 import cats.effect.IO
 import cats.effect.Sync
-import com.chollinger.bridgefour.rock.TestUtils
-import com.chollinger.bridgefour.rock.TestUtils.Jobs.FakeJobCreator
-import com.chollinger.bridgefour.rock.TestUtils.*
-import com.chollinger.bridgefour.rock.programs.TaskExecutorService
+import com.chollinger.bridgefour.spren.TestUtils
+import com.chollinger.bridgefour.spren.TestUtils.Jobs.FakeJobCreator
+import com.chollinger.bridgefour.spren.TestUtils.*
+import com.chollinger.bridgefour.spren.programs.TaskExecutorService
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.FiberContainer
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.background.BackgroundWorkerService

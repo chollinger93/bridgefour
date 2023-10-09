@@ -1,4 +1,4 @@
-package com.chollinger.bridgefour.rock.models
+package com.chollinger.bridgefour.spren.models
 
 import cats.effect.unsafe.implicits.*
 import cats.effect.IO

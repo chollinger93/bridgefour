@@ -1,4 +1,4 @@
-package com.chollinger.bridgefour.rock.http
+package com.chollinger.bridgefour.spren.http
 
 import cats.data.Kleisli
 import cats.effect.kernel.Fiber
@@ -8,11 +8,11 @@ import cats.effect.Sync
 import cats.syntax.all.*
 import cats.Monad
 import cats.Parallel
-import com.chollinger.bridgefour.rock.models.Config
-import com.chollinger.bridgefour.rock.models.Config.ServiceConfig
-import com.chollinger.bridgefour.rock.programs.TaskExecutor
-import com.chollinger.bridgefour.rock.programs.TaskExecutorService
-import com.chollinger.bridgefour.rock.services.WorkerService
+import com.chollinger.bridgefour.spren.models.Config
+import com.chollinger.bridgefour.spren.models.Config.ServiceConfig
+import com.chollinger.bridgefour.spren.programs.TaskExecutor
+import com.chollinger.bridgefour.spren.programs.TaskExecutorService
+import com.chollinger.bridgefour.spren.services.WorkerService
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.FiberContainer
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.background.BackgroundWorkerService

@@ -1,4 +1,4 @@
-package com.chollinger.bridgefour.rock.state
+package com.chollinger.bridgefour.spren.state
 
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.BackgroundWorkerResult
 import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple

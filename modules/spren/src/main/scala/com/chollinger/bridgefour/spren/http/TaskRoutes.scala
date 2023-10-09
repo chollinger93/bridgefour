@@ -1,4 +1,4 @@
-package com.chollinger.bridgefour.rock.http
+package com.chollinger.bridgefour.spren.http
 
 import cats.Monad
 import cats.effect.kernel.Sync
@@ -6,7 +6,7 @@ import cats.effect.Async
 import cats.effect.Concurrent
 import cats.effect.IO
 import cats.syntax.all.*
-import com.chollinger.bridgefour.rock.programs.TaskExecutor
+import com.chollinger.bridgefour.spren.programs.TaskExecutor
 import com.chollinger.bridgefour.shared.http.Route
 import com.chollinger.bridgefour.shared.models.Config.RockConfig
 import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple

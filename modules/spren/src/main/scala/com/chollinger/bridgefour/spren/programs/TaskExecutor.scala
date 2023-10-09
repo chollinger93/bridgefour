@@ -1,4 +1,4 @@
-package com.chollinger.bridgefour.rock.programs
+package com.chollinger.bridgefour.spren.programs
 
 import cats.Monad
 import cats.effect.Concurrent
@@ -11,7 +11,7 @@ import cats.syntax.all.toTraverseOps
 import cats.syntax.flatMap.toFlatMapOps
 import cats.syntax.functor.toFunctorOps
 import cats.syntax.traverse.toTraverseOps
-import com.chollinger.bridgefour.rock.state.TaskExecutionStatusStateMachine
+import com.chollinger.bridgefour.spren.state.TaskExecutionStatusStateMachine
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.BackgroundWorkerResult
 import com.chollinger.bridgefour.shared.jobs.BridgeFourJob

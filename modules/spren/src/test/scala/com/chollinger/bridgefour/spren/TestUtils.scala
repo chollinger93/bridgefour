@@ -1,4 +1,4 @@
-package com.chollinger.bridgefour.rock
+package com.chollinger.bridgefour.spren
 
 import scala.concurrent.duration.FiniteDuration
 import scala.language.postfixOps

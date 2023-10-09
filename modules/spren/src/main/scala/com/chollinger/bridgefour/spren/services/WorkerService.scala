@@ -1,4 +1,4 @@
-package com.chollinger.bridgefour.rock.services
+package com.chollinger.bridgefour.spren.services
 
 import scala.language.postfixOps
 
@@ -8,7 +8,7 @@ import cats.syntax.all.toTraverseOps
 import cats.syntax.traverse.toTraverseOps
 import cats.Monad
 import cats.Parallel
-import com.chollinger.bridgefour.rock.programs.TaskExecutor
+import com.chollinger.bridgefour.spren.programs.TaskExecutor
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.models.Config.RockConfig
 import com.chollinger.bridgefour.shared.models.IDs.*
