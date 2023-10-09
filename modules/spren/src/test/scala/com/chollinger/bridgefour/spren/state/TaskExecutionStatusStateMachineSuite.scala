@@ -1,14 +1,14 @@
 package com.chollinger.bridgefour.spren.state
 
 import cats.effect.IO
-import com.chollinger.bridgefour.spren.TestUtils.slotIdTuple
-import com.chollinger.bridgefour.spren.TestUtils.taskIdTuple
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.BackgroundWorkerResult
 import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
 import com.chollinger.bridgefour.shared.models.IDs.SlotTaskIdTuple
 import com.chollinger.bridgefour.shared.models.Job.TaskState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Worker.SlotState
+import com.chollinger.bridgefour.spren.TestUtils.slotIdTuple
+import com.chollinger.bridgefour.spren.TestUtils.taskIdTuple
 import munit.CatsEffectSuite
 
 class TaskExecutionStatusStateMachineSuite extends CatsEffectSuite {

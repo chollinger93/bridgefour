@@ -9,18 +9,12 @@ import cats.effect.kernel.Fiber
 import cats.syntax.all.*
 import cats.Monad
 import cats.Parallel
-import com.chollinger.bridgefour.spren.TestUtils.Jobs.FakeJobCreator
-import com.chollinger.bridgefour.spren.TestUtils.*
-import com.chollinger.bridgefour.spren.models.Config
-import com.chollinger.bridgefour.spren.models.Config.ServiceConfig
-import com.chollinger.bridgefour.spren.programs.TaskExecutorService
-import com.chollinger.bridgefour.spren.services.WorkerService
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.BackgroundWorkerResult
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.FiberContainer
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.background.BackgroundWorkerService
 import com.chollinger.bridgefour.shared.jobs.*
-import com.chollinger.bridgefour.shared.models.Config.RockConfig
+import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.IDs._
 import com.chollinger.bridgefour.shared.models.Job.TaskState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
@@ -28,6 +22,12 @@ import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
 import com.chollinger.bridgefour.shared.models.Worker.SlotState
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
+import com.chollinger.bridgefour.spren.TestUtils.Jobs.FakeJobCreator
+import com.chollinger.bridgefour.spren.TestUtils.*
+import com.chollinger.bridgefour.spren.models.Config
+import com.chollinger.bridgefour.spren.models.Config.ServiceConfig
+import com.chollinger.bridgefour.spren.programs.TaskExecutorService
+import com.chollinger.bridgefour.spren.services.WorkerService
 import com.comcast.ip4s.*
 import fs2.io.net.Network
 import munit.CatsEffectSuite
@@ -60,7 +60,13 @@ class WorkerServiceSuite extends CatsEffectSuite {
           key: Long,
           timeout: FiniteDuration
       ): IO[BackgroundWorkerResult[IO, TaskState, SlotTaskIdTuple]] =
-        if (key == inProgressSlot) IO(BackgroundWorkerResult(Left(ExecutionStatus.InProgress), None))
+        if (key == inProgressSlot)
+          IO(
+            BackgroundWorkerResult(
+              Left(ExecutionStatus.InProgress),
+              Some(SlotTaskIdTuple(slot = slotIdTuple.copy(id = inProgressSlot), task = taskIdTuple))
+            )
+          )
         else IO(BackgroundWorkerResult(Right(t), None))
 
     }
@@ -70,7 +76,7 @@ class WorkerServiceSuite extends CatsEffectSuite {
 
   test("WorkerService.state should return a correct state") {
     // Expected
-    val task = TaskState(taskIdTuple, status = ExecutionStatus.InProgress)
+    val task = TaskState(taskIdTuple, status = ExecutionStatus.Done)
     val usedSlot =
       SlotState(
         SlotIdTuple(slotId, workerId),
@@ -78,7 +84,7 @@ class WorkerServiceSuite extends CatsEffectSuite {
         status = ExecutionStatus.InProgress,
         // This is a far from perfect test, because the actual BackgroundWorker would set this value to something useful
         // TODO: rethink ExecutionStatus responsibilities
-        taskId = None
+        taskId = Some(taskIdTuple)
       )
     val openSlot =
       SlotState(
@@ -89,8 +95,8 @@ class WorkerServiceSuite extends CatsEffectSuite {
       )
     // Services
     val bgSrv     = MockBackgroundWorkerService(task, slotId)
-    val taskSrv   = TaskExecutorService.make(rockCfg, bgSrv, FakeJobCreator())
-    val workerSrv = WorkerService.make[IO](rockCfg, taskSrv)
+    val taskSrv   = TaskExecutorService.make(sprenCfg, bgSrv, FakeJobCreator())
+    val workerSrv = WorkerService.make[IO](sprenCfg, taskSrv)
     for {
       s <- workerSrv.state()
       _ = assertEquals(
@@ -102,7 +108,7 @@ class WorkerServiceSuite extends CatsEffectSuite {
               availableSlots = List(openSlotId),
               // Similar to the comment above, this test is somewhat BS, since it won't report a correct status
               // and the service filters on Status == InProgress & TaskId.exists
-              runningTasks = List()
+              runningTasks = List(taskIdTuple)
             )
           )
     } yield ()
@@ -115,9 +121,9 @@ class WorkerServiceSuite extends CatsEffectSuite {
     for {
       bg       <- InMemoryPersistence.makeF[IO, Long, FiberContainer[IO, TaskState, SlotTaskIdTuple]]()
       bgSrv     = BackgroundWorkerService.make[IO, TaskState, SlotTaskIdTuple](bg)
-      taskSrv   = TaskExecutorService.make(rockCfg, bgSrv, FakeJobCreator())
-      workerSrv = WorkerService.make[IO](rockCfg, taskSrv)
-      execSrv   = TaskExecutorService.make[IO](rockCfg, bgSrv, JobCreatorService.make())
+      taskSrv   = TaskExecutorService.make(sprenCfg, bgSrv, FakeJobCreator())
+      workerSrv = WorkerService.make[IO](sprenCfg, taskSrv)
+      execSrv   = TaskExecutorService.make[IO](sprenCfg, bgSrv, JobCreatorService.make())
       // Start a task
       statusMap <- execSrv.start(List(delayedTask(1)))
       _          = assertEquals(statusMap, Map(200 -> ExecutionStatus.InProgress))
@@ -148,8 +154,8 @@ class WorkerServiceSuite extends CatsEffectSuite {
     for {
       bg       <- InMemoryPersistence.makeF[IO, Long, FiberContainer[IO, TaskState, SlotTaskIdTuple]]()
       bgSrv     = BackgroundWorkerService.make[IO, TaskState, SlotTaskIdTuple](bg)
-      taskSrv   = TaskExecutorService.make(rockCfg, bgSrv, FakeJobCreator())
-      workerSrv = WorkerService.make[IO](rockCfg, taskSrv)
+      taskSrv   = TaskExecutorService.make(sprenCfg, bgSrv, FakeJobCreator())
+      workerSrv = WorkerService.make[IO](sprenCfg, taskSrv)
       // Get status
       state <- workerSrv.state()
       _ = assertEquals(
@@ -176,9 +182,9 @@ class WorkerServiceSuite extends CatsEffectSuite {
     for {
       bg       <- InMemoryPersistence.makeF[IO, Long, FiberContainer[IO, TaskState, SlotTaskIdTuple]]()
       bgSrv     = BackgroundWorkerService.make[IO, TaskState, SlotTaskIdTuple](bg)
-      taskSrv   = TaskExecutorService.make(rockCfg, bgSrv, FakeJobCreator())
-      workerSrv = WorkerService.make[IO](rockCfg, taskSrv)
-      execSrv   = TaskExecutorService.make[IO](rockCfg, bgSrv, JobCreatorService.make())
+      taskSrv   = TaskExecutorService.make(sprenCfg, bgSrv, FakeJobCreator())
+      workerSrv = WorkerService.make[IO](sprenCfg, taskSrv)
+      execSrv   = TaskExecutorService.make[IO](sprenCfg, bgSrv, JobCreatorService.make())
       // Start a task
       statusMap <- execSrv.start(List(sampleTask))
       _          = assertEquals(statusMap, Map(200 -> ExecutionStatus.InProgress))

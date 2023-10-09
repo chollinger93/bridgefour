@@ -25,7 +25,7 @@ import com.chollinger.bridgefour.kaladin.services.*
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.jobs.*
-import com.chollinger.bridgefour.shared.models.Config.RockConfig
+import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.IDs.JobId
 import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
 import com.chollinger.bridgefour.shared.models.IDs.TaskIdTuple

@@ -29,7 +29,7 @@ import com.chollinger.bridgefour.shared.exceptions.Exceptions.NoFilesAvailableEx
 import com.chollinger.bridgefour.shared.exceptions.Exceptions.OrphanTaskException
 import com.chollinger.bridgefour.shared.extensions.takeN
 import com.chollinger.bridgefour.shared.jobs.LeaderCreator
-import com.chollinger.bridgefour.shared.models.Config.RockConfig
+import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.Config.WorkerConfig
 import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.*

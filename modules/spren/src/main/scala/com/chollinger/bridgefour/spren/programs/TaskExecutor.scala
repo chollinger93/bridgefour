@@ -11,13 +11,12 @@ import cats.syntax.all.toTraverseOps
 import cats.syntax.flatMap.toFlatMapOps
 import cats.syntax.functor.toFunctorOps
 import cats.syntax.traverse.toTraverseOps
-import com.chollinger.bridgefour.spren.state.TaskExecutionStatusStateMachine
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.BackgroundWorkerResult
 import com.chollinger.bridgefour.shared.jobs.BridgeFourJob
 import com.chollinger.bridgefour.shared.jobs.JobClass
 import com.chollinger.bridgefour.shared.jobs.JobCreator
-import com.chollinger.bridgefour.shared.models.Config.RockConfig
+import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.TaskState
 import com.chollinger.bridgefour.shared.models.Status
@@ -25,6 +24,7 @@ import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
 import com.chollinger.bridgefour.shared.models.Worker.SlotState
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
+import com.chollinger.bridgefour.spren.state.TaskExecutionStatusStateMachine
 import org.typelevel.log4cats.Logger
 
 /** An task executor service that maintains state internally, usually by maintaining a BackgroundWorker[F, TaskState,
@@ -46,7 +46,7 @@ object TaskExecutorService {
 
   // TODO: capacity
   def make[F[_]: ThrowableMonadError: Sync: Monad: Logger](
-      sCfg: RockConfig,
+      sCfg: SprenConfig,
       bg: BackgroundWorker[F, TaskState, SlotTaskIdTuple],
       jc: JobCreator[F]
   ): TaskExecutor[F] = new TaskExecutor[F]:

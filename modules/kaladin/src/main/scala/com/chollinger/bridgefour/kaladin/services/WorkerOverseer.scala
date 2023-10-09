@@ -54,13 +54,7 @@ object WorkerOverseerService {
       override def listAvailableWorkers(): F[List[WorkerState]] = {
         for {
           avail <-
-            cfg.workers.parTraverse(w =>
-              err.handleErrorWith(getWorkerState(w))(t =>
-                Logger[F].warn(s"Worker $w is unavailable: $t") >> Concurrent[F].pure(
-                  WorkerState.unavailable(w.id)
-                )
-              )
-            )
+            cfg.workers.parTraverse(w => err.handleError(getWorkerState(w))(t => WorkerState.unavailable(w.id)))
           _ <- Logger[F].debug(s"Available worker slots: ${avail.map(_.availableSlots)}")
           //          _     <- avail.parTraverse(w => availableSlots.set(w.id, w.availableSlots)) // TODO: not needed
         } yield avail

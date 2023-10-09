@@ -5,7 +5,7 @@ import scala.language.postfixOps
 
 import cats.effect.IO
 import com.chollinger.bridgefour.shared.jobs.*
-import com.chollinger.bridgefour.shared.models.Config.RockConfig
+import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.TaskState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
@@ -14,7 +14,7 @@ import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
 import concurrent.duration.DurationDouble
 object TestUtils {
 
-  val rockCfg = RockConfig(0, "http", "0.0.0.0", 5555, 2, 0.2 seconds)
+  val sprenCfg = SprenConfig(0, "http", "0.0.0.0", 5555, 2, 0.2 seconds)
 
   val jobId       = 100
   val taskId      = 200

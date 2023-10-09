@@ -6,10 +6,6 @@ import scala.language.postfixOps
 import cats.effect.kernel.Fiber
 import cats.effect.IO
 import cats.effect.Sync
-import com.chollinger.bridgefour.spren.TestUtils
-import com.chollinger.bridgefour.spren.TestUtils.Jobs.FakeJobCreator
-import com.chollinger.bridgefour.spren.TestUtils.*
-import com.chollinger.bridgefour.spren.programs.TaskExecutorService
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.FiberContainer
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.background.BackgroundWorkerService
@@ -23,6 +19,10 @@ import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
 import com.chollinger.bridgefour.shared.models.Worker.SlotState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
+import com.chollinger.bridgefour.spren.TestUtils
+import com.chollinger.bridgefour.spren.TestUtils.Jobs.FakeJobCreator
+import com.chollinger.bridgefour.spren.TestUtils.*
+import com.chollinger.bridgefour.spren.programs.TaskExecutorService
 import munit.CatsEffectSuite
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -39,7 +39,7 @@ class TaskExecutorServiceSuite extends CatsEffectSuite {
     for {
       state     <- stateF
       bg         = BackgroundWorkerService.make[IO, TaskState, SlotTaskIdTuple](state)
-      srv        = TaskExecutorService.make(rockCfg, bg, FakeJobCreator())
+      srv        = TaskExecutorService.make(sprenCfg, bg, FakeJobCreator())
       statusMap <- srv.start(List(sampleTask))
       _          = assertEquals(statusMap, Map(taskId -> ExecutionStatus.InProgress))
       _         <- IO.println("Getting result")

@@ -8,15 +8,15 @@ import cats.syntax.all.toTraverseOps
 import cats.syntax.traverse.toTraverseOps
 import cats.Monad
 import cats.Parallel
-import com.chollinger.bridgefour.spren.programs.TaskExecutor
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
-import com.chollinger.bridgefour.shared.models.Config.RockConfig
+import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.TaskState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Worker.SlotState
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.Persistence
+import com.chollinger.bridgefour.spren.programs.TaskExecutor
 import org.typelevel.log4cats.Logger
 
 import concurrent.duration.DurationDouble
@@ -39,7 +39,7 @@ sealed trait WorkerService[F[_]] {
 object WorkerService {
 
   def make[F[_]: Parallel: Sync: Logger](
-      cfg: RockConfig,
+      cfg: SprenConfig,
       executor: TaskExecutor[F]
   ): WorkerService[F] =
     new WorkerService[F] {

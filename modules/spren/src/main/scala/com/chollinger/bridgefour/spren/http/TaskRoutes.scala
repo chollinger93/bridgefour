@@ -6,14 +6,14 @@ import cats.effect.Async
 import cats.effect.Concurrent
 import cats.effect.IO
 import cats.syntax.all.*
-import com.chollinger.bridgefour.spren.programs.TaskExecutor
 import com.chollinger.bridgefour.shared.http.Route
-import com.chollinger.bridgefour.shared.models.Config.RockConfig
+import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
 import com.chollinger.bridgefour.shared.models.IDs.TaskId
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
+import com.chollinger.bridgefour.spren.programs.TaskExecutor
 import com.comcast.ip4s.*
 import fs2.io.net.Network
 import org.http4s.*
@@ -27,7 +27,9 @@ import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits.*
 import org.http4s.server.Router
 import org.http4s.server.middleware.Logger
-case class TaskRoutes[F[_]: Concurrent](cfg: RockConfig, executor: TaskExecutor[F]) extends Http4sDsl[F] with Route[F] {
+case class TaskRoutes[F[_]: Concurrent](cfg: SprenConfig, executor: TaskExecutor[F])
+    extends Http4sDsl[F]
+    with Route[F] {
 
   protected val prefixPath: String = "/task"
 

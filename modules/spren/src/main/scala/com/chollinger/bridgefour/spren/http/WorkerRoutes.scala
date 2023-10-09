@@ -5,10 +5,10 @@ import cats.effect.kernel.Sync
 import cats.effect.Async
 import cats.effect._
 import cats.syntax.all.*
-import com.chollinger.bridgefour.spren.services.WorkerService
 import com.chollinger.bridgefour.shared.http.Route
 import com.chollinger.bridgefour.shared.models.Worker
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
+import com.chollinger.bridgefour.spren.services.WorkerService
 import com.comcast.ip4s.*
 import fs2.io.net.Network
 import io.circe._
