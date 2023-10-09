@@ -1,10 +1,13 @@
 package com.chollinger.bridgefour.rock.state
 
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.BackgroundWorkerResult
-import com.chollinger.bridgefour.shared.models.IDs.{SlotIdTuple, SlotTaskIdTuple}
-import com.chollinger.bridgefour.shared.models.Job.{JobDetails, TaskState}
+import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
+import com.chollinger.bridgefour.shared.models.IDs.SlotTaskIdTuple
+import com.chollinger.bridgefour.shared.models.Job.JobDetails
+import com.chollinger.bridgefour.shared.models.Job.TaskState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus.finished
-import com.chollinger.bridgefour.shared.models.Status.{ExecutionStatus, WorkerTaskStatus}
+import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
+import com.chollinger.bridgefour.shared.models.Status.WorkerTaskStatus
 import com.chollinger.bridgefour.shared.models.Worker.SlotState
 import com.chollinger.bridgefour.shared.state.StateMachine
 

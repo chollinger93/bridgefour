@@ -8,8 +8,11 @@ import scala.collection.mutable.ArrayBuffer
 import cats.*
 import cats.effect.implicits.*
 import cats.effect.kernel.Outcome.Succeeded
-import cats.effect.std.{Mutex, UUIDGen}
-import cats.effect.{Async, Concurrent, Sync}
+import cats.effect.std.Mutex
+import cats.effect.std.UUIDGen
+import cats.effect.Async
+import cats.effect.Concurrent
+import cats.effect.Sync
 import cats.implicits.*
 import cats.syntax.all.*
 import cats.syntax.flatMap.toFlatMapOps
@@ -17,19 +20,27 @@ import cats.syntax.functor.toFunctorOps
 import cats.syntax.parallel.catsSyntaxParallelTraverse1
 import cats.syntax.traverse.toTraverseOps
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
-import com.chollinger.bridgefour.kaladin.services.{IdMaker, JobSplitter, WorkerOverseer}
+import com.chollinger.bridgefour.kaladin.services.IdMaker
+import com.chollinger.bridgefour.kaladin.services.JobSplitter
+import com.chollinger.bridgefour.kaladin.services.WorkerOverseer
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
-import com.chollinger.bridgefour.shared.exceptions.Exceptions.{InvalidWorkerConfigException, NoFilesAvailableException, OrphanTaskException}
+import com.chollinger.bridgefour.shared.exceptions.Exceptions.InvalidWorkerConfigException
+import com.chollinger.bridgefour.shared.exceptions.Exceptions.NoFilesAvailableException
+import com.chollinger.bridgefour.shared.exceptions.Exceptions.OrphanTaskException
 import com.chollinger.bridgefour.shared.extensions.takeN
 import com.chollinger.bridgefour.shared.jobs.LeaderCreator
-import com.chollinger.bridgefour.shared.models.Config.{RockConfig, WorkerConfig}
+import com.chollinger.bridgefour.shared.models.Config.RockConfig
+import com.chollinger.bridgefour.shared.models.Config.WorkerConfig
 import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.*
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import com.chollinger.bridgefour.shared.models.Task.{AssignedTaskConfig, AssignmentStatus}
+import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
+import com.chollinger.bridgefour.shared.models.Task.AssignmentStatus
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
-import com.chollinger.bridgefour.shared.models.{Status, WorkerStatus}
-import com.chollinger.bridgefour.shared.persistence.{Counter, Persistence}
+import com.chollinger.bridgefour.shared.models.Status
+import com.chollinger.bridgefour.shared.models.WorkerStatus
+import com.chollinger.bridgefour.shared.persistence.Counter
+import com.chollinger.bridgefour.shared.persistence.Persistence
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
 import io.circe.Json
 import io.circe.parser.decode

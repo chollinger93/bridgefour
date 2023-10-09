@@ -5,14 +5,18 @@ import cats.effect.Concurrent
 import cats.effect.implicits.*
 import cats.effect.kernel.Sync
 import cats.implicits.*
-import cats.syntax.all.{toFlatMapOps, toFunctorOps, toTraverseOps}
+import cats.syntax.all.toFlatMapOps
+import cats.syntax.all.toFunctorOps
+import cats.syntax.all.toTraverseOps
 import cats.syntax.flatMap.toFlatMapOps
 import cats.syntax.functor.toFunctorOps
 import cats.syntax.traverse.toTraverseOps
 import com.chollinger.bridgefour.rock.state.TaskExecutionStatusStateMachine
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.BackgroundWorkerResult
-import com.chollinger.bridgefour.shared.jobs.{BridgeFourJob, JobClass, JobCreator}
+import com.chollinger.bridgefour.shared.jobs.BridgeFourJob
+import com.chollinger.bridgefour.shared.jobs.JobClass
+import com.chollinger.bridgefour.shared.jobs.JobCreator
 import com.chollinger.bridgefour.shared.models.Config.RockConfig
 import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.TaskState

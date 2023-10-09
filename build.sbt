@@ -1,4 +1,5 @@
-import Dependencies._
+import Dependencies.*
+import com.typesafe.sbt.packager.docker.ExecCmd
 
 ThisBuild / organization := "com.chollinger"
 ThisBuild / scalaVersion := "3.3.0"
@@ -24,16 +25,24 @@ lazy val shared = (project in file("modules/shared")).settings(
 lazy val leader = (project in file("modules/kaladin"))
   .settings(
     commonSettings,
-    name := "kaladin"
+    name := "kaladin",
+    dockerUpdateLatest := true,
+    dockerBaseImage := "eclipse-temurin:17-jdk",
   )
   .dependsOn(shared)
+  .enablePlugins(JavaAppPackaging, DockerPlugin)
 
-lazy val worker = (project in file("modules/rock"))
+lazy val worker = (project in file("modules/spren"))
   .settings(
     commonSettings,
-    name := "rock"
+    name := "spren",
+    dockerUpdateLatest := true,
+    dockerBaseImage := "eclipse-temurin:17-jdk"
   )
   .dependsOn(shared)
+  .enablePlugins(JavaAppPackaging, DockerPlugin)
 
 addCommandAlias("lint", ";scalafixAll --rules OrganizeImports")
 addCommandAlias("format", ";scalafmtAll")
+// Plugins
+enablePlugins(JavaAppPackaging, DockerPlugin)

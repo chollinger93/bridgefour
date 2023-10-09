@@ -2,17 +2,23 @@ package com.chollinger.bridgefour.rock.http
 
 import cats.data.Kleisli
 import cats.effect.kernel.Fiber
-import cats.effect.{Async, Resource, Sync}
+import cats.effect.Async
+import cats.effect.Resource
+import cats.effect.Sync
 import cats.syntax.all.*
-import cats.{Monad, Parallel}
+import cats.Monad
+import cats.Parallel
 import com.chollinger.bridgefour.rock.models.Config
 import com.chollinger.bridgefour.rock.models.Config.ServiceConfig
-import com.chollinger.bridgefour.rock.programs.{TaskExecutor, TaskExecutorService}
+import com.chollinger.bridgefour.rock.programs.TaskExecutor
+import com.chollinger.bridgefour.rock.programs.TaskExecutorService
 import com.chollinger.bridgefour.rock.services.WorkerService
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.FiberContainer
-import com.chollinger.bridgefour.shared.background.{BackgroundWorker, BackgroundWorkerService}
+import com.chollinger.bridgefour.shared.background.BackgroundWorker
+import com.chollinger.bridgefour.shared.background.BackgroundWorkerService
 import com.chollinger.bridgefour.shared.jobs.JobCreatorService
-import com.chollinger.bridgefour.shared.models.IDs.{SlotIdTuple, SlotTaskIdTuple}
+import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
+import com.chollinger.bridgefour.shared.models.IDs.SlotTaskIdTuple
 import com.chollinger.bridgefour.shared.models.Job.TaskState
 import com.chollinger.bridgefour.shared.models.Worker.SlotState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
@@ -23,7 +29,9 @@ import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits.*
 import org.http4s.server.middleware.Logger
 import org.http4s.server.middleware.Logger as Http4sLogger
-import org.http4s.{HttpApp, Request, Response}
+import org.http4s.HttpApp
+import org.http4s.Request
+import org.http4s.Response
 import org.typelevel.log4cats.Logger
 object Server {
 

@@ -15,6 +15,7 @@ import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
 import org.http4s.Status
 import org.http4s.circe.JsonDecoder
 import org.http4s.client.Client
+import org.typelevel.log4cats.Logger
 
 sealed trait HealthMonitorService[F[_]] {
 
@@ -26,23 +27,33 @@ sealed trait HealthMonitorService[F[_]] {
 
 object HealthMonitorService {
 
-  def make[F[_]: Sync: Parallel: ThrowableMonadError](cfg: ServiceConfig, client: Client[F]): HealthMonitorService[F] =
+  def make[F[_]: Sync: Parallel: ThrowableMonadError: Logger](
+      cfg: ServiceConfig,
+      client: Client[F]
+  ): HealthMonitorService[F] =
     new HealthMonitorService[F] {
 
       val sF: Sync[F]                 = implicitly[Sync[F]]
       val err: ThrowableMonadError[F] = implicitly[ThrowableMonadError[F]]
 
       override def checkWorkerStatus(workerCfg: WorkerConfig): F[WorkerStatus] = {
-        err.handleError(client.get(s"${workerCfg.uri()}/worker/status") { r =>
-          sF.blocking(r.status match {
-            case Status.Ok => WorkerStatus.Alive
-            case _         => WorkerStatus.Dead
-          })
-        })(_ => WorkerStatus.Dead)
+        err.handleErrorWith(client.get(s"${workerCfg.uri()}/worker/status") { r =>
+          Logger[F].debug(s"Worker ${workerCfg.uri()} status: ${r.status}") >>
+            sF.blocking(r.status match {
+              case Status.Ok => WorkerStatus.Alive
+              case _         => WorkerStatus.Dead
+            })
+        })(t =>
+          Logger[F].warn(s"No response from worker at ${workerCfg.uri()}: ${t.printStackTrace()}") >> sF.blocking(
+            WorkerStatus.Dead
+          )
+        )
       }
 
       override def checkClusterStatus(): F[Map[WorkerId, WorkerStatus]] =
-        cfg.workers.parTraverse(c => checkWorkerStatus(c).map(r => (c.id, r))).map(e => e.toMap)
+        Logger[F].debug(s"Workers: ${cfg.workers}") >> cfg.workers
+          .parTraverse(c => checkWorkerStatus(c).map(r => (c.id, r)))
+          .map(e => e.toMap)
 
     }
 

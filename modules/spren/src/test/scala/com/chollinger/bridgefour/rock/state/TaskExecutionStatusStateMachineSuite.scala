@@ -1,9 +1,11 @@
 package com.chollinger.bridgefour.rock.state
 
 import cats.effect.IO
-import com.chollinger.bridgefour.rock.TestUtils.{slotIdTuple, taskIdTuple}
+import com.chollinger.bridgefour.rock.TestUtils.slotIdTuple
+import com.chollinger.bridgefour.rock.TestUtils.taskIdTuple
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.BackgroundWorkerResult
-import com.chollinger.bridgefour.shared.models.IDs.{SlotIdTuple, SlotTaskIdTuple}
+import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
+import com.chollinger.bridgefour.shared.models.IDs.SlotTaskIdTuple
 import com.chollinger.bridgefour.shared.models.Job.TaskState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Worker.SlotState

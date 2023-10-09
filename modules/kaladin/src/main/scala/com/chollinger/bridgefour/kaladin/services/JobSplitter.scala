@@ -12,11 +12,13 @@ import cats.effect.kernel.instances.all.parallelForGenSpawn
 import cats.effect.kernel.instances.spawn.parallelForGenSpawn
 import cats.implicits.*
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
-import com.chollinger.bridgefour.shared.exceptions.Exceptions.{NoFilesAvailableException, NoWorkersAvailableException}
+import com.chollinger.bridgefour.shared.exceptions.Exceptions.NoFilesAvailableException
+import com.chollinger.bridgefour.shared.exceptions.Exceptions.NoWorkersAvailableException
 import com.chollinger.bridgefour.shared.extensions.takeN
 import com.chollinger.bridgefour.shared.models.Config.WorkerConfig
 import com.chollinger.bridgefour.shared.models.IDs.*
-import com.chollinger.bridgefour.shared.models.Job.{JobDetails, _}
+import com.chollinger.bridgefour.shared.models.Job.JobDetails
+import com.chollinger.bridgefour.shared.models.Job._
 import com.chollinger.bridgefour.shared.models.Task._
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError

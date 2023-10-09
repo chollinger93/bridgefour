@@ -6,14 +6,18 @@ import cats.Monad
 import cats.implicits.*
 import cats.syntax.flatMap.toFlatMapOps
 import cats.syntax.functor.toFunctorOps
-import com.chollinger.bridgefour.kaladin.services.{IdMaker, JobConfigParser, JobSplitter}
+import com.chollinger.bridgefour.kaladin.services.IdMaker
+import com.chollinger.bridgefour.kaladin.services.JobConfigParser
+import com.chollinger.bridgefour.kaladin.services.JobSplitter
 import com.chollinger.bridgefour.kaladin.state._
 import com.chollinger.bridgefour.shared.models.Job.*
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus.finished
-import com.chollinger.bridgefour.shared.models.Status.{ExecutionStatus, WorkerTaskStatus}
+import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
+import com.chollinger.bridgefour.shared.models.Status.WorkerTaskStatus
 import com.chollinger.bridgefour.shared.models.Task.*
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
-import com.chollinger.bridgefour.shared.state.{StateMachine, StateMachineWithAction}
+import com.chollinger.bridgefour.shared.state.StateMachine
+import com.chollinger.bridgefour.shared.state.StateMachineWithAction
 import org.typelevel.log4cats.Logger
 
 // TODO: The state machines are simple FSMs, but do not model transitions and actions well and rely to heavily on the `JobDetails` model

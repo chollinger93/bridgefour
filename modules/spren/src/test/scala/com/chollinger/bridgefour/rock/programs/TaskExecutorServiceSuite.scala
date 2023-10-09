@@ -4,15 +4,19 @@ import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 
 import cats.effect.kernel.Fiber
-import cats.effect.{IO, Sync}
+import cats.effect.IO
+import cats.effect.Sync
 import com.chollinger.bridgefour.rock.TestUtils
 import com.chollinger.bridgefour.rock.TestUtils.Jobs.FakeJobCreator
 import com.chollinger.bridgefour.rock.TestUtils.*
 import com.chollinger.bridgefour.rock.programs.TaskExecutorService
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.FiberContainer
-import com.chollinger.bridgefour.shared.background.{BackgroundWorker, BackgroundWorkerService}
+import com.chollinger.bridgefour.shared.background.BackgroundWorker
+import com.chollinger.bridgefour.shared.background.BackgroundWorkerService
 import com.chollinger.bridgefour.shared.jobs.*
-import com.chollinger.bridgefour.shared.models.IDs.{SlotIdTuple, SlotTaskIdTuple, TaskIdTuple}
+import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
+import com.chollinger.bridgefour.shared.models.IDs.SlotTaskIdTuple
+import com.chollinger.bridgefour.shared.models.IDs.TaskIdTuple
 import com.chollinger.bridgefour.shared.models.Job.TaskState
 import com.chollinger.bridgefour.shared.models.Status
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus

@@ -4,17 +4,20 @@ import java.io.File
 import java.nio.file.Files
 
 import scala.collection.immutable.List
-import scala.concurrent.duration.{DurationDouble, FiniteDuration}
+import scala.concurrent.duration.DurationDouble
+import scala.concurrent.duration.FiniteDuration
 import scala.language.postfixOps
 
 import cats.data.Kleisli
 import cats.effect.*
 import cats.effect.kernel.Fiber
-import cats.effect.std.{Mutex, UUIDGen}
+import cats.effect.std.Mutex
+import cats.effect.std.UUIDGen
 import cats.implicits.*
 import cats.syntax.all.*
 import cats.syntax.traverse.toTraverseOps
-import cats.{Monad, Parallel}
+import cats.Monad
+import cats.Parallel
 import com.chollinger.bridgefour.kaladin.TestUtils.Http.*
 import com.chollinger.bridgefour.kaladin.TestUtils.*
 import com.chollinger.bridgefour.kaladin.models.Config
@@ -23,12 +26,15 @@ import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.jobs.*
 import com.chollinger.bridgefour.shared.models.Config.RockConfig
-import com.chollinger.bridgefour.shared.models.IDs.{JobId, SlotIdTuple, TaskIdTuple}
+import com.chollinger.bridgefour.shared.models.IDs.JobId
+import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
+import com.chollinger.bridgefour.shared.models.IDs.TaskIdTuple
 import com.chollinger.bridgefour.shared.models.Job.*
 import com.chollinger.bridgefour.shared.models.Status
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.*
-import com.chollinger.bridgefour.shared.models.Worker.{SlotState, WorkerState}
+import com.chollinger.bridgefour.shared.models.Worker.SlotState
+import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
 import com.comcast.ip4s.*
 import fs2.io.net.Network

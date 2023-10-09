@@ -7,22 +7,26 @@ import cats.data.Kleisli
 import cats.effect.*
 import cats.effect.kernel.Fiber
 import cats.syntax.all.*
-import cats.{Monad, Parallel}
+import cats.Monad
+import cats.Parallel
 import com.chollinger.bridgefour.rock.TestUtils.Jobs.FakeJobCreator
 import com.chollinger.bridgefour.rock.TestUtils.*
 import com.chollinger.bridgefour.rock.models.Config
 import com.chollinger.bridgefour.rock.models.Config.ServiceConfig
 import com.chollinger.bridgefour.rock.programs.TaskExecutorService
 import com.chollinger.bridgefour.rock.services.WorkerService
-import com.chollinger.bridgefour.shared.background.BackgroundWorker.{BackgroundWorkerResult, FiberContainer}
-import com.chollinger.bridgefour.shared.background.{BackgroundWorker, BackgroundWorkerService}
+import com.chollinger.bridgefour.shared.background.BackgroundWorker.BackgroundWorkerResult
+import com.chollinger.bridgefour.shared.background.BackgroundWorker.FiberContainer
+import com.chollinger.bridgefour.shared.background.BackgroundWorker
+import com.chollinger.bridgefour.shared.background.BackgroundWorkerService
 import com.chollinger.bridgefour.shared.jobs.*
 import com.chollinger.bridgefour.shared.models.Config.RockConfig
 import com.chollinger.bridgefour.shared.models.IDs._
 import com.chollinger.bridgefour.shared.models.Job.TaskState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
-import com.chollinger.bridgefour.shared.models.Worker.{SlotState, WorkerState}
+import com.chollinger.bridgefour.shared.models.Worker.SlotState
+import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
 import com.comcast.ip4s.*
 import fs2.io.net.Network
@@ -31,9 +35,12 @@ import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits.*
 import org.http4s.server.middleware.Logger as Http4sLogger
-import org.http4s.{HttpApp, Request, Response}
+import org.http4s.HttpApp
+import org.http4s.Request
+import org.http4s.Response
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import org.typelevel.log4cats.{Logger, SelfAwareStructuredLogger}
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.SelfAwareStructuredLogger
 
 import concurrent.duration.DurationDouble
 
