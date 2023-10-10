@@ -49,7 +49,7 @@ object Config {
   ) extends HostnameConfig
       derives ConfigReader
 
-  case class RockConfig(
+  case class SprenConfig(
       id: WorkerId,
       schema: String,
       host: String,

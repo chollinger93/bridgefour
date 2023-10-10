@@ -5,7 +5,7 @@ object Dependencies {
   // Versions
   val CatsEffectVersion              = "3.5.0"
   val PureConfigVersion              = "0.17.4"
-  val Http4sVersion                  = "0.23.19"
+  val Http4sVersion                  = "0.23.23"
   val MunitVersion                   = "0.7.29"
   val LogbackVersion                 = "1.4.7"
   val MunitCatsEffectVersion         = "1.0.7"

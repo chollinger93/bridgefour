@@ -23,7 +23,7 @@ It is explained in detail on my [blog](https://chollinger.com/blog/2023/06/build
 
 General purpose diagram for "starting a job":
 
-![](docs/DistributedSystem-Start Job.drawio.png)
+![](docs/DistributedSystem-StartJob.drawio.png)
 
 ### Comparing it to `WordCount`
 
@@ -62,6 +62,17 @@ Lastly, please check the last section for a retrofit of Partitioning into Bridge
 
 ## Run application
 
+### Docker
+
+```bash
+sbt docker:publishLocal
+docker-compose up
+```
+
+And run `sbin/wordcount_example_docker.sh` to run a sample job.
+
+### Bare Metal
+
 In separate terminals (or computers, provided you have an `NFS` share mounted - see above), run:
 
 ```bash 
@@ -72,7 +83,9 @@ WORKER1_PORT=5554 WORKER2_PORT=5553 sbt leader/run
 
 And run `sbin/wordcount_example.sh` to run a sample job.
 
-This will showcase a execution with more tasks than workers:
+## The Sample Job
+
+``sbin/wordcount_*.sh` will showcase a execution with more tasks than workers:
 
 1. Download "War and Peace" by Leo Tolstoy
 2. Run a word count job on it, with an artificial delay of 30s per task, with 5 tasks on 4 workers
@@ -91,7 +104,7 @@ Checking results
   "and": 20560,
   "": 16663,
   "to": 16324,
- ```
+```
 
 ## Commits
 

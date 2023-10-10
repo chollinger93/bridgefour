@@ -1,6 +1,7 @@
 package com.chollinger.bridgefour.kaladin.services
 
 import cats.effect.IO
+import com.chollinger.bridgefour.kaladin.Main.logger
 import com.chollinger.bridgefour.kaladin.TestUtils.Http.mockClient
 import com.chollinger.bridgefour.kaladin.models.Config
 import com.chollinger.bridgefour.shared.models.WorkerStatus

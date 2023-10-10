@@ -4,7 +4,8 @@ import java.io.File
 import java.nio.file.Files
 
 import scala.collection.immutable.List
-import scala.concurrent.duration.{DurationDouble, FiniteDuration}
+import scala.concurrent.duration.DurationDouble
+import scala.concurrent.duration.FiniteDuration
 import scala.language.postfixOps
 
 import cats.data.Kleisli
@@ -14,26 +15,33 @@ import cats.effect.std.UUIDGen
 import cats.implicits.*
 import cats.syntax.all.*
 import cats.syntax.traverse.toTraverseOps
-import cats.{Monad, Parallel}
-import com.chollinger.bridgefour.kaladin.TestUtils.{MockIDMaker, createTmpDir, createTmpFile}
+import cats.Monad
+import cats.Parallel
+import com.chollinger.bridgefour.kaladin.TestUtils.MockIDMaker
+import com.chollinger.bridgefour.kaladin.TestUtils.createTmpDir
+import com.chollinger.bridgefour.kaladin.TestUtils.createTmpFile
 import com.chollinger.bridgefour.kaladin.models.Config
-import com.chollinger.bridgefour.kaladin.services.{IdMaker, JobConfigParser}
+import com.chollinger.bridgefour.kaladin.services.IdMaker
+import com.chollinger.bridgefour.kaladin.services.JobConfigParser
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
-import com.chollinger.bridgefour.shared.models.Config.RockConfig
+import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.*
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task._
-import com.chollinger.bridgefour.shared.models.Worker.{SlotState, WorkerState}
+import com.chollinger.bridgefour.shared.models.Worker.SlotState
+import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
 import com.comcast.ip4s.*
 import fs2.io.net.Network
 import munit.CatsEffectSuite
 import org.http4s.*
-import org.http4s.circe.CirceEntityCodec.{circeEntityDecoder, circeEntityEncoder}
+import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
+import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.circe.CirceEntityDecoder.circeEntityDecoder
 import org.http4s.circe.CirceEntityEncoder.circeEntityEncoder
-import org.http4s.circe.{accumulatingJsonOf, jsonEncoderOf}
+import org.http4s.circe.accumulatingJsonOf
+import org.http4s.circe.jsonEncoderOf
 import org.http4s.client.Client
 import org.http4s.dsl.io.*
 import org.http4s.ember.client.EmberClientBuilder

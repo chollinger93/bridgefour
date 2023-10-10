@@ -19,7 +19,7 @@ import com.chollinger.bridgefour.kaladin.TestUtils.createTmpDir
 import com.chollinger.bridgefour.kaladin.TestUtils.createTmpFile
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.jobs.*
-import com.chollinger.bridgefour.shared.models.Config.RockConfig
+import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.IDs._
 import com.chollinger.bridgefour.shared.models.Job.TaskState
 import com.chollinger.bridgefour.shared.models.Job.UserJobConfig
