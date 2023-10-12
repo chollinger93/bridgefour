@@ -6,7 +6,7 @@ import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
 import com.chollinger.bridgefour.shared.models.IDs.SlotTaskIdTuple
 import com.chollinger.bridgefour.shared.models.Job.TaskState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import com.chollinger.bridgefour.shared.models.Worker.SlotState
+import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.spren.TestUtils.slotIdTuple
 import com.chollinger.bridgefour.spren.TestUtils.taskIdTuple
 import munit.CatsEffectSuite
@@ -29,7 +29,7 @@ class TaskExecutionStatusStateMachineSuite extends CatsEffectSuite {
     // Error
     val e1 = BackgroundWorkerResult[IO, TaskState, SlotTaskIdTuple](Left(ExecutionStatus.Error), Some(meta))
     val s1 = sm.transition(init, e1)
-    assertEquals(s1, SlotState(slotIdTuple, available = true, status = ExecutionStatus.Error, Some(meta.task)))
+    assertEquals(s1, SlotState(slotIdTuple, available = true, status = ExecutionStatus.Error))
   }
   test("TaskExecutionStatusStateMachine transitions success") {
     // Success
@@ -38,7 +38,7 @@ class TaskExecutionStatusStateMachineSuite extends CatsEffectSuite {
       Some(meta)
     )
     val s1 = sm.transition(init, e1)
-    assertEquals(s1, SlotState(slotIdTuple, available = true, status = ExecutionStatus.Done, Some(meta.task)))
+    assertEquals(s1, SlotState(slotIdTuple, available = true, status = ExecutionStatus.Done))
   }
   test("TaskExecutionStatusStateMachine transitions fiber failure") {
     // Success
@@ -47,7 +47,7 @@ class TaskExecutionStatusStateMachineSuite extends CatsEffectSuite {
       Some(meta)
     )
     val s1 = sm.transition(init, e1)
-    assertEquals(s1, SlotState(slotIdTuple, available = true, status = ExecutionStatus.Error, Some(meta.task)))
+    assertEquals(s1, SlotState(slotIdTuple, available = true, status = ExecutionStatus.Error))
   }
 
 }
