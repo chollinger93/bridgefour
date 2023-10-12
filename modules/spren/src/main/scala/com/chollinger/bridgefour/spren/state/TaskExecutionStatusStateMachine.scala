@@ -7,8 +7,7 @@ import com.chollinger.bridgefour.shared.models.Job.JobDetails
 import com.chollinger.bridgefour.shared.models.Job.TaskState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus.finished
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import com.chollinger.bridgefour.shared.models.Status.WorkerTaskStatus
-import com.chollinger.bridgefour.shared.models.Worker.SlotState
+import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.state.StateMachine
 
 class TaskExecutionStatusStateMachine
@@ -29,16 +28,16 @@ class TaskExecutionStatusStateMachine
     */
   def transition(initialSlot: SlotState, event: BackgroundWorkerResult[_, TaskState, SlotTaskIdTuple]): SlotState =
     event.res match
-      case Right(r) => SlotState(initialSlot.id, available = true, status = r.status, Some(r.id))
+      case Right(r) => SlotState(initialSlot.id, available = true, status = r.status)
       case Left(s) =>
         event.meta.match {
           // BackgroundWorker takes some responsibility for state transitions - bad coupling
           case Some(m) =>
             s match {
-              case ExecutionStatus.InProgress => SlotState(m.slot, available = false, status = s, Some(m.task))
+              case ExecutionStatus.InProgress => SlotState(m.slot, available = false, status = s)
               // This does not re-start these tasks anywhere, that is done in the leader
               case ExecutionStatus.Done | ExecutionStatus.Error | ExecutionStatus.Halted =>
-                SlotState(m.slot, available = true, status = s, Some(m.task))
+                SlotState(m.slot, available = true, status = s)
               case ExecutionStatus.Missing => SlotState.empty(initialSlot.id)
             }
           case _ => SlotState.empty(initialSlot.id)

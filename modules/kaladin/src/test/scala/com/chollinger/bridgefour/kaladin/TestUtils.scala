@@ -29,7 +29,7 @@ import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.*
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task._
-import com.chollinger.bridgefour.shared.models.Worker.SlotState
+import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
 import com.comcast.ip4s.*
@@ -101,11 +101,10 @@ object TestUtils {
       SlotState(
         SlotIdTuple(id = 0, workerId = 0),
         available = false,
-        status = ExecutionStatus.Done,
-        taskId = Some(taskIdTuple)
+        status = ExecutionStatus.Done
       )
     val openSlot: SlotState =
-      SlotState(SlotIdTuple(id = 1, workerId = 0), available = true, status = ExecutionStatus.Missing, taskId = None)
+      SlotState(SlotIdTuple(id = 1, workerId = 0), available = true, status = ExecutionStatus.Missing)
     val halfUsedWorkerState: WorkerState = WorkerState(
       id = 0,
       slots = List(usedSlot, openSlot),

@@ -13,7 +13,7 @@ import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.TaskState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import com.chollinger.bridgefour.shared.models.Worker.SlotState
+import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.Persistence
 import com.chollinger.bridgefour.spren.programs.TaskExecutor
@@ -57,13 +57,13 @@ object WorkerService {
         slots        <- slots()
         allSlotIds    = slots.map(_.id.id)
         unusedSlotIds = slots.filter(_.available).map(_.id.id)
-        runningTasks  = slots.filter(_.status == ExecutionStatus.InProgress).flatMap(_.taskId)
+        runningTasks  = slots.filter(_.status == ExecutionStatus.InProgress)
       } yield WorkerState(
         id = cfg.id,
         slots = slots,
         allSlots = allSlotIds,
         availableSlots = unusedSlotIds,
-        runningTasks = runningTasks
+        runningTasks = List() // TODO: refactor: broken
       )
 
     }

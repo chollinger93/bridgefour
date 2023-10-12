@@ -22,7 +22,7 @@ import com.chollinger.bridgefour.shared.models.Job.TaskState
 import com.chollinger.bridgefour.shared.models.Status
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
-import com.chollinger.bridgefour.shared.models.Worker.SlotState
+import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
 import com.chollinger.bridgefour.spren.state.TaskExecutionStatusStateMachine
 import org.typelevel.log4cats.Logger

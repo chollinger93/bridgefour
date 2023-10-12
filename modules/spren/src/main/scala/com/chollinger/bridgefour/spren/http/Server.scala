@@ -15,7 +15,7 @@ import com.chollinger.bridgefour.shared.jobs.JobCreatorService
 import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
 import com.chollinger.bridgefour.shared.models.IDs.SlotTaskIdTuple
 import com.chollinger.bridgefour.shared.models.Job.TaskState
-import com.chollinger.bridgefour.shared.models.Worker.SlotState
+import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
 import com.chollinger.bridgefour.spren.models.Config
 import com.chollinger.bridgefour.spren.models.Config.ServiceConfig

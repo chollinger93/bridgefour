@@ -28,11 +28,4 @@ object Status {
 
   }
 
-  case class WorkerTaskStatus(
-      // Are there slots on the worker that can be used
-      slots: Boolean,
-      // Task status
-      taskStatus: ExecutionStatus
-  )
-
 }

@@ -19,7 +19,7 @@ import com.chollinger.bridgefour.shared.models.IDs._
 import com.chollinger.bridgefour.shared.models.Job.TaskState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
-import com.chollinger.bridgefour.shared.models.Worker.SlotState
+import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
 import com.chollinger.bridgefour.spren.TestUtils.Jobs.FakeJobCreator
@@ -81,17 +81,15 @@ class WorkerServiceSuite extends CatsEffectSuite {
       SlotState(
         SlotIdTuple(slotId, workerId),
         available = false,
-        status = ExecutionStatus.InProgress,
+        status = ExecutionStatus.InProgress
         // This is a far from perfect test, because the actual BackgroundWorker would set this value to something useful
         // TODO: rethink ExecutionStatus responsibilities
-        taskId = Some(taskIdTuple)
       )
     val openSlot =
       SlotState(
         SlotIdTuple(openSlotId, workerId),
         available = true,
-        status = ExecutionStatus.Done,
-        taskId = Some(taskIdTuple)
+        status = ExecutionStatus.Done
       )
     // Services
     val bgSrv     = MockBackgroundWorkerService(task, slotId)
@@ -136,9 +134,9 @@ class WorkerServiceSuite extends CatsEffectSuite {
               id = workerId,
               slots = List(
                 // One running, with the delayedTask's taskIdTuple
-                SlotState(SlotIdTuple(slotId, workerId), false, ExecutionStatus.InProgress, Some(taskIdTuple)),
+                SlotState(SlotIdTuple(slotId, workerId), false, ExecutionStatus.InProgress),
                 // One available
-                SlotState(SlotIdTuple(openSlotId, workerId), true, ExecutionStatus.Missing, None)
+                SlotState(SlotIdTuple(openSlotId, workerId), true, ExecutionStatus.Missing)
               ),
               allSlots = List(slotId, openSlotId),
               // One slot should be occupied
@@ -164,8 +162,8 @@ class WorkerServiceSuite extends CatsEffectSuite {
               id = workerId,
               slots = List(
                 // Nothing running
-                SlotState(SlotIdTuple(slotId, workerId), true, ExecutionStatus.Missing, None),
-                SlotState(SlotIdTuple(openSlotId, workerId), true, ExecutionStatus.Missing, None)
+                SlotState(SlotIdTuple(slotId, workerId), true, ExecutionStatus.Missing),
+                SlotState(SlotIdTuple(openSlotId, workerId), true, ExecutionStatus.Missing)
               ),
               allSlots = List(slotId, openSlotId),
               // Both are available
@@ -198,8 +196,8 @@ class WorkerServiceSuite extends CatsEffectSuite {
               id = workerId,
               slots = List(
                 // Nothing running, but slot 0 reports the last task it finished
-                SlotState(SlotIdTuple(slotId, workerId), true, ExecutionStatus.Done, Some(taskIdTuple)),
-                SlotState(SlotIdTuple(openSlotId, workerId), true, ExecutionStatus.Missing, None)
+                SlotState(SlotIdTuple(slotId, workerId), true, ExecutionStatus.Done),
+                SlotState(SlotIdTuple(openSlotId, workerId), true, ExecutionStatus.Missing)
               ),
               allSlots = List(slotId, openSlotId),
               // Both are available
