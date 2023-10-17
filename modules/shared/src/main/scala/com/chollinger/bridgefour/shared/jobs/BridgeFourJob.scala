@@ -73,7 +73,7 @@ trait BridgeFourJob[F[_]] {
   def config: AssignedTaskConfig
 
   /** Each job must be able to do computations on the output data */
-  def run(): F[TaskState]
+  def run(): F[BackgroundTaskState]
 
 }
 
@@ -82,8 +82,8 @@ case class SampleBridgeFourJob[F[_]: Async](config: AssignedTaskConfig) extends 
 
   val jobClass: JobClass = JobClass.SampleJob
 
-  override def run(): F[TaskState] =
-    Async[F].blocking(TaskState(id = config.taskId, status = ExecutionStatus.Done))
+  override def run(): F[BackgroundTaskState] =
+    Async[F].blocking(BackgroundTaskState(id = config.taskId.id, status = ExecutionStatus.Done))
 
 }
 
@@ -121,14 +121,14 @@ case class DelayedWordCountBridgeFourJob[F[_]: Async: Temporal: Logger](config: 
         >> Logger[F].info(s"Wrote ${data.size} lines to $out")
     }
 
-  override def run(): F[TaskState] = for {
+  override def run(): F[BackgroundTaskState] = for {
     _        <- Logger[F].info(s"Starting job for file ${config.input}")
     waitTimeS = config.userSettings.getOrElse("timeout", "30").toInt
     _        <- Temporal[F].sleep(FiniteDuration(waitTimeS, TimeUnit.SECONDS))
     count    <- processFile(config.input)
     _        <- writeResult(config.outputFile, count)
     _        <- Logger[F].info(s"Done with job after $waitTimeS for file ${config.input}")
-    r        <- Async[F].delay(TaskState(id = config.taskId, status = ExecutionStatus.Done))
+    r        <- Async[F].delay(BackgroundTaskState(id = config.taskId.id, status = ExecutionStatus.Done))
   } yield r
 
 }

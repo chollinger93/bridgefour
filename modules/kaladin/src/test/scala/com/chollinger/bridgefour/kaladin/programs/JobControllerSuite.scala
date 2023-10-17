@@ -30,10 +30,10 @@ import com.chollinger.bridgefour.shared.models.IDs.JobId
 import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
 import com.chollinger.bridgefour.shared.models.IDs.TaskIdTuple
 import com.chollinger.bridgefour.shared.models.Job.*
+import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Status
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.*
-import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
 import com.comcast.ip4s.*
@@ -100,7 +100,7 @@ class JobControllerSuite extends CatsEffectSuite {
                 AssignedTaskConfig(
                   // From mock-random ID generator
                   taskId = TaskIdTuple(id = jobId, jobId = jobId),
-                  slotId = SlotIdTuple(openSlot.id.id, halfUsedWorkerState.id),
+                  slotId = SlotIdTuple(openSlot.id, halfUsedWorkerState.id),
                   input = f1.getAbsolutePath,
                   output = outDir.getAbsolutePath,
                   jobClass = JobClass.SampleJob,
@@ -136,9 +136,9 @@ class JobControllerSuite extends CatsEffectSuite {
     val doneWorkerState: WorkerState = WorkerState(
       id = 0,
       slots = List(usedSlot, openSlot),
-      allSlots = List(usedSlot.id.id, openSlot.id.id),
-      availableSlots = List(openSlot.id.id, openSlot.id.id),
-      runningTasks = List()
+      allSlots = List(usedSlot.id, openSlot.id),
+      availableSlots = List(openSlot.id, openSlot.id)
+//      runningTasks = List()
     )
     for {
       cfg    <- Config.load[IO]()

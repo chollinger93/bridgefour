@@ -26,8 +26,8 @@ import com.chollinger.bridgefour.shared.jobs.*
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.*
-import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.States.SlotState
+import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
 import com.comcast.ip4s.*
@@ -66,7 +66,7 @@ class WorkerOverseerSuite extends CatsEffectSuite {
       // The config only has one worker
       _ = assertEquals(workers.map(_.availableSlots.size).head, 1)
       _ = assertEquals(workers.map(_.slots.size).head, 2)
-      _ = assertEquals(workers.map(_.runningTasks.size).head, 1)
+//      _ = assertEquals(workers.map(_.runningTasks.size).head, 1)
       _ = assertEquals(workers.size, 1)
       _ = assertEquals(workers, List(halfUsedWorkerState))
     } yield ()

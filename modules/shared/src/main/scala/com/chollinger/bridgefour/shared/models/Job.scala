@@ -8,7 +8,9 @@ import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
 import com.chollinger.bridgefour.shared.models.IDs.TaskId
 import com.chollinger.bridgefour.shared.models.IDs.TaskIdTuple
 import com.chollinger.bridgefour.shared.models.IDs.WorkerId
-import com.chollinger.bridgefour.shared.models.Task.{AssignedTaskConfig, AssignmentStatus, UnassignedTaskConfig}
+import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
+import com.chollinger.bridgefour.shared.models.Task.AssignmentStatus
+import com.chollinger.bridgefour.shared.models.Task.UnassignedTaskConfig
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import io.circe.Decoder
 import io.circe.Encoder
@@ -95,6 +97,6 @@ object Job {
   }
 
   // A TaskState is the terminal state of a job, i.e. it should (generally) never transition to "InProgress" in practice
-  case class TaskState(id: TaskIdTuple, status: ExecutionStatus) derives Encoder.AsObject, Decoder
+  case class BackgroundTaskState(id: TaskId, status: ExecutionStatus) derives Encoder.AsObject, Decoder
 
 }

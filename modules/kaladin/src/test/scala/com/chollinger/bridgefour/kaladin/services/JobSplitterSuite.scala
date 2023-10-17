@@ -60,7 +60,7 @@ class JobSplitterSuite extends CatsEffectSuite {
                 AssignedTaskConfig(
                   // From mock-random ID generator
                   taskId = TaskIdTuple(id = 100, jobId = 100),
-                  slotId = SlotIdTuple(openSlot.id.id, halfUsedWorkerState.id),
+                  slotId = SlotIdTuple(openSlot.id, halfUsedWorkerState.id),
                   input = files.head.getAbsolutePath,
                   output = outDirS,
                   jobClass = JobClass.SampleJob,

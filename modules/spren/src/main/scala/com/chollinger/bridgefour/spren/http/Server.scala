@@ -14,7 +14,8 @@ import com.chollinger.bridgefour.shared.background.BackgroundWorkerService
 import com.chollinger.bridgefour.shared.jobs.JobCreatorService
 import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
 import com.chollinger.bridgefour.shared.models.IDs.SlotTaskIdTuple
-import com.chollinger.bridgefour.shared.models.Job.TaskState
+import com.chollinger.bridgefour.shared.models.IDs.TaskId
+import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState
 import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
 import com.chollinger.bridgefour.spren.models.Config
@@ -40,8 +41,10 @@ object Server {
     for {
 //      client    <- EmberClientBuilder.default[F].build
       state <-
-        Resource.make(InMemoryPersistence.makeF[F, Long, FiberContainer[F, TaskState, SlotTaskIdTuple]]())(_ => mF.unit)
-      bgSrv     = BackgroundWorkerService.make[F, TaskState, SlotTaskIdTuple](state)
+        Resource.make(InMemoryPersistence.makeF[F, Long, FiberContainer[F, BackgroundTaskState, TaskId]]())(_ =>
+          mF.unit
+        )
+      bgSrv     = BackgroundWorkerService.make[F, BackgroundTaskState, TaskId](state)
       jcSrv     = JobCreatorService.make[F]()
       execSrv   = TaskExecutorService.make[F](cfg.self, bgSrv, jcSrv)
       workerSrv = WorkerService.make[F](cfg.self, execSrv)

@@ -18,13 +18,13 @@ import com.chollinger.bridgefour.shared.jobs.JobClass
 import com.chollinger.bridgefour.shared.jobs.JobCreator
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.IDs.*
-import com.chollinger.bridgefour.shared.models.Job.TaskState
+import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState
+import com.chollinger.bridgefour.shared.models.States.SlotState
+import com.chollinger.bridgefour.shared.models.States.TaskState
 import com.chollinger.bridgefour.shared.models.Status
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
-import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
-import com.chollinger.bridgefour.spren.state.TaskExecutionStatusStateMachine
 import org.typelevel.log4cats.Logger
 
 /** An task executor service that maintains state internally, usually by maintaining a BackgroundWorker[F, TaskState,
@@ -37,8 +37,8 @@ trait TaskExecutor[F[_]] {
 
   def start(tasks: List[AssignedTaskConfig]): F[Map[TaskId, ExecutionStatus]]
 
-  def getSlotState(id: SlotIdTuple): F[SlotState]
-  def getStatus(id: SlotIdTuple): F[ExecutionStatus]
+  def getSlotState(id: SlotId): F[SlotState]
+  def getStatus(id: SlotId): F[ExecutionStatus]
 
 }
 
@@ -47,12 +47,11 @@ object TaskExecutorService {
   // TODO: capacity
   def make[F[_]: ThrowableMonadError: Sync: Monad: Logger](
       sCfg: SprenConfig,
-      bg: BackgroundWorker[F, TaskState, SlotTaskIdTuple],
+      bg: BackgroundWorker[F, BackgroundTaskState, TaskId],
       jc: JobCreator[F]
   ): TaskExecutor[F] = new TaskExecutor[F]:
 
-    val taskStateMachine: TaskExecutionStatusStateMachine = TaskExecutionStatusStateMachine()
-    val err: ThrowableMonadError[F]                       = implicitly[ThrowableMonadError[F]]
+    val err: ThrowableMonadError[F] = implicitly[ThrowableMonadError[F]]
 
     private def startTask(cfg: AssignedTaskConfig): F[(TaskId, ExecutionStatus)] = {
       val task = jc.makeJob(cfg)
@@ -60,9 +59,7 @@ object TaskExecutorService {
         _ <- Logger[F].debug(s"Starting worker task $task in slot ${cfg.slotId}")
         r <-
           err
-            .handleError(bg.start(cfg.slotId.id, task.run(), Some(SlotTaskIdTuple(cfg.slotId, cfg.taskId))))(_ =>
-              ExecutionStatus.Error
-            )
+            .handleError(bg.start(cfg.slotId.id, task.run(), Some(cfg.taskId.id)))(_ => ExecutionStatus.Error)
             .map(s => (cfg.taskId.id, s))
         _ <- Logger[F].info(s"Started worker task $task in slot ${cfg.slotId}: $r")
       } yield r
@@ -72,10 +69,15 @@ object TaskExecutorService {
     override def start(tasks: List[AssignedTaskConfig]): F[Map[TaskId, ExecutionStatus]] =
       tasks.traverse(c => startTask(c)).map(_.toMap)
 
-    override def getSlotState(id: SlotIdTuple): F[SlotState] =
-      bg.probeResult(id.id, sCfg.probingTimeout).map(r => taskStateMachine.transition(SlotState.empty(id), r))
+    override def getSlotState(id: SlotId): F[SlotState] =
+      bg.probeResult(id, sCfg.probingTimeout).map { r =>
+        r.res match
+          // The "result" for this operation is just another ExecutionStatus from the underlying task
+          case Right(res)   => SlotState(id, available = ExecutionStatus.mapAvailable(res.status), status = res.status)
+          case Left(status) => SlotState(id, available = ExecutionStatus.mapAvailable(status), status = status)
+      }
 
-    override def getStatus(id: SlotIdTuple): F[ExecutionStatus] =
+    override def getStatus(id: SlotId): F[ExecutionStatus] =
       getSlotState(id).map(_.status)
 
 }

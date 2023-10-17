@@ -27,9 +27,9 @@ import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.*
+import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task._
-import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
 import com.comcast.ip4s.*
@@ -93,24 +93,25 @@ object TestUtils {
     given EntityDecoder[IO, AssignedTaskConfig]           = accumulatingJsonOf[IO, AssignedTaskConfig]
     given EntityEncoder[IO, Map[TaskId, ExecutionStatus]] = jsonEncoderOf[IO, Map[TaskId, ExecutionStatus]]
 
-    val jobId                     = 100
-    val workerId                  = 0
-    val taskIdTuple               = TaskIdTuple(id = 10, jobId = 0)
-    val inProgressTask: TaskState = TaskState(taskIdTuple, status = ExecutionStatus.InProgress)
+    val jobId                               = 100
+    val workerId                            = 0
+    val taskId                              = 10
+    val taskIdTuple                         = TaskIdTuple(id = 10, jobId = 0)
+    val inProgressTask: BackgroundTaskState = BackgroundTaskState(taskId, status = ExecutionStatus.InProgress)
     val usedSlot: SlotState =
       SlotState(
-        SlotIdTuple(id = 0, workerId = 0),
+        0,
         available = false,
         status = ExecutionStatus.Done
       )
     val openSlot: SlotState =
-      SlotState(SlotIdTuple(id = 1, workerId = 0), available = true, status = ExecutionStatus.Missing)
+      SlotState(1, available = true, status = ExecutionStatus.Missing)
     val halfUsedWorkerState: WorkerState = WorkerState(
       id = 0,
       slots = List(usedSlot, openSlot),
-      allSlots = List(usedSlot.id.id, openSlot.id.id),
-      availableSlots = List(openSlot.id.id),
-      runningTasks = List(taskIdTuple)
+      allSlots = List(usedSlot.id, openSlot.id),
+      availableSlots = List(openSlot.id)
+//      runningTasks = List(taskIdTuple)
     )
 
     private def httpRoutes(
