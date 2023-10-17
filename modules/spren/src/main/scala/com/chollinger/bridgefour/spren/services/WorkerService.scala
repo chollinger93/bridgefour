@@ -11,9 +11,9 @@ import cats.Parallel
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.IDs.*
-import com.chollinger.bridgefour.shared.models.Job.TaskState
-import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
+import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState
 import com.chollinger.bridgefour.shared.models.States.SlotState
+import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.Persistence
 import com.chollinger.bridgefour.spren.programs.TaskExecutor
@@ -47,7 +47,7 @@ object WorkerService {
       private def slots(): F[List[SlotState]] = {
         for {
           res <- Range(0, cfg.maxSlots).toList.parTraverse { i =>
-                   executor.getSlotState(SlotIdTuple(i, cfg.id))
+                   executor.getSlotState(i)
                  }
           _ <- Logger[F].debug(s"Slot scan returned: $res")
         } yield res
@@ -55,15 +55,14 @@ object WorkerService {
 
       override def state(): F[WorkerState] = for {
         slots        <- slots()
-        allSlotIds    = slots.map(_.id.id)
-        unusedSlotIds = slots.filter(_.available).map(_.id.id)
+        allSlotIds    = slots.map(_.id)
+        unusedSlotIds = slots.filter(_.available).map(_.id)
         runningTasks  = slots.filter(_.status == ExecutionStatus.InProgress)
       } yield WorkerState(
         id = cfg.id,
         slots = slots,
         allSlots = allSlotIds,
-        availableSlots = unusedSlotIds,
-        runningTasks = List() // TODO: refactor: broken
+        availableSlots = unusedSlotIds
       )
 
     }

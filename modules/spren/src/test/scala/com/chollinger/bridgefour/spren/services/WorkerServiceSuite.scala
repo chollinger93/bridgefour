@@ -15,11 +15,12 @@ import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.background.BackgroundWorkerService
 import com.chollinger.bridgefour.shared.jobs.*
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
+import com.chollinger.bridgefour.shared.models.IDs.TaskId
 import com.chollinger.bridgefour.shared.models.IDs._
-import com.chollinger.bridgefour.shared.models.Job.TaskState
+import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState
+import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
-import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
 import com.chollinger.bridgefour.spren.TestUtils.Jobs.FakeJobCreator
@@ -48,26 +49,30 @@ class WorkerServiceSuite extends CatsEffectSuite {
 
   implicit def unsafeLogger[F[_]: Sync]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
 
-  private def MockBackgroundWorkerService(t: TaskState, inProgressSlot: SlotId) =
-    new BackgroundWorker[IO, TaskState, SlotTaskIdTuple] {
+  private def MockBackgroundWorkerService(t: BackgroundTaskState, inProgressSlot: SlotId) =
+    new BackgroundWorker[IO, BackgroundTaskState, TaskId] {
 
-      override def start(key: Long, f: IO[TaskState], meta: Option[SlotTaskIdTuple] = None): IO[ExecutionStatus] = ???
-      override def get(key: Long): IO[Option[FiberContainer[IO, TaskState, SlotTaskIdTuple]]]                    = ???
-      override def getResult(key: Long): IO[BackgroundWorkerResult[IO, TaskState, SlotTaskIdTuple]] =
-        if (key == inProgressSlot) IO(BackgroundWorkerResult(Left(ExecutionStatus.InProgress), None))
-        else IO(BackgroundWorkerResult(Right(t), None))
+      override def start(
+          key: Long,
+          f: IO[BackgroundTaskState],
+          meta: Option[TaskId] = None
+      ): IO[ExecutionStatus] = ???
+      override def get(key: Long): IO[Option[FiberContainer[IO, BackgroundTaskState, TaskId]]] = ???
+      override def getResult(key: Long): IO[BackgroundWorkerResult[IO, BackgroundTaskState, TaskId]] =
+        if (key == inProgressSlot) IO(BackgroundWorkerResult(Left(ExecutionStatus.InProgress), Some(taskId)))
+        else IO(BackgroundWorkerResult(Right(t), Some(taskId)))
       override def probeResult(
           key: Long,
           timeout: FiniteDuration
-      ): IO[BackgroundWorkerResult[IO, TaskState, SlotTaskIdTuple]] =
+      ): IO[BackgroundWorkerResult[IO, BackgroundTaskState, TaskId]] =
         if (key == inProgressSlot)
           IO(
             BackgroundWorkerResult(
               Left(ExecutionStatus.InProgress),
-              Some(SlotTaskIdTuple(slot = slotIdTuple.copy(id = inProgressSlot), task = taskIdTuple))
+              Some(taskId)
             )
           )
-        else IO(BackgroundWorkerResult(Right(t), None))
+        else IO(BackgroundWorkerResult(Right(t), Some(taskId)))
 
     }
 
@@ -76,18 +81,16 @@ class WorkerServiceSuite extends CatsEffectSuite {
 
   test("WorkerService.state should return a correct state") {
     // Expected
-    val task = TaskState(taskIdTuple, status = ExecutionStatus.Done)
+    val task = BackgroundTaskState(taskId, status = ExecutionStatus.Done)
     val usedSlot =
       SlotState(
-        SlotIdTuple(slotId, workerId),
+        slotId,
         available = false,
         status = ExecutionStatus.InProgress
-        // This is a far from perfect test, because the actual BackgroundWorker would set this value to something useful
-        // TODO: rethink ExecutionStatus responsibilities
       )
     val openSlot =
       SlotState(
-        SlotIdTuple(openSlotId, workerId),
+        openSlotId,
         available = true,
         status = ExecutionStatus.Done
       )
@@ -103,10 +106,7 @@ class WorkerServiceSuite extends CatsEffectSuite {
               id = workerId,
               slots = List(usedSlot, openSlot),
               allSlots = List(slotId, openSlotId),
-              availableSlots = List(openSlotId),
-              // Similar to the comment above, this test is somewhat BS, since it won't report a correct status
-              // and the service filters on Status == InProgress & TaskId.exists
-              runningTasks = List(taskIdTuple)
+              availableSlots = List(openSlotId)
             )
           )
     } yield ()
@@ -117,8 +117,8 @@ class WorkerServiceSuite extends CatsEffectSuite {
   test("WorkerService should work with a real background worker, returning a valid WorkerState") {
     val taskIdTuple = TaskIdTuple(taskId, jobId)
     for {
-      bg       <- InMemoryPersistence.makeF[IO, Long, FiberContainer[IO, TaskState, SlotTaskIdTuple]]()
-      bgSrv     = BackgroundWorkerService.make[IO, TaskState, SlotTaskIdTuple](bg)
+      bg       <- InMemoryPersistence.makeF[IO, Long, FiberContainer[IO, BackgroundTaskState, TaskId]]()
+      bgSrv     = BackgroundWorkerService.make[IO, BackgroundTaskState, TaskId](bg)
       taskSrv   = TaskExecutorService.make(sprenCfg, bgSrv, FakeJobCreator())
       workerSrv = WorkerService.make[IO](sprenCfg, taskSrv)
       execSrv   = TaskExecutorService.make[IO](sprenCfg, bgSrv, JobCreatorService.make())
@@ -134,15 +134,13 @@ class WorkerServiceSuite extends CatsEffectSuite {
               id = workerId,
               slots = List(
                 // One running, with the delayedTask's taskIdTuple
-                SlotState(SlotIdTuple(slotId, workerId), false, ExecutionStatus.InProgress),
+                SlotState(slotId, false, ExecutionStatus.InProgress),
                 // One available
-                SlotState(SlotIdTuple(openSlotId, workerId), true, ExecutionStatus.Missing)
+                SlotState(openSlotId, true, ExecutionStatus.Missing)
               ),
               allSlots = List(slotId, openSlotId),
               // One slot should be occupied
-              availableSlots = List(openSlotId),
-              // The delayed task should still be running
-              runningTasks = List(taskIdTuple)
+              availableSlots = List(openSlotId)
             )
           )
     } yield ()
@@ -150,8 +148,8 @@ class WorkerServiceSuite extends CatsEffectSuite {
 
   test("WorkerService should yield an empty state if no processing happened yet") {
     for {
-      bg       <- InMemoryPersistence.makeF[IO, Long, FiberContainer[IO, TaskState, SlotTaskIdTuple]]()
-      bgSrv     = BackgroundWorkerService.make[IO, TaskState, SlotTaskIdTuple](bg)
+      bg       <- InMemoryPersistence.makeF[IO, Long, FiberContainer[IO, BackgroundTaskState, TaskId]]()
+      bgSrv     = BackgroundWorkerService.make[IO, BackgroundTaskState, TaskId](bg)
       taskSrv   = TaskExecutorService.make(sprenCfg, bgSrv, FakeJobCreator())
       workerSrv = WorkerService.make[IO](sprenCfg, taskSrv)
       // Get status
@@ -162,14 +160,12 @@ class WorkerServiceSuite extends CatsEffectSuite {
               id = workerId,
               slots = List(
                 // Nothing running
-                SlotState(SlotIdTuple(slotId, workerId), true, ExecutionStatus.Missing),
-                SlotState(SlotIdTuple(openSlotId, workerId), true, ExecutionStatus.Missing)
+                SlotState(slotId, true, ExecutionStatus.Missing),
+                SlotState(openSlotId, true, ExecutionStatus.Missing)
               ),
               allSlots = List(slotId, openSlotId),
               // Both are available
-              availableSlots = List(slotId, openSlotId),
-              // Nothing should be running
-              runningTasks = List()
+              availableSlots = List(slotId, openSlotId)
             )
           )
     } yield ()
@@ -178,8 +174,8 @@ class WorkerServiceSuite extends CatsEffectSuite {
   test("WorkerService should return a valid state after processing is done") {
     val taskIdTuple = TaskIdTuple(taskId, jobId)
     for {
-      bg       <- InMemoryPersistence.makeF[IO, Long, FiberContainer[IO, TaskState, SlotTaskIdTuple]]()
-      bgSrv     = BackgroundWorkerService.make[IO, TaskState, SlotTaskIdTuple](bg)
+      bg       <- InMemoryPersistence.makeF[IO, Long, FiberContainer[IO, BackgroundTaskState, TaskId]]()
+      bgSrv     = BackgroundWorkerService.make[IO, BackgroundTaskState, TaskId](bg)
       taskSrv   = TaskExecutorService.make(sprenCfg, bgSrv, FakeJobCreator())
       workerSrv = WorkerService.make[IO](sprenCfg, taskSrv)
       execSrv   = TaskExecutorService.make[IO](sprenCfg, bgSrv, JobCreatorService.make())
@@ -196,14 +192,12 @@ class WorkerServiceSuite extends CatsEffectSuite {
               id = workerId,
               slots = List(
                 // Nothing running, but slot 0 reports the last task it finished
-                SlotState(SlotIdTuple(slotId, workerId), true, ExecutionStatus.Done),
-                SlotState(SlotIdTuple(openSlotId, workerId), true, ExecutionStatus.Missing)
+                SlotState(slotId, true, ExecutionStatus.Done),
+                SlotState(openSlotId, true, ExecutionStatus.Missing)
               ),
               allSlots = List(slotId, openSlotId),
               // Both are available
-              availableSlots = List(slotId, openSlotId),
-              // Nothing should be running
-              runningTasks = List()
+              availableSlots = List(slotId, openSlotId)
             )
           )
     } yield ()

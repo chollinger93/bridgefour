@@ -39,7 +39,9 @@ case class TaskRoutes[F[_]: Concurrent](cfg: SprenConfig, executor: TaskExecutor
   given EntityEncoder[F, ExecutionStatus]              = jsonEncoderOf[F, ExecutionStatus]
   protected def httpRoutes(): HttpRoutes[F] = {
     HttpRoutes.of[F] {
-      case GET -> Root / "status" / IntVar(slotId) => Ok(executor.getStatus(SlotIdTuple(slotId, cfg.id)))
+      // Reports the state of a specific slot
+      case GET -> Root / "status" / IntVar(slotId) => Ok(executor.getStatus(slotId))
+      // Starts a task
       case req @ POST -> Root / "start" =>
         Ok(for {
           tasks <- req.as[List[AssignedTaskConfig]]

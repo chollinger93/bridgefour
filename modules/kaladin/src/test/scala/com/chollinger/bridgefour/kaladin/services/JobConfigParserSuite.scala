@@ -21,10 +21,10 @@ import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.jobs.*
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.IDs._
-import com.chollinger.bridgefour.shared.models.Job.TaskState
+import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState
 import com.chollinger.bridgefour.shared.models.Job.UserJobConfig
-import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.States.SlotState
+import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
 import com.comcast.ip4s.*
