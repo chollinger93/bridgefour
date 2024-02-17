@@ -8,6 +8,7 @@ import cats.syntax.all.*
 import com.chollinger.bridgefour.kaladin.programs.JobController
 import com.chollinger.bridgefour.kaladin.services.HealthMonitorService
 import com.chollinger.bridgefour.shared.http.Route
+import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
 import com.chollinger.bridgefour.shared.models.IDs.WorkerId
 import com.chollinger.bridgefour.shared.models.Job.JobDetails
 import com.chollinger.bridgefour.shared.models.Job.UserJobConfig
@@ -39,6 +40,7 @@ case class LeaderRoutes[F[_]: Concurrent](controller: JobController[F], healthMo
   given EntityEncoder[F, Json]                                = jsonEncoderOf[F, Json]
   given EntityEncoder[F, Map[WorkerId, WorkerStatus]]         = jsonEncoderOf[F, Map[WorkerId, WorkerStatus]]
   given EntityEncoder[F, Either[ExecutionStatus, JobDetails]] = jsonEncoderOf[F, Either[ExecutionStatus, JobDetails]]
+  given EntityEncoder[F, ClusterState]                        = jsonEncoderOf[F, ClusterState]
 
   protected def httpRoutes(): HttpRoutes[F] = {
     HttpRoutes.of[F] {

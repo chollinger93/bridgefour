@@ -54,16 +54,8 @@ object WorkerService {
       }
 
       override def state(): F[WorkerState] = for {
-        slots        <- slots()
-        allSlotIds    = slots.map(_.id)
-        unusedSlotIds = slots.filter(_.available).map(_.id)
-        runningTasks  = slots.filter(_.status == ExecutionStatus.InProgress)
-      } yield WorkerState(
-        id = cfg.id,
-        slots = slots,
-        allSlots = allSlotIds,
-        availableSlots = unusedSlotIds
-      )
+        slots <- slots()
+      } yield WorkerState(cfg.id, slots)
 
     }
 

@@ -4,8 +4,8 @@ services:
     ports:
       - "5550:5550"
     volumes:
-      - "/tmp/in:/data/in"
-      - "/tmp/out:/data/out"
+      - "/tmp/in:/tmp/in"
+      - "/tmp/out:/tmp/out"
     environment:
       BRIDGEFOUR_HOST: 0.0.0.0
       BRIDGEFOUR_PORT: 5550
@@ -21,8 +21,8 @@ services:
     ports:
       - "5551:5551"
     volumes:
-      - "/tmp/in:/data/in"
-      - "/tmp/out:/data/out"
+      - "/tmp/in:/tmp/in"
+      - "/tmp/out:/tmp/out"
     environment:
       BRIDGEFOUR_HOST: 0.0.0.0
       BRIDGEFOUR_PORT: 5551
@@ -38,8 +38,8 @@ services:
     ports:
       - "5552:5552"
     volumes:
-      - "/tmp/in:/data/in"
-      - "/tmp/out:/data/out"
+      - "/tmp/in:/tmp/in"
+      - "/tmp/out:/tmp/out"
     environment:
       BRIDGEFOUR_HOST: 0.0.0.0
       BRIDGEFOUR_PORT: 5552

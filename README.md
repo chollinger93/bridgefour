@@ -76,8 +76,8 @@ And run `sbin/wordcount_example_docker.sh` to run a sample job.
 In separate terminals (or computers, provided you have an `NFS` share mounted - see above), run:
 
 ```bash 
-WORKER_PORT=5553 WORKER_ID=1 sbt worker/run 
-WORKER_PORT=5554 WORKER_ID=0 sbt worker/run 
+BRIDGEFOUR_PORT=5553 WORKER_ID=0 sbt worker/run 
+BRIDGEFOUR_PORT=5554 WORKER_ID=1 sbt worker/run 
 WORKER1_PORT=5554 WORKER2_PORT=5553 sbt leader/run 
 ```
 

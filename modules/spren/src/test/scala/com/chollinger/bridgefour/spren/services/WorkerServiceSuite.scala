@@ -85,13 +85,11 @@ class WorkerServiceSuite extends CatsEffectSuite {
     val usedSlot =
       SlotState(
         slotId,
-        available = false,
         status = ExecutionStatus.InProgress
       )
     val openSlot =
       SlotState(
         openSlotId,
-        available = true,
         status = ExecutionStatus.Done
       )
     // Services
@@ -134,9 +132,9 @@ class WorkerServiceSuite extends CatsEffectSuite {
               id = workerId,
               slots = List(
                 // One running, with the delayedTask's taskIdTuple
-                SlotState(slotId, false, ExecutionStatus.InProgress),
+                SlotState(slotId, ExecutionStatus.InProgress),
                 // One available
-                SlotState(openSlotId, true, ExecutionStatus.Missing)
+                SlotState(openSlotId, ExecutionStatus.Missing)
               ),
               allSlots = List(slotId, openSlotId),
               // One slot should be occupied
@@ -160,8 +158,8 @@ class WorkerServiceSuite extends CatsEffectSuite {
               id = workerId,
               slots = List(
                 // Nothing running
-                SlotState(slotId, true, ExecutionStatus.Missing),
-                SlotState(openSlotId, true, ExecutionStatus.Missing)
+                SlotState(slotId, ExecutionStatus.Missing),
+                SlotState(openSlotId, ExecutionStatus.Missing)
               ),
               allSlots = List(slotId, openSlotId),
               // Both are available
@@ -192,8 +190,8 @@ class WorkerServiceSuite extends CatsEffectSuite {
               id = workerId,
               slots = List(
                 // Nothing running, but slot 0 reports the last task it finished
-                SlotState(slotId, true, ExecutionStatus.Done),
-                SlotState(openSlotId, true, ExecutionStatus.Missing)
+                SlotState(slotId, ExecutionStatus.Done),
+                SlotState(openSlotId, ExecutionStatus.Missing)
               ),
               allSlots = List(slotId, openSlotId),
               // Both are available

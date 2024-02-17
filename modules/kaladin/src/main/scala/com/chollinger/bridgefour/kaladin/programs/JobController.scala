@@ -221,6 +221,7 @@ case class JobControllerService[F[_]: ThrowableMonadError: Concurrent: Async: Lo
         _ <- Logger[F].debug(s"Starting job: $jCfg")
         // Build the initial state
         jd <- stateMachine.initialState(jCfg)
+        _  <- Logger[F].debug(s"Initial state: $jd")
         // Assign & start new tasks
         jd2 <- assignTasksAndStartAllWithStateChange(jd)
         _   <- state.put(jd2.jobId, jd2)

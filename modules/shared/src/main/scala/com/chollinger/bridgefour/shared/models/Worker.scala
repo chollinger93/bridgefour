@@ -24,14 +24,23 @@ object Worker {
       id: WorkerId,
       slots: List[SlotState],
       allSlots: List[SlotId],
-      availableSlots: List[SlotId]
+      availableSlots: List[SlotId],
+      status: WorkerStatus = WorkerStatus.Alive
       // See https://github.com/circe/circe/pull/2009
   ) derives Encoder.AsObject,
         Decoder
 
   object WorkerState {
 
-    def unavailable(id: WorkerId): WorkerState = WorkerState(id, List.empty, List.empty, List.empty)
+    def apply(id: WorkerId, slots: List[SlotState]): WorkerState = {
+      val allSlotIds    = slots.map(_.id)
+      val unusedSlotIds = slots.filter(_.available).map(_.id)
+      val runningTasks  = slots.filter(_.status == ExecutionStatus.InProgress)
+      val status        = if (slots.isEmpty) WorkerStatus.Dead else WorkerStatus.Alive
+      new WorkerState(id, slots, allSlotIds, unusedSlotIds, status)
+    }
+
+    def unavailable(id: WorkerId): WorkerState = WorkerState(id, List.empty, List.empty, List.empty, WorkerStatus.Dead)
 
   }
 
