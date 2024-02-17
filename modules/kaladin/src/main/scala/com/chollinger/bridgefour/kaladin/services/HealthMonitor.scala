@@ -9,6 +9,7 @@ import cats.syntax.parallel.*
 import cats.Monad
 import cats.Parallel
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
+import com.chollinger.bridgefour.shared.exceptions.Exceptions.MisconfiguredClusterException
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
 import com.chollinger.bridgefour.shared.models.Config.WorkerConfig
 import com.chollinger.bridgefour.shared.models.IDs.*
@@ -46,24 +47,49 @@ object HealthMonitorService {
       val err: ThrowableMonadError[F]     = implicitly[ThrowableMonadError[F]]
       given EntityDecoder[F, WorkerState] = accumulatingJsonOf[F, WorkerState]
 
+      // Mismatched workers are a catastrophic failure
+      private def catchMismatchedWorkers(workerCfg: WorkerConfig, res: WorkerState): F[Unit] = {
+        if (res.id != workerCfg.id) {
+          Logger[F].error(
+            s"Expected ID ${workerCfg.id} from ${workerCfg.uri()} but got ${res.id}"
+          ) >>
+            err.raiseError(
+              MisconfiguredClusterException(
+                s"Worker ID mismatch: Expected ${workerCfg.id} from ${workerCfg.uri()} but got ${res.id}! " +
+                  s"Check the worker's configuration and ensure that the worker is properly configured."
+              )
+            )
+        } else {
+          sF.unit
+        }
+      }
+
       override protected def checkWorkerState(workerCfg: WorkerConfig): F[WorkerState] = {
         err.handleErrorWith(client.get(s"${workerCfg.uri()}/worker/state") { r =>
           for {
-            _   <- Logger[F].debug(s"Worker ${workerCfg.uri()} status: ${r.status}")
             res <- r.as[WorkerState]
+            _   <- Logger[F].debug(s"Worker id ${workerCfg.id}(${res.id}) @ ${workerCfg.uri()} status: ${res.status}")
+            _   <- catchMismatchedWorkers(workerCfg, res)
           } yield res
         })(t =>
-          Logger[F].warn(s"No response from worker at ${workerCfg.uri()}: ${t.printStackTrace()}") >> sF.blocking(
-            WorkerState.unavailable(workerCfg.id)
-          )
+          if (t.isInstanceOf[MisconfiguredClusterException]) {
+            err.raiseError(t)
+          } else {
+            Logger[F].warn(
+              s"No response from worker id ${workerCfg.id} @ ${workerCfg.uri()}: $t"
+            ) >> sF.blocking(
+              WorkerState.unavailable(workerCfg.id)
+            )
+          }
         )
       }
 
       override def checkClusterStatus(): F[ClusterState] =
         for {
-          _ <- Logger[F].debug(s"Workers: ${cfg.workers}")
+          _ <- Logger[F].debug(s"Configured workers: ${cfg.workers}")
           state <- cfg.workers
                      .parTraverse(c => checkWorkerState(c))
+          _      <- Logger[F].debug(s"Worker responses: $state")
           cluster = ClusterState(cfg.workers, state)
           _      <- Logger[F].debug(s"Cluster: $cluster")
         } yield cluster

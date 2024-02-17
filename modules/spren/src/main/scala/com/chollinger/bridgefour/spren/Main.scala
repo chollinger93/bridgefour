@@ -14,7 +14,7 @@ object Main extends IOApp.Simple {
   def run: IO[Unit] =
     for {
       cfg <- Config.load[IO]()
-      _   <- Logger[IO].info(s"Summoning a spren at ${cfg.self.uri()}")
+      _   <- Logger[IO].info(s"Summoning a spren at ${cfg.self.uri()} with id ${cfg.self.id}...")
       _   <- Server.run[IO](cfg)
     } yield ()
 
