@@ -101,15 +101,15 @@ object TestUtils {
     val usedSlot: SlotState =
       SlotState(
         0,
-        status = ExecutionStatus.Done
+        status = ExecutionStatus.NotStarted
       )
     val openSlot: SlotState =
       SlotState(1, status = ExecutionStatus.Missing)
     val halfUsedWorkerState: WorkerState = WorkerState(
       id = 0,
-      slots = List(usedSlot, openSlot),
-      allSlots = List(usedSlot.id, openSlot.id),
-      availableSlots = List(openSlot.id)
+      slots = List(usedSlot, openSlot)
+//      allSlots = List(usedSlot.id, openSlot.id),
+//      availableSlots = List(openSlot.id)
 //      runningTasks = List(taskIdTuple)
     )
 

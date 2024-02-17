@@ -20,7 +20,7 @@ enum WorkerStatus derives JsonTaggedAdt.Codec {
 
 object Worker {
 
-  case class WorkerState(
+  case class WorkerState private (
       id: WorkerId,
       slots: List[SlotState],
       allSlots: List[SlotId],
@@ -33,11 +33,11 @@ object Worker {
   object WorkerState {
 
     def apply(id: WorkerId, slots: List[SlotState]): WorkerState = {
-      val allSlotIds    = slots.map(_.id)
-      val unusedSlotIds = slots.filter(_.available).map(_.id)
-      val runningTasks  = slots.filter(_.status == ExecutionStatus.InProgress)
-      val status        = if (slots.isEmpty) WorkerStatus.Dead else WorkerStatus.Alive
-      new WorkerState(id, slots, allSlotIds, unusedSlotIds, status)
+      val allSlotIds     = slots.map(_.id)
+      val availableSlots = slots.filter(_.available).map(_.id)
+      val runningTasks   = slots.filter(_.status == ExecutionStatus.InProgress)
+      val status         = if (slots.isEmpty) WorkerStatus.Dead else WorkerStatus.Alive
+      new WorkerState(id, slots, allSlotIds, availableSlots, status)
     }
 
     def unavailable(id: WorkerId): WorkerState = WorkerState(id, List.empty, List.empty, List.empty, WorkerStatus.Dead)

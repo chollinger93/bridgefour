@@ -32,10 +32,12 @@ class HealthMonitorSuite extends CatsEffectSuite {
                 0 -> WorkerState(
                   id = 0,
                   slots = List[SlotState](
+                    // from `usedState`
                     SlotState(
                       id = 0,
-                      status = ExecutionStatus.Done
+                      status = ExecutionStatus.NotStarted
                     ),
+                    // from `openState`
                     SlotState(
                       id = 1,
                       status = ExecutionStatus.Missing
@@ -43,7 +45,7 @@ class HealthMonitorSuite extends CatsEffectSuite {
                   )
                 )
               ),
-              slots = SlotCountOverview(open = 2, processing = 0, total = 2)
+              slots = SlotCountOverview(open = 1, processing = 0, total = 2)
             )
           )
     } yield ()

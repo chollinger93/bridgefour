@@ -98,15 +98,16 @@ class WorkerServiceSuite extends CatsEffectSuite {
     val workerSrv = WorkerService.make[IO](sprenCfg, taskSrv)
     for {
       s <- workerSrv.state()
+      expS = WorkerState(
+               id = workerId,
+               slots = List(usedSlot, openSlot)
+             )
       _ = assertEquals(
             s,
-            WorkerState(
-              id = workerId,
-              slots = List(usedSlot, openSlot),
-              allSlots = List(slotId, openSlotId),
-              availableSlots = List(openSlotId)
-            )
+            expS
           )
+      _ = assertEquals(s.allSlots, List(slotId, openSlotId))
+      _ = assertEquals(s.availableSlots, List(openSlotId))
     } yield ()
   }
 
@@ -126,21 +127,22 @@ class WorkerServiceSuite extends CatsEffectSuite {
       // Get status
       state <- workerSrv.state()
       _     <- Logger[IO].info(s"state: $state")
+      expS = WorkerState(
+               id = workerId,
+               slots = List(
+                 // One running, with the delayedTask's taskIdTuple
+                 SlotState(slotId, ExecutionStatus.InProgress),
+                 // One available
+                 SlotState(openSlotId, ExecutionStatus.Missing)
+               )
+             )
       _ = assertEquals(
             state,
-            WorkerState(
-              id = workerId,
-              slots = List(
-                // One running, with the delayedTask's taskIdTuple
-                SlotState(slotId, ExecutionStatus.InProgress),
-                // One available
-                SlotState(openSlotId, ExecutionStatus.Missing)
-              ),
-              allSlots = List(slotId, openSlotId),
-              // One slot should be occupied
-              availableSlots = List(openSlotId)
-            )
+            expS
           )
+      _ = assertEquals(state.allSlots, List(slotId, openSlotId))
+      // One slot should be occupied
+      _ = assertEquals(state.availableSlots, List(openSlotId))
     } yield ()
   }
 
@@ -152,20 +154,21 @@ class WorkerServiceSuite extends CatsEffectSuite {
       workerSrv = WorkerService.make[IO](sprenCfg, taskSrv)
       // Get status
       state <- workerSrv.state()
+      expS = WorkerState(
+               id = workerId,
+               slots = List(
+                 // Nothing running
+                 SlotState(slotId, ExecutionStatus.Missing),
+                 SlotState(openSlotId, ExecutionStatus.Missing)
+               )
+             )
       _ = assertEquals(
             state,
-            WorkerState(
-              id = workerId,
-              slots = List(
-                // Nothing running
-                SlotState(slotId, ExecutionStatus.Missing),
-                SlotState(openSlotId, ExecutionStatus.Missing)
-              ),
-              allSlots = List(slotId, openSlotId),
-              // Both are available
-              availableSlots = List(slotId, openSlotId)
-            )
+            expS
           )
+      _ = assertEquals(state.allSlots, List(slotId, openSlotId))
+      // Both are available
+      _ = assertEquals(state.availableSlots, List(slotId, openSlotId))
     } yield ()
   }
 
@@ -184,20 +187,21 @@ class WorkerServiceSuite extends CatsEffectSuite {
       _ <- bgSrv.getResult(sampleTask.slotId.id)
       // Get status
       state <- workerSrv.state()
+      expS = WorkerState(
+               id = workerId,
+               slots = List(
+                 // Nothing running, but slot 0 reports the last task it finished
+                 SlotState(slotId, ExecutionStatus.Done),
+                 SlotState(openSlotId, ExecutionStatus.Missing)
+               )
+             )
       _ = assertEquals(
             state,
-            WorkerState(
-              id = workerId,
-              slots = List(
-                // Nothing running, but slot 0 reports the last task it finished
-                SlotState(slotId, ExecutionStatus.Done),
-                SlotState(openSlotId, ExecutionStatus.Missing)
-              ),
-              allSlots = List(slotId, openSlotId),
-              // Both are available
-              availableSlots = List(slotId, openSlotId)
-            )
+            expS
           )
+      _ = assertEquals(state.allSlots, List(slotId, openSlotId))
+      // Both are available
+      _ = assertEquals(state.availableSlots, List(slotId, openSlotId))
     } yield ()
   }
 

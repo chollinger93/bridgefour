@@ -135,9 +135,9 @@ class JobControllerSuite extends CatsEffectSuite {
     val client = mockClient(halfUsedWorkerState, usedSlotIds = List(1))
     val doneWorkerState: WorkerState = WorkerState(
       id = 0,
-      slots = List(usedSlot, openSlot),
-      allSlots = List(usedSlot.id, openSlot.id),
-      availableSlots = List(openSlot.id, openSlot.id)
+      slots = List(usedSlot, openSlot)
+//      allSlots = List(usedSlot.id, openSlot.id),
+//      availableSlots = List(openSlot.id, openSlot.id)
 //      runningTasks = List()
     )
     for {

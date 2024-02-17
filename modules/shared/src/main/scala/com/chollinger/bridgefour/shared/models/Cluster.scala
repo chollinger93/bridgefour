@@ -34,7 +34,7 @@ object Cluster {
 
     def apply(states: List[WorkerState]): SlotCountOverview = SlotCountOverview(
       open = states.map(_.availableSlots).map(_.size).sum,
-      processing = states.map(_.slots).map(s => s.filter(s => ExecutionStatus.isRunning(s.status))).map(_.size).sum,
+      processing = states.map(_.slots).map(s => s.filter(s => !ExecutionStatus.mapAvailable(s.status))).map(_.size).sum,
       total = states.map(_.slots.size).sum
     )
 
