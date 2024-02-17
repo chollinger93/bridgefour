@@ -33,6 +33,8 @@ object Status {
         case _ => true
     }
 
+    def isRunning(s: ExecutionStatus): Boolean = s == ExecutionStatus.InProgress
+
   }
 
 }

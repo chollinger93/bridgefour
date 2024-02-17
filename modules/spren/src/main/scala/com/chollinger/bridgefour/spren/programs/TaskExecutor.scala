@@ -73,8 +73,8 @@ object TaskExecutorService {
       bg.probeResult(id, sCfg.probingTimeout).map { r =>
         r.res match
           // The "result" for this operation is just another ExecutionStatus from the underlying task
-          case Right(res)   => SlotState(id, available = ExecutionStatus.mapAvailable(res.status), status = res.status)
-          case Left(status) => SlotState(id, available = ExecutionStatus.mapAvailable(status), status = status)
+          case Right(res)   => SlotState(id, status = res.status)
+          case Left(status) => SlotState(id, status = status)
       }
 
     override def getStatus(id: SlotId): F[ExecutionStatus] =

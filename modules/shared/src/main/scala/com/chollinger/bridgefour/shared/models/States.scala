@@ -16,7 +16,7 @@ object States {
 
   // A SlotState is reported by a worker. They are unaware of what exactly they are working on. The state is ephemeral.
   // The leader keeps track of it persistently.
-  case class SlotState(
+  case class SlotState private (
       id: SlotId,
       available: Boolean,
       status: ExecutionStatus
@@ -24,6 +24,9 @@ object States {
         Decoder
 
   object SlotState {
+
+    def apply(id: SlotId, status: ExecutionStatus): SlotState =
+      new SlotState(id, available = ExecutionStatus.mapAvailable(status), status = status)
 
     def started(id: SlotId, taskId: TaskIdTuple): SlotState =
       SlotState(id, false, ExecutionStatus.InProgress)
