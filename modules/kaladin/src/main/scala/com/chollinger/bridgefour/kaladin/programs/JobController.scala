@@ -152,24 +152,25 @@ case class JobControllerService[F[_]: ThrowableMonadError: Concurrent: Async: Lo
     } else sF.pure(submittedTaskConfig)
   }
 
-  private def logTaskChange(oldJd: JobDetails, newJd: JobDetails): F[Unit] = for {
-    _ <- Logger[F].debug(
-           s"JobID ${newJd.jobId} State Change: ExecutionStatus: ${oldJd.executionStatus} => ${newJd.executionStatus}"
-         )
+  private def logTaskChange(from: String)(oldJd: JobDetails, newJd: JobDetails): F[Unit] = for {
     _ <-
       Logger[F].debug(
-        s"JobID ${newJd.jobId} State Change: AssignmentStatus: ${oldJd.assignmentStatus} => ${newJd.assignmentStatus}"
+        s"JobID ${newJd.jobId} State Change ($from): ExecutionStatus: ${oldJd.executionStatus} => ${newJd.executionStatus}"
       )
     _ <-
       Logger[F].debug(
-        s"JobID ${newJd.jobId} State Change: " +
+        s"JobID ${newJd.jobId} State Change ($from): AssignmentStatus: ${oldJd.assignmentStatus} => ${newJd.assignmentStatus}"
+      )
+    _ <-
+      Logger[F].debug(
+        s"JobID ${newJd.jobId} State Change ($from): [Overview] " +
           s"Completed: ${oldJd.completedTasks.size}->${newJd.completedTasks.size}, " +
           s"Open: ${oldJd.openTasks.size}->${newJd.openTasks.size}, " +
           s"Assigned: ${oldJd.assignedTasks.size}->${newJd.assignedTasks.size}"
       )
     _ <-
       Logger[F].debug(
-        s"JobID ${newJd.jobId} State Change: " +
+        s"JobID ${newJd.jobId} State Change ($from): [Input] " +
           s"Completed: ${newJd.completedTasks.map(_.input)}, " +
           s"Open: ${newJd.openTasks.map(_.input)}, " +
           s"Assigned: ${newJd.assignedTasks.map(_.input)}"
@@ -190,21 +191,21 @@ case class JobControllerService[F[_]: ThrowableMonadError: Concurrent: Async: Lo
     submittedTaskConfig <- mapTaskStatusToConfig(tasks.assigned, submittedTasks)
     _                   <- Logger[F].debug(s"Submitted task state for ${jd.jobId}: $submittedTaskConfig")
     nJd                  = stateMachine.transition(jd, submittedTaskConfig)
-    _                   <- logTaskChange(jd, nJd)
+    _                   <- logTaskChange("assign")(jd, nJd)
   } yield nJd
 
   // Get each worker's task status for this job, update all states, store, and return it
   private def updateJobDetailsFromWorkersAndAssign(jd: JobDetails): F[JobDetails] = for {
     // Get each worker's status
-    _                   <- Logger[F].debug(s"Job ${jd.jobId} execution status: ${jd.executionStatus}")
+    _                   <- Logger[F].debug(s"[Update] Job ${jd.jobId} initial execution status: ${jd.executionStatus}")
     currentTaskStatus   <- jd.assignedTasks.parTraverse(tc => getTaskStatus(tc))
-    _                   <- Logger[F].debug(s"Raw task state for ${jd.jobId}: $currentTaskStatus")
+    _                   <- Logger[F].debug(s"[Update] Raw task state for ${jd.jobId}: $currentTaskStatus")
     assignedTaskStatus   = currentTaskStatus.toMap
     submittedTaskConfig <- mapTaskStatusToConfig(jd.assignedTasks, assignedTaskStatus)
-    _                   <- Logger[F].debug(s"Current task state for ${jd.jobId}: $submittedTaskConfig")
+    _                   <- Logger[F].debug(s"[Update] Current task state for ${jd.jobId}: $submittedTaskConfig")
     // Reflect the current change in worker task status in the JD
     jd1 = stateMachine.transition(jd, submittedTaskConfig)
-    _  <- logTaskChange(jd, jd1)
+    _  <- logTaskChange("update")(jd, jd1)
     // Assign & start new tasks
     jd2 <-
       if (AssignmentStatus.needsAssignments(jd1.assignmentStatus) && !ExecutionStatus.finished(jd1.executionStatus))
@@ -237,6 +238,7 @@ case class JobControllerService[F[_]: ThrowableMonadError: Concurrent: Async: Lo
              case Some(j) => j.executionStatus
              case _       => ExecutionStatus.Missing
            })
+    _ <- Logger[F].debug(s"Job result for $jdN")
   } yield jdN
 
   def checkAndUpdateJobProgress(jobId: JobId): F[ExecutionStatus] =
