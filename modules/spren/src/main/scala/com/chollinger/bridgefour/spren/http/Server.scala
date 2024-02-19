@@ -1,13 +1,13 @@
 package com.chollinger.bridgefour.spren.http
 
+import cats.Monad
+import cats.Parallel
 import cats.data.Kleisli
-import cats.effect.kernel.Fiber
 import cats.effect.Async
 import cats.effect.Resource
 import cats.effect.Sync
+import cats.effect.kernel.Fiber
 import cats.syntax.all.*
-import cats.Monad
-import cats.Parallel
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.FiberContainer
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.background.BackgroundWorkerService
@@ -25,14 +25,14 @@ import com.chollinger.bridgefour.spren.programs.TaskExecutorService
 import com.chollinger.bridgefour.spren.services.WorkerService
 import com.comcast.ip4s.*
 import fs2.io.net.Network
+import org.http4s.HttpApp
+import org.http4s.Request
+import org.http4s.Response
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits.*
 import org.http4s.server.middleware.Logger
 import org.http4s.server.middleware.Logger as Http4sLogger
-import org.http4s.HttpApp
-import org.http4s.Request
-import org.http4s.Response
 import org.typelevel.log4cats.Logger
 object Server {
 

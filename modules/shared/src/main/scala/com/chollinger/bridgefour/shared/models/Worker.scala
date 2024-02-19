@@ -1,14 +1,8 @@
 package com.chollinger.bridgefour.shared.models
 
-import com.chollinger.bridgefour.shared.models.IDs.SlotId
-import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
-import com.chollinger.bridgefour.shared.models.IDs.TaskIdTuple
-import com.chollinger.bridgefour.shared.models.IDs.WorkerId
-import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState
+import com.chollinger.bridgefour.shared.models.IDs.{SlotId, WorkerId}
 import com.chollinger.bridgefour.shared.models.States.SlotState
-import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import io.circe.Decoder
-import io.circe.Encoder
+import io.circe.{Decoder, Encoder}
 import org.latestbit.circe.adt.codec.JsonTaggedAdt
 
 enum WorkerStatus derives JsonTaggedAdt.Codec {

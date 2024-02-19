@@ -1,11 +1,7 @@
 package com.chollinger.bridgefour.shared.jobs
 
-import cats.Monad
-import cats.Parallel
-import cats.effect.Concurrent
-import cats.effect.IO
-import cats.effect.Resource
-import cats.effect.Temporal
+import cats.{Monad, Parallel}
+import cats.effect.{Concurrent, IO, Resource, Temporal}
 import cats.effect.kernel.Async
 import cats.implicits.*
 import cats.syntax.all.toTraverseOps
@@ -24,13 +20,11 @@ import org.http4s.circe.accumulatingJsonOf
 import org.latestbit.circe.adt.codec.JsonTaggedAdt
 import org.typelevel.log4cats.Logger
 
-import java.io.File
-import java.io.PrintWriter
+import java.io.{File, PrintWriter}
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.*
-import scala.io.BufferedSource
-import scala.io.Source
+import scala.io.{BufferedSource, Source}
 import scala.language.postfixOps
 
 // TODO: make it accept actual user jobs

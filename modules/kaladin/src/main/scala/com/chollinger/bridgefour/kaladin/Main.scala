@@ -4,9 +4,9 @@ import cats.effect.IO
 import cats.effect.IOApp
 import com.chollinger.bridgefour.kaladin.http.Server
 import com.chollinger.bridgefour.kaladin.models.Config
-import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 object Main extends IOApp.Simple {
 

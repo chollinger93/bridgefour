@@ -1,21 +1,14 @@
 package com.chollinger.bridgefour.kaladin.services
 
-import java.io.File
-import java.nio.file.Files
-
-import scala.concurrent.duration.DurationDouble
-import scala.concurrent.duration.FiniteDuration
-import scala.language.postfixOps
-
+import cats.Monad
+import cats.Parallel
 import cats.data.Kleisli
 import cats.effect.*
 import cats.effect.kernel.Fiber
 import cats.implicits.*
 import cats.syntax.all.toTraverseOps
-import cats.syntax.all._
+import cats.syntax.all.*
 import cats.syntax.traverse.toTraverseOps
-import cats.Monad
-import cats.Parallel
 import com.chollinger.bridgefour.kaladin.TestUtils.createTmpDir
 import com.chollinger.bridgefour.kaladin.TestUtils.createTmpFile
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
@@ -31,13 +24,19 @@ import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
 import com.comcast.ip4s.*
 import fs2.io.net.Network
 import munit.CatsEffectSuite
+import org.http4s.HttpApp
+import org.http4s.Request
+import org.http4s.Response
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits.*
 import org.http4s.server.middleware.Logger
-import org.http4s.HttpApp
-import org.http4s.Request
-import org.http4s.Response
+
+import java.io.File
+import java.nio.file.Files
+import scala.concurrent.duration.DurationDouble
+import scala.concurrent.duration.FiniteDuration
+import scala.language.postfixOps
 
 class JobConfigParserSuite extends CatsEffectSuite {
 

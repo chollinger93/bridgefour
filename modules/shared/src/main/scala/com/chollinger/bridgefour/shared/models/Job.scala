@@ -1,20 +1,10 @@
 package com.chollinger.bridgefour.shared.models
 
-import cats.effect.kernel.Sync
 import com.chollinger.bridgefour.shared.jobs.JobClass
-import com.chollinger.bridgefour.shared.models.IDs.JobId
-import com.chollinger.bridgefour.shared.models.IDs.SlotId
-import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
-import com.chollinger.bridgefour.shared.models.IDs.TaskId
-import com.chollinger.bridgefour.shared.models.IDs.TaskIdTuple
-import com.chollinger.bridgefour.shared.models.IDs.WorkerId
-import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
-import com.chollinger.bridgefour.shared.models.Task.AssignmentStatus
-import com.chollinger.bridgefour.shared.models.Task.UnassignedTaskConfig
+import com.chollinger.bridgefour.shared.models.IDs.{JobId, TaskId}
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import io.circe.Decoder
-import io.circe.Encoder
-import org.latestbit.circe.adt.codec.*
+import com.chollinger.bridgefour.shared.models.Task.{AssignedTaskConfig, AssignmentStatus, UnassignedTaskConfig}
+import io.circe.{Decoder, Encoder}
 
 object Job {
 

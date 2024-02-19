@@ -1,22 +1,11 @@
 package com.chollinger.bridgefour.shared.models
 
+import com.chollinger.bridgefour.shared.models.IDs.WorkerId
 import org.http4s.Uri
-import pureconfig.ConfigReader
 import pureconfig.*
 import pureconfig.generic.derivation.default.*
-import cats.effect.IO
-import cats.effect.Sync
-import cats.effect.unsafe.implicits.*
-import com.chollinger.bridgefour.shared.models.IDs.WorkerId
-import io.circe.Decoder
-import io.circe.Encoder
-import org.http4s.Uri
-import pureconfig.module.catseffect.syntax.*
-import pureconfig.generic.derivation.default.*
-import pureconfig.generic.derivation.ConfigReaderDerivation
 
-import concurrent.duration.DurationDouble
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{DurationDouble, FiniteDuration}
 import scala.language.postfixOps
 
 object Config {

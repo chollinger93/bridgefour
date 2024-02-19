@@ -1,25 +1,15 @@
 package com.chollinger.bridgefour.spren.services
 
-import scala.language.postfixOps
-
+import cats.Parallel
 import cats.effect.Sync
 import cats.implicits.*
-import cats.syntax.all.toTraverseOps
-import cats.syntax.traverse.toTraverseOps
-import cats.Monad
-import cats.Parallel
-import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
-import com.chollinger.bridgefour.shared.models.IDs.*
-import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState
 import com.chollinger.bridgefour.shared.models.States.SlotState
-import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
-import com.chollinger.bridgefour.shared.persistence.Persistence
 import com.chollinger.bridgefour.spren.programs.TaskExecutor
 import org.typelevel.log4cats.Logger
 
-import concurrent.duration.DurationDouble
+import scala.language.postfixOps
 
 /** A generic overseer that reports on the overall status of the worker, i.e. about open/used slots & running tasks
   *

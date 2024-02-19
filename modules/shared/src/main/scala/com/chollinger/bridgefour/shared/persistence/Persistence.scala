@@ -1,34 +1,10 @@
 package com.chollinger.bridgefour.shared.persistence
 
-import cats.Applicative
-import cats.Monad
-import cats.MonadError
-import cats.Parallel
-import cats.effect.Async
-import cats.effect.Ref
-import cats.effect.Sync
-import cats.effect.kernel.Concurrent
-import cats.effect.std.MapRef
-import cats.effect.std.Mutex
-import cats.implicits.*
+import cats.effect.{Ref, Sync}
+import cats.implicits.{toFlatMapOps, toFunctorOps}
 
 import java.util.concurrent.ConcurrentHashMap
-import scala.collection.concurrent
 import scala.jdk.CollectionConverters.*
-import cats.implicits.toFunctorOps
-import cats.syntax.all.toFunctorOps
-import cats.syntax.functor.toFunctorOps
-import cats.implicits.toFlatMapOps
-import cats.syntax.all.toFlatMapOps
-import cats.syntax.flatMap.toFlatMapOps
-
-import math.Fractional.Implicits.infixFractionalOps
-import math.Integral.Implicits.infixIntegralOps
-import math.Numeric.Implicits.infixNumericOps
-import cats.implicits.toTraverseOps
-import cats.syntax.all.toTraverseOps
-import cats.syntax.traverse.toTraverseOps
-import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
 
 sealed trait ReadOnlyPersistence[F[_], K, V] {
 

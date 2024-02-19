@@ -1,13 +1,7 @@
 package com.chollinger.bridgefour.kaladin
 
-import java.io.File
-import java.nio.file.Files
-
-import scala.collection.immutable.List
-import scala.concurrent.duration.DurationDouble
-import scala.concurrent.duration.FiniteDuration
-import scala.language.postfixOps
-
+import cats.Monad
+import cats.Parallel
 import cats.data.Kleisli
 import cats.effect.*
 import cats.effect.kernel.Fiber
@@ -15,8 +9,6 @@ import cats.effect.std.UUIDGen
 import cats.implicits.*
 import cats.syntax.all.*
 import cats.syntax.traverse.toTraverseOps
-import cats.Monad
-import cats.Parallel
 import com.chollinger.bridgefour.kaladin.TestUtils.MockIDMaker
 import com.chollinger.bridgefour.kaladin.TestUtils.createTmpDir
 import com.chollinger.bridgefour.kaladin.TestUtils.createTmpFile
@@ -51,6 +43,13 @@ import org.http4s.server.Router
 import org.http4s.server.middleware.Logger
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+
+import java.io.File
+import java.nio.file.Files
+import scala.collection.immutable.List
+import scala.concurrent.duration.DurationDouble
+import scala.concurrent.duration.FiniteDuration
+import scala.language.postfixOps
 object TestUtils {
 
   def createTmpFile(dir: File, prefix: String = "test-", suffix: String = ".csv"): IO[File] = IO(
