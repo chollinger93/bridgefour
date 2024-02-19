@@ -1,5 +1,8 @@
 package com.chollinger.bridgefour.spren
 
+import scala.concurrent.duration.{DurationDouble, FiniteDuration}
+import scala.language.postfixOps
+
 import cats.effect.IO
 import com.chollinger.bridgefour.shared.jobs.*
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
@@ -7,10 +10,6 @@ import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
-
-import scala.concurrent.duration.DurationDouble
-import scala.concurrent.duration.FiniteDuration
-import scala.language.postfixOps
 object TestUtils {
 
   val sprenCfg = SprenConfig(0, "http", "0.0.0.0", 5555, 2, 0.2 seconds)

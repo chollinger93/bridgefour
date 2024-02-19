@@ -1,5 +1,7 @@
 package com.chollinger.bridgefour.spren.services
 
+import scala.language.postfixOps
+
 import cats.Parallel
 import cats.effect.Sync
 import cats.implicits.*
@@ -8,8 +10,6 @@ import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.spren.programs.TaskExecutor
 import org.typelevel.log4cats.Logger
-
-import scala.language.postfixOps
 
 /** A generic overseer that reports on the overall status of the worker, i.e. about open/used slots & running tasks
   *

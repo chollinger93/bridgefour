@@ -1,29 +1,29 @@
 package com.chollinger.bridgefour.kaladin.programs
 
+import scala.concurrent.duration.DurationDouble
+import scala.language.postfixOps
+import scala.util.boundary
+
 import cats.*
-import cats.effect.Async
-import cats.effect.Concurrent
-import cats.effect.Sync
 import cats.effect.implicits.*
 import cats.effect.std.Mutex
+import cats.effect.{Async, Concurrent, Sync}
 import cats.implicits.*
 import cats.syntax.flatMap.toFlatMapOps
 import cats.syntax.functor.toFunctorOps
 import cats.syntax.parallel.catsSyntaxParallelTraverse1
 import cats.syntax.traverse.toTraverseOps
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
-import com.chollinger.bridgefour.kaladin.services.ClusterOverseer
-import com.chollinger.bridgefour.kaladin.services.IdMaker
-import com.chollinger.bridgefour.kaladin.services.JobSplitter
+import com.chollinger.bridgefour.kaladin.services.{ClusterOverseer, IdMaker, JobSplitter}
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
-import com.chollinger.bridgefour.shared.exceptions.Exceptions.InvalidWorkerConfigException
-import com.chollinger.bridgefour.shared.exceptions.Exceptions.OrphanTaskException
+import com.chollinger.bridgefour.shared.exceptions.Exceptions.{InvalidWorkerConfigException, OrphanTaskException}
 import com.chollinger.bridgefour.shared.extensions.StronglyConsistent
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
 import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.JobDetails
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
+import com.chollinger.bridgefour.shared.models.Task.{AssignedTaskConfig, AssignmentStatus}
+import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.Persistence
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
 import org.http4s.*
@@ -32,8 +32,7 @@ import org.http4s.circe.accumulatingJsonOf
 import org.http4s.client.Client
 import org.typelevel.log4cats.Logger
 
-import scala.concurrent.duration.DurationDouble
-import scala.language.postfixOps
+import boundary.break
 
 sealed trait ClusterController[F[_]] {
 
@@ -110,12 +109,8 @@ case class ClusterControllerImpl[F[_]: ThrowableMonadError: Concurrent: Async: L
     * @return
     *   Updated JD
     */
-  private def assignTasksAndStartAllWithStateChange(jd: JobDetails): F[JobDetails] = for {
-    // Get Cluster State
-    // TODO: read from cache and seed initially
-    clusterState <- getAndUpdateClusterStatus()
-    workers       = clusterState.workers.values.toList
-    // Assign new tasks
+  private def splitAndAssignTasks(jd: JobDetails, workers: List[WorkerState]): F[JobDetails] = for {
+    _     <- Logger[F].debug(s"Job ${jd.jobId} does need assignments")
     tasks <- splitter.splitJobIntoTasks(jd, workers, ids)
     _     <- Logger[F].debug(s"Starting tasks: ${tasks.assigned.map(t => (t.taskId, t.slotId))})}")
     // Talk to workers
@@ -127,13 +122,25 @@ case class ClusterControllerImpl[F[_]: ThrowableMonadError: Concurrent: Async: L
     _                   <- stateMachine.log("assign")(jd, nJd)
   } yield nJd
 
+  private def assignTasksAndStartAllWithStateChange(jd: JobDetails): F[JobDetails] = for {
+    // Get Cluster State
+    // TODO: read from cache and seed initially
+    clusterState <- getAndUpdateClusterStatus()
+    workers       = clusterState.workers.values.toList
+    // Assign new tasks
+    nJd <- jd.assignmentStatus match {
+             case s if AssignmentStatus.needsAssignments(s) => splitAndAssignTasks(jd, workers)
+             case _                                         => sF.pure(jd)
+           }
+  } yield nJd
+
   // ############################
   // Status
   // ############################
   private def getTaskStatus(tc: AssignedTaskConfig): F[(TaskId, ExecutionStatus)] = {
     val wId  = tc.slotId.workerId
     val wCfg = cfg.workers.find(_.id == wId)
-    if (wCfg.isEmpty) err.raiseError(new InvalidWorkerConfigException(s"Invalid worker config for id $wId"))
+    if (wCfg.isEmpty) err.raiseError(InvalidWorkerConfigException(s"Invalid worker config for id $wId"))
     val r =
       Request[F](method = Method.GET, uri = Uri.unsafeFromString(s"${wCfg.get.uri()}/task/status/${tc.slotId.id}"))
     err
@@ -209,7 +216,9 @@ case class ClusterControllerImpl[F[_]: ThrowableMonadError: Concurrent: Async: L
     lck.lock.surround {
       for {
         _         <- Logger[F].debug("Updating all job states")
-        newStates <- jobState.keys().flatMap(_.parTraverse(getJobStatus))
+        allJobs   <- jobState.values()
+        openJobs   = allJobs.filter(j => !ExecutionStatus.finished(j.executionStatus)).map(_.jobId)
+        newStates <- openJobs.parTraverse(getJobStatus)
         _         <- Logger[F].debug(s"Got ${newStates.flatten.size} new states")
         _ <- newStates.parTraverse {
                case Some(jd) => jobState.put(jd.jobId, jd)
@@ -221,12 +230,15 @@ case class ClusterControllerImpl[F[_]: ThrowableMonadError: Concurrent: Async: L
   override def rebalanceUnassignedTasks(): F[List[JobDetails]] = lck.lock.surround {
     for {
       _         <- Logger[F].debug("Rebalancing all jobs")
-      newStates <- jobState.values().flatMap(_.parTraverse(assignTasksAndStartAllWithStateChange))
+      allJobs   <- jobState.values()
+      openJobs   = allJobs.filter(j => !ExecutionStatus.finished(j.executionStatus))
+      _         <- Logger[F].debug(s"${openJobs.size} jobs need rebalancing")
+      newStates <- openJobs.parTraverse(assignTasksAndStartAllWithStateChange)
       _         <- newStates.parTraverse(jd => jobState.put(jd.jobId, jd))
     } yield newStates
   }
 
-  def bgThread(): F[Unit] = for {
+  private def bgThread(): F[Unit] = for {
     _ <- err.handleErrorWith(updateClusterStatus().void)(t => Logger[F].error(s"Failed to update cluster status: $t"))
     _ <- err.handleErrorWith(rebalanceUnassignedTasks().void)(t => Logger[F].error(s"Failed to balance tasks: $t"))
     _ <- err.handleErrorWith(updateAllJobStates().void)(t => Logger[F].error(s"Failed to update job states: $t"))

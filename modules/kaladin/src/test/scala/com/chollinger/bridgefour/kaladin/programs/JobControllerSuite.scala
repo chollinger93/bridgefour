@@ -1,10 +1,14 @@
 package com.chollinger.bridgefour.kaladin.programs
 
+import java.io.File
+
+import scala.language.postfixOps
+
 import cats.effect.*
 import cats.effect.std.Mutex
 import cats.implicits.*
-import com.chollinger.bridgefour.kaladin.TestUtils.*
 import com.chollinger.bridgefour.kaladin.TestUtils.Http.*
+import com.chollinger.bridgefour.kaladin.TestUtils.*
 import com.chollinger.bridgefour.kaladin.models.Config
 import com.chollinger.bridgefour.kaladin.services.*
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
@@ -22,9 +26,6 @@ import org.http4s.*
 import org.http4s.circe.accumulatingJsonOf
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-
-import java.io.File
-import scala.language.postfixOps
 class JobControllerSuite extends CatsEffectSuite {
 
   implicit def unsafeLogger[F[_]: Sync]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]

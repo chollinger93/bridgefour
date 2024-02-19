@@ -1,8 +1,9 @@
 package com.chollinger.bridgefour.kaladin.programs
 
+import scala.collection.immutable
+
 import cats.*
-import cats.effect.Async
-import cats.effect.Concurrent
+import cats.effect.{Async, Concurrent}
 import cats.syntax.flatMap.toFlatMapOps
 import cats.syntax.functor.toFunctorOps
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
@@ -20,8 +21,6 @@ import org.http4s.*
 import org.http4s.circe.accumulatingJsonOf
 import org.http4s.client.Client
 import org.typelevel.log4cats.Logger
-
-import scala.collection.immutable
 
 sealed trait JobController[F[_]] {
 
@@ -76,7 +75,7 @@ case class JobControllerService[F[_]: ThrowableMonadError: Concurrent: Async: Lo
     jobState.values().map(_.filter(s => !ExecutionStatus.available(s.executionStatus)))
 
   override def getJobResult(jobId: JobId): F[ExecutionStatus] = for {
-    _  <- Logger[F].debug(s"Updating job status for $jobId")
+    _  <- Logger[F].debug(s"Getting job result for $jobId")
     jd <- jobState.get(jobId)
     jdN <- jd match {
              case Some(j) => sF.blocking(j.executionStatus)

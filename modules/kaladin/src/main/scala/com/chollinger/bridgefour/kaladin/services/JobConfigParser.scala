@@ -1,9 +1,9 @@
 package com.chollinger.bridgefour.kaladin.services
 
+import java.io.File
+
 import cats.effect.Sync
 import com.chollinger.bridgefour.shared.models.Job.JobConfig
-
-import java.io.File
 
 trait JobConfigParser[F[_]] {
 
