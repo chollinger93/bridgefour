@@ -1,56 +1,21 @@
 #!/bin/bash
 
 set -eou pipefail
-#trap cleanUp INT
+trap cleanUp INT
 
-function createData() {
-  rm -rf /tmp/data/
-  mkdir -p /tmp/data/in
-  mkdir -p /tmp/data/out
-  if [[ ! -f "/tmp/war_and_peace.txt" ]]; then
-    wget https://www.gutenberg.org/cache/epub/2600/pg2600.txt -O /tmp/war_and_peace.txt
-  fi
-  # 66030 lines => 4 workers => ~16500 lines per worker
-  split -l 16500 /tmp/war_and_peace.txt /tmp/data/in/war_and_peace.txt.
-}
-
-
-function startJob() {
-  start=$(curl -sS --location "http://localhost:$LEADER_PORT/start" \
-    --header 'Content-Type: application/json' \
-    --data '{
-                        "name": "Example job",
-                        "jobClass": {
-                            "type": "DelayedWordCountJob"
-                        },
-                        "input": "/tmp/in",
-                        "output": "/tmp/out",
-                        "userSettings": {"timeout": "2"}
-                    }')
-  JOB_ID=$(echo "$start" | jq '.jobId')
-  echo "${start}"
-}
-
-function cleanUp() {
-  echo "Cleaning up"
-  docker-compose down
-}
-
-function printWorkerState() {
-  local port=$1
-  echo $(curl -Ss --location "http://localhost:$port/worker/state")
-}
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+source "${DIR}/lib.sh"
 
 sleep=10
-LEADER_PORT=5550
-WORKER1_PORT=5551
-WORKER2_PORT=5552
+LEADER_PORT=6550
+WORKER1_PORT=6551
+WORKER2_PORT=6552
 
 # Create data
 createData
 
 # Start cluster
-docker-compose up -d
+startCluster
 
 # Start a job
 startJob
@@ -58,11 +23,11 @@ echo "Started job $JOB_ID"
 
 # Observe status on the leader
 while true; do
-  status=$(curl -sS --location "http://localhost:$LEADER_PORT/refresh/$JOB_ID")
+  status=$(curl -sS --location "http://localhost:$LEADER_PORT/status/$JOB_ID")
   echo "${status}"
   typ=$(echo "$status" | jq '.type')
-  if [[ $typ != '"InProgress"' && $typ != '"Halted"' ]]; then
-    echo "Job done"
+  if [[ $typ != '"NotStarted"' && $typ != '"InProgress"' && $typ != '"Halted"' ]]; then
+    echo "Job done with $typ"
     break
   fi
   echo "Worker 1"
