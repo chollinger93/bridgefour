@@ -1,11 +1,10 @@
 package com.chollinger.bridgefour.shared.models
 
-import com.chollinger.bridgefour.shared.jobs._
-import io.circe.Decoder
-import io.circe.Encoder
-import org.latestbit.circe.adt.codec.*
+import com.chollinger.bridgefour.shared.jobs.*
 import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.*
+import io.circe.{Decoder, Encoder}
+import org.latestbit.circe.adt.codec.*
 
 object Task {
 

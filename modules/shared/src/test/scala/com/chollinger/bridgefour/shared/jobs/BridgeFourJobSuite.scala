@@ -1,35 +1,27 @@
 package com.chollinger.bridgefour.shared.jobs
 
-import cats.effect.IO
-import cats.effect.Resource
-import cats.effect.Sync
-import munit.CatsEffectSuite
+import cats.effect.{IO, Resource, Sync}
 import cats.effect.implicits.*
-import io.circe.*
-import io.circe.generic.auto.*
-import io.circe.literal.*
-import io.circe.syntax.*
-
-import java.io.File
-import java.io.PrintWriter
-import java.nio.file.Files
 import cats.implicits.toTraverseOps
 import cats.syntax.all.toTraverseOps
 import cats.syntax.traverse.toTraverseOps
 import com.chollinger.bridgefour.shared.jobs.DelayedWordCountBridgeFourJob
-import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
-import com.chollinger.bridgefour.shared.models.IDs.TaskIdTuple
+import com.chollinger.bridgefour.shared.models.IDs.{SlotIdTuple, TaskIdTuple}
+import com.chollinger.bridgefour.shared.models.Job.{JobDetails, SystemJobConfig}
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
-import com.chollinger.bridgefour.shared.models.Job.JobDetails
-import com.chollinger.bridgefour.shared.models.Job.SystemJobConfig
+import io.circe.*
+import io.circe.generic.auto.*
+import io.circe.literal.*
+import io.circe.syntax.*
+import munit.CatsEffectSuite
 import org.http4s.EntityDecoder
 import org.http4s.circe.accumulatingJsonOf
-import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.typelevel.log4cats.{Logger, SelfAwareStructuredLogger}
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-import scala.io.BufferedSource
-import scala.io.Source
+import java.io.{File, PrintWriter}
+import java.nio.file.Files
+import scala.io.{BufferedSource, Source}
 class BridgeFourJobSuite extends CatsEffectSuite {
 
   implicit def unsafeLogger[F[_]: Sync]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]

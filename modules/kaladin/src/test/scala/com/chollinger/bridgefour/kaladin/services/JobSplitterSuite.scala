@@ -1,13 +1,13 @@
 package com.chollinger.bridgefour.kaladin.services
 
+import cats.Monad
+import cats.Parallel
 import cats.effect.IO
 import cats.effect.Sync
 import cats.implicits.*
 import cats.syntax.all.toTraverseOps
-import cats.syntax.all._
+import cats.syntax.all.*
 import cats.syntax.traverse.toTraverseOps
-import cats.Monad
-import cats.Parallel
 import com.chollinger.bridgefour.kaladin.TestUtils.Http.*
 import com.chollinger.bridgefour.kaladin.TestUtils.MockIDMaker
 import com.chollinger.bridgefour.kaladin.TestUtils.createTmpDir
@@ -20,9 +20,9 @@ import com.chollinger.bridgefour.shared.models.Job.*
 import com.chollinger.bridgefour.shared.models.Task.*
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import munit.CatsEffectSuite
-import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 class JobSplitterSuite extends CatsEffectSuite {
 
   implicit def unsafeLogger[F[_]: Sync]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]

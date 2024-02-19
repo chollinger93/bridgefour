@@ -1,27 +1,19 @@
 package com.chollinger.bridgefour.shared.background
 
 import cats.Monad
-import com.chollinger.bridgefour.shared.models.Job.UserJobConfig
-import com.chollinger.bridgefour.shared.models.Job.JobDetails
-import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import cats.effect.implicits.*
-import cats.implicits.toFunctorOps
-import cats.syntax.all.toFunctorOps
-import cats.syntax.functor.toFunctorOps
-import cats.Monad
-import cats.effect.kernel.Async
-import cats.effect.kernel.Fiber
-import cats.effect.kernel.Outcome
-import cats.effect.kernel.Resource
-import cats.implicits._
-import cats.syntax.all.toFlatMapOps
+import cats.effect.kernel.{Async, Fiber, Outcome, Resource}
+import cats.implicits.*
+import cats.syntax.all.{toFlatMapOps, toFunctorOps}
 import cats.syntax.flatMap.toFlatMapOps
+import cats.syntax.functor.toFunctorOps
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.*
+import com.chollinger.bridgefour.shared.models.Job.{JobDetails, UserJobConfig}
+import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.persistence.Persistence
 import org.typelevel.log4cats.Logger
 
-import concurrent.duration.DurationInt
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.language.postfixOps
 
 /** A generic background worker that can store effectful background tasks with metadata

@@ -1,9 +1,7 @@
 package com.chollinger.bridgefour.shared.background
 
+import cats.effect.{IO, Sync, SyncIO}
 import cats.effect.kernel.Fiber
-import cats.effect.IO
-import cats.effect.Sync
-import cats.effect.SyncIO
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.FiberContainer
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus

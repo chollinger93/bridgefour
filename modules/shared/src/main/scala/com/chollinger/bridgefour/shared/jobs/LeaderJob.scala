@@ -1,15 +1,11 @@
 package com.chollinger.bridgefour.shared.jobs
 
+import cats.{Monad, Parallel}
+import cats.effect.{Concurrent, IO, Resource, Temporal}
 import cats.effect.kernel.Async
-import cats.effect.Concurrent
-import cats.effect.IO
-import cats.effect.Resource
-import cats.effect.Temporal
 import cats.implicits.*
 import cats.syntax.all.toTraverseOps
 import cats.syntax.traverse.toTraverseOps
-import cats.Monad
-import cats.Parallel
 import com.chollinger.bridgefour.shared.jobs.JobClass
 import com.chollinger.bridgefour.shared.models.Job.*
 import com.chollinger.bridgefour.shared.models.Status
@@ -23,13 +19,11 @@ import org.http4s.EntityDecoder
 import org.http4s.circe.accumulatingJsonOf
 import org.typelevel.log4cats.Logger
 
-import java.io.File
-import java.io.PrintWriter
+import java.io.{File, PrintWriter}
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.*
-import scala.io.BufferedSource
-import scala.io.Source
+import scala.io.{BufferedSource, Source}
 import scala.language.postfixOps
 
 trait LeaderCreator[F[_]] {

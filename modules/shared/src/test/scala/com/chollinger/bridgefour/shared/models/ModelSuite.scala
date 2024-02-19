@@ -2,17 +2,15 @@ package com.chollinger.bridgefour.shared.models
 
 import com.chollinger.bridgefour.shared.jobs.JobClass
 import com.chollinger.bridgefour.shared.models.IDs.*
-import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
 import com.chollinger.bridgefour.shared.models.Job.UserJobConfig
 import com.chollinger.bridgefour.shared.models.Status
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import munit.CatsEffectSuite
-import io.circe.parser.decode
-import io.circe.syntax.*
-import org.latestbit.circe.adt.codec.*
+import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
 import io.circe.*
 import io.circe.parser.*
 import io.circe.syntax.*
+import munit.CatsEffectSuite
+import org.latestbit.circe.adt.codec.*
 class ModelSuite extends CatsEffectSuite {
 
   val taskId   = 100

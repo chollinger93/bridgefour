@@ -1,7 +1,5 @@
 package com.chollinger.bridgefour.kaladin.programs
 
-import scala.collection.immutable.List
-
 import cats.effect.IO
 import cats.effect.Sync
 import com.chollinger.bridgefour.kaladin.TestUtils.*
@@ -17,6 +15,8 @@ import com.chollinger.bridgefour.shared.models.Task.*
 import munit.CatsEffectSuite
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+
+import scala.collection.immutable.List
 class JobDetailsStateMachineSuite extends CatsEffectSuite {
 
   implicit def unsafeLogger[F[_]: Sync]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]

@@ -3,8 +3,7 @@ package com.chollinger.bridgefour.shared.persistence
 import cats.effect.IO
 import cats.effect.std.Random
 import cats.implicits.*
-import com.chollinger.bridgefour.shared.persistence.Counter
-import com.chollinger.bridgefour.shared.persistence.InMemoryCounter
+import com.chollinger.bridgefour.shared.persistence.{Counter, InMemoryCounter}
 import munit.CatsEffectSuite
 
 import java.util.concurrent.TimeUnit

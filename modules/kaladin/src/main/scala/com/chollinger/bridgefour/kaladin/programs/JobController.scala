@@ -1,14 +1,11 @@
 package com.chollinger.bridgefour.kaladin.programs
 
-import scala.collection.immutable
-
 import cats.*
 import cats.effect.Async
 import cats.effect.Concurrent
 import cats.syntax.flatMap.toFlatMapOps
 import cats.syntax.functor.toFunctorOps
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
-import com.chollinger.bridgefour.kaladin.services.JobSplitter
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
 import com.chollinger.bridgefour.shared.extensions.*
 import com.chollinger.bridgefour.shared.jobs.LeaderCreator
@@ -23,6 +20,8 @@ import org.http4s.*
 import org.http4s.circe.accumulatingJsonOf
 import org.http4s.client.Client
 import org.typelevel.log4cats.Logger
+
+import scala.collection.immutable
 
 sealed trait JobController[F[_]] {
 

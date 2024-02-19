@@ -1,14 +1,11 @@
 package com.chollinger.bridgefour.kaladin.programs
 
-import scala.language.postfixOps
-
 import cats.*
-import cats.effect.implicits.*
-import cats.effect.kernel.Fiber
-import cats.effect.std.Mutex
 import cats.effect.Async
 import cats.effect.Concurrent
 import cats.effect.Sync
+import cats.effect.implicits.*
+import cats.effect.std.Mutex
 import cats.implicits.*
 import cats.syntax.flatMap.toFlatMapOps
 import cats.syntax.functor.toFunctorOps
@@ -35,7 +32,8 @@ import org.http4s.circe.accumulatingJsonOf
 import org.http4s.client.Client
 import org.typelevel.log4cats.Logger
 
-import concurrent.duration.DurationDouble
+import scala.concurrent.duration.DurationDouble
+import scala.language.postfixOps
 
 sealed trait ClusterController[F[_]] {
 

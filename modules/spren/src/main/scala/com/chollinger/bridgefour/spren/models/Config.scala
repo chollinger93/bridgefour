@@ -1,8 +1,8 @@
 package com.chollinger.bridgefour.spren.models
 
-import cats.effect.unsafe.implicits.*
 import cats.effect.IO
 import cats.effect.Sync
+import cats.effect.unsafe.implicits.*
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.comcast.ip4s.Host
 import com.comcast.ip4s.Port
