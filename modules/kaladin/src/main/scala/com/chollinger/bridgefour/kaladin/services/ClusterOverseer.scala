@@ -7,6 +7,7 @@ import cats.effect.Sync
 import cats.implicits.*
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
 import com.chollinger.bridgefour.shared.exceptions.Exceptions.MisconfiguredClusterException
+import com.chollinger.bridgefour.shared.extensions.StronglyConsistent
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
 import com.chollinger.bridgefour.shared.models.Config.WorkerConfig
 import com.chollinger.bridgefour.shared.models.Worker.*
@@ -16,25 +17,30 @@ import org.http4s.circe.accumulatingJsonOf
 import org.http4s.client.Client
 import org.typelevel.log4cats.Logger
 
-sealed trait HealthMonitorService[F[_]] {
+sealed trait ClusterOverseer[F[_]] {
 
   protected def checkWorkerState(workerCfg: WorkerConfig): F[WorkerState]
 
-  def checkClusterStatus(): F[ClusterState]
+  def getWorkerState(cfg: WorkerConfig): F[WorkerState]
+
+  @StronglyConsistent
+  def getClusterState(): F[ClusterState]
 
 }
 
-object HealthMonitorService {
+object ClusterOverseer {
 
   def make[F[_]: Async: Parallel: Concurrent: ThrowableMonadError: Logger](
       cfg: ServiceConfig,
       client: Client[F]
-  ): HealthMonitorService[F] =
-    new HealthMonitorService[F] {
+  ): ClusterOverseer[F] =
+    new ClusterOverseer[F] {
 
       val sF: Sync[F]                     = implicitly[Sync[F]]
       val err: ThrowableMonadError[F]     = implicitly[ThrowableMonadError[F]]
       given EntityDecoder[F, WorkerState] = accumulatingJsonOf[F, WorkerState]
+
+      def getWorkerState(cfg: WorkerConfig): F[WorkerState] = client.expect[WorkerState](s"${cfg.uri()}/worker/state")
 
       // Mismatched workers are a catastrophic failure
       private def catchMismatchedWorkers(workerCfg: WorkerConfig, res: WorkerState): F[Unit] = {
@@ -73,7 +79,7 @@ object HealthMonitorService {
         )
       }
 
-      override def checkClusterStatus(): F[ClusterState] =
+      override def getClusterState(): F[ClusterState] =
         for {
           _ <- Logger[F].debug(s"Configured workers: ${cfg.workers}")
           state <- cfg.workers

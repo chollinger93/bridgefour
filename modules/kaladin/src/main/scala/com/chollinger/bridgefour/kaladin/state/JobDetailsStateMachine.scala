@@ -31,6 +31,8 @@ trait JobDetailsStateMachine[F[_]] extends StateMachine[JobDetails, Map[Assigned
       remoteTaskState: Map[AssignedTaskConfig, ExecutionStatus]
   ): JobDetails
 
+  def log(from: String)(oldJd: JobDetails, newJd: JobDetails): F[Unit]
+
 }
 
 class JobExecutionStatusStateMachine extends StateMachine[ExecutionStatus, JobDetails] {
@@ -132,6 +134,33 @@ object JobDetailsStateMachine {
         assignmentStatus = assignmentStatusStateMachine.transition(jd.assignmentStatus, nJd)
       )
     }
+
+    override def log(from: String)(oldJd: JobDetails, newJd: JobDetails): F[Unit] = for {
+      _ <-
+        Logger[F].debug(
+          s"JobID ${newJd.jobId} State Change ($from): ExecutionStatus: ${oldJd.executionStatus} => ${newJd.executionStatus}"
+        )
+      _ <-
+        Logger[F].debug(
+          s"JobID ${newJd.jobId} State Change ($from): AssignmentStatus: ${oldJd.assignmentStatus} => ${newJd.assignmentStatus}"
+        )
+      _ <-
+        Logger[F].debug(
+          s"JobID ${newJd.jobId} State Change ($from): [Overview] " +
+            s"Completed tasks: ${oldJd.completedTasks.size}->${newJd.completedTasks.size}, " +
+            s"Open tasks: ${oldJd.openTasks.size}->${newJd.openTasks.size}, " +
+            s"Assigned tasks: ${oldJd.assignedTasks.size}->${newJd.assignedTasks.size}, " +
+            s"Total tasks: ${oldJd.taskSize}->${newJd.taskSize}"
+        )
+      _ <-
+        Logger[F].debug(
+          s"JobID ${newJd.jobId} State Change ($from): [Input] " +
+            s"Completed: ${newJd.completedTasks.map(_.input)}, " +
+            s"Open: ${newJd.openTasks.map(_.input)}, " +
+            s"Assigned: ${newJd.assignedTasks.map(_.input)}"
+        )
+
+    } yield ()
 
   }
 

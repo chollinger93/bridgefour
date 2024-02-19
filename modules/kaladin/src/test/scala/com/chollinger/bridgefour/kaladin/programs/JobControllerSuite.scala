@@ -25,10 +25,9 @@ import com.chollinger.bridgefour.kaladin.services.*
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.jobs.*
+import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
-import com.chollinger.bridgefour.shared.models.IDs.JobId
-import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
-import com.chollinger.bridgefour.shared.models.IDs.TaskIdTuple
+import com.chollinger.bridgefour.shared.models.IDs._
 import com.chollinger.bridgefour.shared.models.Job.*
 import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Status
@@ -78,19 +77,27 @@ class JobControllerSuite extends CatsEffectSuite {
                output = outDir.getAbsolutePath,
                userSettings = Map()
              )
-      wrkSrv       = WorkerOverseerService.make[IO](cfg, client)
-      state       <- InMemoryPersistence.makeF[IO, JobId, JobDetails]()
+      wrkSrv       = ClusterOverseer.make[IO](cfg, client)
+      jState      <- InMemoryPersistence.makeF[IO, JobId, JobDetails]()
+      cState      <- InMemoryPersistence.makeF[IO, ClusterId, ClusterState]()
       splitter     = JobSplitterService.make[IO]()
       stateMachine = JobDetailsStateMachine.make(ids, cfgParser, splitter)
       leader       = LeaderCreatorService.make[IO]()
       lock        <- Mutex[IO]
       // Program
-      srv  = JobControllerService(client, ids, wrkSrv, splitter, state, stateMachine, leader, lock, cfg)
-      res <- srv.startJob(jCfg)
-      _   <- IO.println(res.asJson.spaces2)
+      srv      = JobControllerService(client, jState, stateMachine, leader, cfg)
+      ctrl     = ClusterControllerImpl[IO](client, wrkSrv, splitter, jState, cState, ids, stateMachine, lock, cfg)
+      initial <- srv.submitJob(jCfg)
+      _        = assertEquals(initial.executionStatus, ExecutionStatus.NotStarted)
+      _        = assertEquals(initial.assignmentStatus, AssignmentStatus.NotAssigned)
+      // Do what the controller does in the background explicitly and poll state storage
+      _   <- ctrl.rebalanceUnassignedTasks()
+      res <- jState.get(jobId)
+      // Controller
+      _ <- IO.println(res.get.asJson.spaces2)
       // The mock environment has one available slot out of two total
       _ = assertEquals(
-            res,
+            res.get,
             JobDetails(
               jobId = jobId, // from mockID
               jobConfig = SystemJobConfig(jobId, jCfg),
@@ -119,10 +126,10 @@ class JobControllerSuite extends CatsEffectSuite {
             )
           )
       // Check get job
-      s <- srv.getJobResultAndUpdateState(jobId)
+      s <- srv.getJobResult(jobId)
       _  = assertEquals(s, ExecutionStatus.InProgress)
       // Check that it matches the state
-      s2 <- state.get(jobId)
+      s2 <- jState.get(jobId)
       _   = assertEquals(s, s2.get.executionStatus)
       // No data results available
       r <- srv.calculateResults(jobId)
@@ -157,33 +164,35 @@ class JobControllerSuite extends CatsEffectSuite {
                output = outDir.getAbsolutePath,
                userSettings = Map()
              )
-      wrkSrv       = WorkerOverseerService.make[IO](cfg, client)
-      state       <- InMemoryPersistence.makeF[IO, JobId, JobDetails]()
+      wrkSrv       = ClusterOverseer.make[IO](cfg, client)
+      jState      <- InMemoryPersistence.makeF[IO, JobId, JobDetails]()
+      cState      <- InMemoryPersistence.makeF[IO, ClusterId, ClusterState]()
       splitter     = JobSplitterService.make[IO]()
       stateMachine = JobDetailsStateMachine.make(ids, cfgParser, splitter)
       leader       = LeaderCreatorService.make[IO]()
       lock        <- Mutex[IO]
       // Program
-      srv = JobControllerService(client, ids, wrkSrv, splitter, state, stateMachine, leader, lock, cfg)
-      _  <- srv.startJob(jCfg)
+      srv      = JobControllerService(client, jState, stateMachine, leader, cfg)
+      ctrl     = ClusterControllerImpl[IO](client, wrkSrv, splitter, jState, cState, ids, stateMachine, lock, cfg)
+      initial <- srv.submitJob(jCfg)
+      _        = assertEquals(initial.executionStatus, ExecutionStatus.NotStarted)
+      _        = assertEquals(initial.assignmentStatus, AssignmentStatus.NotAssigned)
+      // Do what the controller does in the background explicitly and poll state storage
+      _ <- ctrl.rebalanceUnassignedTasks()
       // Check get job
-      s <- srv.getJobResultAndUpdateState(jobId)
+      s <- srv.getJobResult(jobId)
       _  = assertEquals(s, ExecutionStatus.InProgress)
       // The mock environment has one available slot out of two total - same as last test
       // Set a new client where everything is done
+      mClient = mockClient(doneWorkerState, doneSlotIds = doneWorkerState.allSlotIds)
       srv = JobControllerService(
-              mockClient(doneWorkerState, doneSlotIds = doneWorkerState.allSlotIds),
-              ids,
-              wrkSrv,
-              splitter,
-              state,
-              stateMachine,
-              leader,
-              lock,
-              cfg
+              mClient, jState, stateMachine, leader, cfg
             )
+      ctrl = ClusterControllerImpl[IO](mClient, wrkSrv, splitter, jState, cState, ids, stateMachine, lock, cfg)
       // The job should now be done
-      s <- srv.getJobResultAndUpdateState(jobId)
+      _ <- ctrl.rebalanceUnassignedTasks()
+      _ <- ctrl.updateAllJobStates()
+      s <- srv.getJobResult(jobId)
       _  = assertEquals(s, ExecutionStatus.Done)
     } yield ()
   }
@@ -203,23 +212,30 @@ class JobControllerSuite extends CatsEffectSuite {
                output = outDir.getAbsolutePath,
                userSettings = Map()
              )
-      wrkSrv       = WorkerOverseerService.make[IO](cfg, client)
-      state       <- InMemoryPersistence.makeF[IO, JobId, JobDetails]()
+      wrkSrv       = ClusterOverseer.make[IO](cfg, client)
+      jState      <- InMemoryPersistence.makeF[IO, JobId, JobDetails]()
+      cState      <- InMemoryPersistence.makeF[IO, ClusterId, ClusterState]()
       splitter     = JobSplitterService.make[IO]()
       stateMachine = JobDetailsStateMachine.make(ids, cfgParser, splitter)
       leader       = LeaderCreatorService.make[IO]()
       lock        <- Mutex[IO]
       // Program
-      srv = JobControllerService(client, ids, wrkSrv, splitter, state, stateMachine, leader, lock, cfg)
-      _  <- srv.startJob(jCfg)
+      srv      = JobControllerService(client, jState, stateMachine, leader, cfg)
+      ctrl     = ClusterControllerImpl[IO](client, wrkSrv, splitter, jState, cState, ids, stateMachine, lock, cfg)
+      initial <- srv.submitJob(jCfg)
+      _        = assertEquals(initial.executionStatus, ExecutionStatus.NotStarted)
+      _        = assertEquals(initial.assignmentStatus, AssignmentStatus.NotAssigned)
+      // Do what the controller does in the background explicitly and poll state storage
+      _   <- ctrl.rebalanceUnassignedTasks()
+      res <- jState.get(jobId)
       // Check get job
-      s <- srv.getJobResultAndUpdateState(jobId)
+      s <- srv.getJobResult(jobId)
       _  = assertEquals(s, ExecutionStatus.Done)
       // Check that it matches the state
-      s2 <- state.get(jobId)
+      s2 <- jState.get(jobId)
       _   = assertEquals(s, s2.get.executionStatus)
       // Now update the progress a bunch of times, which should be a NoOp
-      _ <- srv.getJobResultAndUpdateState(jobId)
+      _ <- srv.getJobResult(jobId)
       // Get results
       r <- srv.calculateResults(jobId)
       // SampleLeaderJob just returns the jobId

@@ -30,21 +30,24 @@ import cats.syntax.all.toTraverseOps
 import cats.syntax.traverse.toTraverseOps
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
 
-sealed trait Persistence[F[_], K, V] {
-
-  def put(key: K, value: V): F[Unit]
-
-  def update(identity: V)(key: K, v: V => V): F[Unit]
+sealed trait ReadOnlyPersistence[F[_], K, V] {
 
   def get(key: K): F[Option[V]]
-
-  def del(key: K): F[Option[V]]
 
   def keys(): F[List[K]]
 
   def values(): F[List[V]]
 
   def list(): F[Map[K, V]]
+
+}
+sealed trait Persistence[F[_], K, V] extends ReadOnlyPersistence[F, K, V] {
+
+  def put(key: K, value: V): F[Unit]
+
+  def update(identity: V)(key: K, v: V => V): F[Unit]
+
+  def del(key: K): F[Option[V]]
 
 }
 
