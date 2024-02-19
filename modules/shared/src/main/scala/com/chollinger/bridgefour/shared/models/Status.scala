@@ -26,7 +26,7 @@ object Status {
 
     def completed(s: ExecutionStatus): Boolean = s == ExecutionStatus.Done || s == ExecutionStatus.Error
 
-    def mapAvailable(s: ExecutionStatus): Boolean = {
+    def available(s: ExecutionStatus): Boolean = {
       s match
         case ExecutionStatus.NotStarted | ExecutionStatus.InProgress | ExecutionStatus.Halted =>
           false

@@ -27,7 +27,7 @@ import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
 import com.chollinger.bridgefour.shared.exceptions.Exceptions.InvalidWorkerConfigException
 import com.chollinger.bridgefour.shared.exceptions.Exceptions.NoFilesAvailableException
 import com.chollinger.bridgefour.shared.exceptions.Exceptions.OrphanTaskException
-import com.chollinger.bridgefour.shared.extensions.takeN
+import com.chollinger.bridgefour.shared.extensions._
 import com.chollinger.bridgefour.shared.jobs.LeaderCreator
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.Config.WorkerConfig
@@ -54,14 +54,22 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 sealed trait JobController[F[_]] {
 
+  @EventuallyConsistent
   def startJob(cfg: UserJobConfig): F[JobDetails]
 
+  @EventuallyConsistent
   def stopJob(jobId: JobId): F[ExecutionStatus]
 
+  @StaleReads
+  def listRunningJobs(): F[List[JobDetails]]
+
+  @StronglyConsistent
   def getJobResultAndUpdateState(jobId: JobId): F[ExecutionStatus]
 
+  @StronglyConsistent
   def getJobDetails(jobId: JobId): F[Either[ExecutionStatus, JobDetails]]
 
+  @StronglyConsistent
   def calculateResults(jobId: JobId): F[Either[ExecutionStatus, Json]]
 
 }
@@ -71,7 +79,7 @@ case class JobControllerService[F[_]: ThrowableMonadError: Concurrent: Async: Lo
     ids: IdMaker[F, Int],
     workerOverseerService: WorkerOverseer[F],
     splitter: JobSplitter[F],
-    state: Persistence[F, JobId, JobDetails],
+    jobState: Persistence[F, JobId, JobDetails],
     stateMachine: JobDetailsStateMachine[F],
     leaderJob: LeaderCreator[F],
     lock: Mutex[F],
@@ -210,7 +218,7 @@ case class JobControllerService[F[_]: ThrowableMonadError: Concurrent: Async: Lo
         assignTasksAndStartAllWithStateChange(jd1)
       else sF.blocking(jd1)
     // Persist
-    _ <- state.put(jd2.jobId, jd2)
+    _ <- jobState.put(jd2.jobId, jd2)
   } yield jd2
 
   // API
@@ -223,17 +231,20 @@ case class JobControllerService[F[_]: ThrowableMonadError: Concurrent: Async: Lo
         _  <- Logger[F].debug(s"Initial state: $jd")
         // Assign & start new tasks
         jd2 <- assignTasksAndStartAllWithStateChange(jd)
-        _   <- state.put(jd2.jobId, jd2)
+        _   <- jobState.put(jd2.jobId, jd2)
       } yield jd2
     }
 
   override def stopJob(jobId: JobId): F[ExecutionStatus] = ???
 
+  override def listRunningJobs(): F[List[JobDetails]] =
+    jobState.values().map(_.filter(s => !ExecutionStatus.available(s.executionStatus)))
+
   override def getJobResultAndUpdateState(jobId: JobId): F[ExecutionStatus] = {
     lock.lock.surround {
       for {
         _  <- Logger[F].debug(s"Updating job status for $jobId")
-        jd <- state.get(jobId)
+        jd <- jobState.get(jobId)
         jdN <- jd match {
                  case Some(j) if !ExecutionStatus.finished(j.executionStatus) =>
                    updateJobDetailsFromWorkersAndAssign(j).map(_.executionStatus)
@@ -246,7 +257,7 @@ case class JobControllerService[F[_]: ThrowableMonadError: Concurrent: Async: Lo
   }
   def getJobDetails(jobId: JobId): F[Either[ExecutionStatus, JobDetails]] = for {
     _  <- Logger[F].debug(s"Updating job status for $jobId")
-    jd <- state.get(jobId)
+    jd <- jobState.get(jobId)
     jdN <- jd match {
              case Some(j) => sF.blocking(Right(j))
              case _       => sF.blocking(Left(ExecutionStatus.Missing))
@@ -255,7 +266,7 @@ case class JobControllerService[F[_]: ThrowableMonadError: Concurrent: Async: Lo
 
   def calculateResults(jobId: JobId): F[Either[ExecutionStatus, Json]] = for {
     _  <- Logger[F].debug(s"Trying to get data for $jobId")
-    jd <- state.get(jobId)
+    jd <- jobState.get(jobId)
     jdN <- jd match {
              // TODO: worker queue
              case Some(j) if ExecutionStatus.finished(j.executionStatus) =>

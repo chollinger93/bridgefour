@@ -22,7 +22,7 @@ object States {
   ) derives Encoder.AsObject,
         Decoder {
 
-    def available(): Boolean = ExecutionStatus.mapAvailable(status)
+    def available(): Boolean = ExecutionStatus.available(status)
 
   }
 
