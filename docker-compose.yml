@@ -2,32 +2,33 @@ services:
   kaladin:
     image: kaladin:latest
     ports:
-      - "5550:5550"
+      - "6550:6550"
     volumes:
       - "/tmp/in:/tmp/in"
       - "/tmp/out:/tmp/out"
     environment:
       BRIDGEFOUR_HOST: 0.0.0.0
-      BRIDGEFOUR_PORT: 5550
+      BRIDGEFOUR_PORT: 6550
       WORKER1_HOST: spren-01
-      WORKER1_PORT: 5551
+      WORKER1_PORT: 6551
       WORKER2_HOST: spren-02
-      WORKER2_PORT: 5552
+      WORKER2_PORT: 6552
     networks:
       - bridgefour
 
   spren-01:
     image: spren:latest
     ports:
-      - "5551:5551"
+      - "6551:6551"
     volumes:
       - "/tmp/in:/tmp/in"
       - "/tmp/out:/tmp/out"
     environment:
+      WORKER_ID: 0
       BRIDGEFOUR_HOST: 0.0.0.0
-      BRIDGEFOUR_PORT: 5551
+      BRIDGEFOUR_PORT: 6551
       LEADER_HOST: kaladin
-      LEADER_PORT: 5550
+      LEADER_PORT: 6550
     networks:
       - bridgefour
     depends_on:
@@ -36,15 +37,16 @@ services:
   spren-02:
     image: spren:latest
     ports:
-      - "5552:5552"
+      - "6552:6552"
     volumes:
       - "/tmp/in:/tmp/in"
       - "/tmp/out:/tmp/out"
     environment:
+      WORKER_ID: 1
       BRIDGEFOUR_HOST: 0.0.0.0
-      BRIDGEFOUR_PORT: 5552
+      BRIDGEFOUR_PORT: 6552
       LEADER_HOST: kaladin
-      LEADER_PORT: 5550
+      LEADER_PORT: 6550
     networks:
       - bridgefour
     depends_on:
