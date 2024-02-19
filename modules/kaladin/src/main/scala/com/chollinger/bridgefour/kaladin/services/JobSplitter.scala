@@ -27,7 +27,7 @@ object JobSplitterService {
     private def validateTaskSplit(workers: List[WorkerState], files: List[FilePath]): F[List[WorkerState]] = {
       val fWorkers = workers.filter(_.availableSlots.nonEmpty)
       if (fWorkers.isEmpty)
-        Logger[F].warn("No workers available in pool!") >> mF.pure(List.empty)
+        Logger[F].warn(s"No workers available in pool! Failed to assign ${files.size} tasks.") >> mF.pure(List.empty)
       else if (files.isEmpty)
         err.raiseError[List[WorkerState]](new NoFilesAvailableException("No files available to process"))
       else mF.pure(fWorkers)

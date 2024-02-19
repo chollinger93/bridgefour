@@ -24,14 +24,13 @@ object Status {
 
     def finished(s: ExecutionStatus): Boolean = s == ExecutionStatus.Done
 
-    def completed(s: ExecutionStatus): Boolean = s == ExecutionStatus.Done || s == ExecutionStatus.Error
-
     def available(s: ExecutionStatus): Boolean = {
       s match
         case ExecutionStatus.NotStarted | ExecutionStatus.InProgress | ExecutionStatus.Halted =>
           false
         case _ => true
     }
+
   }
 
 }

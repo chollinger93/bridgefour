@@ -1,15 +1,12 @@
 package com.chollinger.bridgefour.spren.http
 
 import cats.Monad
-import cats.effect.Async
-import cats.effect.Concurrent
-import cats.effect.IO
 import cats.effect.kernel.Sync
+import cats.effect.{Async, Concurrent, IO}
 import cats.syntax.all.*
 import com.chollinger.bridgefour.shared.http.Route
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
-import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
-import com.chollinger.bridgefour.shared.models.IDs.TaskId
+import com.chollinger.bridgefour.shared.models.IDs.{SlotIdTuple, TaskId}
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
@@ -19,8 +16,7 @@ import fs2.io.net.Network
 import org.http4s.*
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
 import org.http4s.circe.CirceEntityDecoder.circeEntityDecoder
-import org.http4s.circe.accumulatingJsonOf
-import org.http4s.circe.jsonEncoderOf
+import org.http4s.circe.{accumulatingJsonOf, jsonEncoderOf}
 import org.http4s.dsl.Http4sDsl
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.ember.server.EmberServerBuilder

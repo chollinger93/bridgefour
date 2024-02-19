@@ -1,10 +1,11 @@
 package com.chollinger.bridgefour.spren.services
 
+import scala.concurrent.duration.FiniteDuration
+import scala.language.postfixOps
+
 import cats.effect.*
-import com.chollinger.bridgefour.shared.background.BackgroundWorker.BackgroundWorkerResult
-import com.chollinger.bridgefour.shared.background.BackgroundWorker.FiberContainer
-import com.chollinger.bridgefour.shared.background.BackgroundWorker
-import com.chollinger.bridgefour.shared.background.BackgroundWorkerService
+import com.chollinger.bridgefour.shared.background.BackgroundWorker.{BackgroundWorkerResult, FiberContainer}
+import com.chollinger.bridgefour.shared.background.{BackgroundWorker, BackgroundWorkerService}
 import com.chollinger.bridgefour.shared.jobs.*
 import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState
@@ -13,21 +14,15 @@ import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
-import com.chollinger.bridgefour.spren.TestUtils.*
 import com.chollinger.bridgefour.spren.TestUtils.Jobs.FakeJobCreator
+import com.chollinger.bridgefour.spren.TestUtils.*
 import com.chollinger.bridgefour.spren.models.Config
 import com.chollinger.bridgefour.spren.programs.TaskExecutorService
 import munit.CatsEffectSuite
-import org.http4s.HttpApp
-import org.http4s.Request
-import org.http4s.Response
 import org.http4s.server.middleware.Logger as Http4sLogger
-import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.http4s.{HttpApp, Request, Response}
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-
-import scala.concurrent.duration.FiniteDuration
-import scala.language.postfixOps
+import org.typelevel.log4cats.{Logger, SelfAwareStructuredLogger}
 
 class WorkerServiceSuite extends CatsEffectSuite {
 

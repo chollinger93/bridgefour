@@ -1,9 +1,8 @@
 package com.chollinger.bridgefour.kaladin.services
 
 import cats.Parallel
-import cats.effect.Concurrent
-import cats.effect.Sync
 import cats.effect.kernel.Async
+import cats.effect.{Concurrent, Sync}
 import cats.implicits.*
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
 import com.chollinger.bridgefour.shared.exceptions.Exceptions.MisconfiguredClusterException

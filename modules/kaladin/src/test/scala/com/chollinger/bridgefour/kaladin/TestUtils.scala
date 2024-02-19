@@ -1,7 +1,12 @@
 package com.chollinger.bridgefour.kaladin
 
-import cats.Monad
-import cats.Parallel
+import java.io.File
+import java.nio.file.Files
+
+import scala.collection.immutable.List
+import scala.concurrent.duration.{DurationDouble, FiniteDuration}
+import scala.language.postfixOps
+
 import cats.data.Kleisli
 import cats.effect.*
 import cats.effect.kernel.Fiber
@@ -9,12 +14,10 @@ import cats.effect.std.UUIDGen
 import cats.implicits.*
 import cats.syntax.all.*
 import cats.syntax.traverse.toTraverseOps
-import com.chollinger.bridgefour.kaladin.TestUtils.MockIDMaker
-import com.chollinger.bridgefour.kaladin.TestUtils.createTmpDir
-import com.chollinger.bridgefour.kaladin.TestUtils.createTmpFile
+import cats.{Monad, Parallel}
+import com.chollinger.bridgefour.kaladin.TestUtils.{MockIDMaker, createTmpDir, createTmpFile}
 import com.chollinger.bridgefour.kaladin.models.Config
-import com.chollinger.bridgefour.kaladin.services.IdMaker
-import com.chollinger.bridgefour.kaladin.services.JobConfigParser
+import com.chollinger.bridgefour.kaladin.services.{IdMaker, JobConfigParser}
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.IDs.*
@@ -28,12 +31,10 @@ import com.comcast.ip4s.*
 import fs2.io.net.Network
 import munit.CatsEffectSuite
 import org.http4s.*
-import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
-import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
+import org.http4s.circe.CirceEntityCodec.{circeEntityDecoder, circeEntityEncoder}
 import org.http4s.circe.CirceEntityDecoder.circeEntityDecoder
 import org.http4s.circe.CirceEntityEncoder.circeEntityEncoder
-import org.http4s.circe.accumulatingJsonOf
-import org.http4s.circe.jsonEncoderOf
+import org.http4s.circe.{accumulatingJsonOf, jsonEncoderOf}
 import org.http4s.client.Client
 import org.http4s.dsl.io.*
 import org.http4s.ember.client.EmberClientBuilder
@@ -43,13 +44,6 @@ import org.http4s.server.Router
 import org.http4s.server.middleware.Logger
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-
-import java.io.File
-import java.nio.file.Files
-import scala.collection.immutable.List
-import scala.concurrent.duration.DurationDouble
-import scala.concurrent.duration.FiniteDuration
-import scala.language.postfixOps
 object TestUtils {
 
   def createTmpFile(dir: File, prefix: String = "test-", suffix: String = ".csv"): IO[File] = IO(

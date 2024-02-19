@@ -1,6 +1,7 @@
 package com.chollinger.bridgefour.shared.models
 
-import io.circe.{Decoder, Encoder}
+import io.circe.Decoder
+import io.circe.Encoder
 
 object IDs {
 
@@ -12,7 +13,5 @@ object IDs {
   type SlotId    = Int
   case class TaskIdTuple(id: TaskId, jobId: JobId) derives Encoder.AsObject, Decoder
   case class SlotIdTuple(id: SlotId, workerId: WorkerId) derives Encoder.AsObject, Decoder
-
-  case class SlotTaskIdTuple(slot: SlotIdTuple, task: TaskIdTuple)
 
 }
