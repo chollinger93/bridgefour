@@ -8,10 +8,13 @@ import cats.effect.IO
 import cats.effect.Resource
 import cats.syntax.all.*
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
+import com.chollinger.bridgefour.kaladin.programs.ClusterControllerImpl
 import com.chollinger.bridgefour.kaladin.programs.JobControllerService
 import com.chollinger.bridgefour.kaladin.services.*
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
 import com.chollinger.bridgefour.shared.jobs.LeaderCreatorService
+import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
+import com.chollinger.bridgefour.shared.models.IDs.ClusterId
 import com.chollinger.bridgefour.shared.models.IDs.JobId
 import com.chollinger.bridgefour.shared.models.Job.JobDetails
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
@@ -36,12 +39,14 @@ object Server {
       cfgParser     = JobConfigParserService.make[F]()
       splitter      = JobSplitterService.make()
       stateMachine  = JobDetailsStateMachine.make(ids, cfgParser, splitter)
-      wrkSrv        = WorkerOverseerService.make[F](cfg, client)
-      state        <- Resource.make(InMemoryPersistence.makeF[F, JobId, JobDetails]())(_ => Async[F].unit)
+      jState       <- Resource.make(InMemoryPersistence.makeF[F, JobId, JobDetails]())(_ => Async[F].unit)
+      cState       <- Resource.make(InMemoryPersistence.makeF[F, ClusterId, ClusterState]())(_ => Async[F].unit)
       leader        = LeaderCreatorService.make[F]()
       lock         <- Resource.make(Mutex[F])(_ => Async[F].unit)
-      jobController = JobControllerService(client, ids, wrkSrv, splitter, state, stateMachine, leader, lock, cfg)
-      healthMonitor = HealthMonitorService.make[F](cfg, client)
+      healthMonitor = ClusterOverseer.make[F](cfg, client)
+      jobController = JobControllerService(client, jState, stateMachine, leader, cfg)
+      clusterController =
+        ClusterControllerImpl(client, healthMonitor, splitter, jState, cState, ids, stateMachine, lock, cfg)
       httpApp: Kleisli[F, Request[F], Response[F]] =
         LeaderRoutes[F](jobController, healthMonitor).routes.orNotFound
 

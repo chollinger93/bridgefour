@@ -76,7 +76,11 @@ object Job {
       openTasks: List[UnassignedTaskConfig],
       completedTasks: List[AssignedTaskConfig]
   ) derives Encoder.AsObject,
-        Decoder
+        Decoder {
+
+    val taskSize: Int = assignedTasks.size + openTasks.size + completedTasks.size
+
+  }
 
   object JobDetails {
 
