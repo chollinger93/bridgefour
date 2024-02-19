@@ -18,20 +18,23 @@ object States {
   // The leader keeps track of it persistently.
   case class SlotState private (
       id: SlotId,
-      available: Boolean,
       status: ExecutionStatus
   ) derives Encoder.AsObject,
-        Decoder
+        Decoder {
+
+    def available(): Boolean = ExecutionStatus.mapAvailable(status)
+
+  }
 
   object SlotState {
 
     def apply(id: SlotId, status: ExecutionStatus): SlotState =
-      new SlotState(id, available = ExecutionStatus.mapAvailable(status), status = status)
+      new SlotState(id, status = status)
 
     def started(id: SlotId, taskId: TaskIdTuple): SlotState =
-      SlotState(id, false, ExecutionStatus.InProgress)
+      SlotState(id, ExecutionStatus.InProgress)
 
-    def empty(id: SlotId): SlotState = SlotState(id, true, ExecutionStatus.Missing)
+    def empty(id: SlotId): SlotState = SlotState(id, ExecutionStatus.Missing)
 
   }
 

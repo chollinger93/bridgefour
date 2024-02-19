@@ -169,7 +169,7 @@ class JobControllerSuite extends CatsEffectSuite {
       // The mock environment has one available slot out of two total - same as last test
       // Set a new client where everything is done
       srv = JobControllerService(
-              mockClient(doneWorkerState, doneSlotIds = doneWorkerState.allSlots),
+              mockClient(doneWorkerState, doneSlotIds = doneWorkerState.allSlotIds),
               ids,
               wrkSrv,
               splitter,

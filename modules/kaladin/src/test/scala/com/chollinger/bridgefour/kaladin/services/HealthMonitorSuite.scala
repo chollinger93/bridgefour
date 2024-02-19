@@ -7,17 +7,17 @@ import com.chollinger.bridgefour.kaladin.models.Config
 import com.chollinger.bridgefour.shared.exceptions.Exceptions.MisconfiguredClusterException
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
 import com.chollinger.bridgefour.shared.models.Cluster.SlotCountOverview
-import com.chollinger.bridgefour.shared.models.ClusterStatus
 import com.chollinger.bridgefour.shared.models.IDs.SlotId
 import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
+import com.chollinger.bridgefour.shared.models.ClusterStatus
 import com.chollinger.bridgefour.shared.models.WorkerStatus
 import munit.CatsEffectSuite
 import org.http4s.HttpRoutes
 import org.http4s.client.Client
 import org.http4s.dsl.io.Ok
-import org.http4s.dsl.io.*
+import org.http4s.dsl.io._
 class HealthMonitorSuite extends CatsEffectSuite {
 
   test("checkClusterStatus reports valid status if cluster is up") {
@@ -47,7 +47,7 @@ class HealthMonitorSuite extends CatsEffectSuite {
                   )
                 )
               ),
-              slots = SlotCountOverview(open = 1, processing = 0, total = 2)
+              slots = SlotCountOverview(open = 1, total = 2)
             )
           )
     } yield ()
@@ -69,7 +69,7 @@ class HealthMonitorSuite extends CatsEffectSuite {
                   slots = List[SlotState]()
                 )
               ),
-              slots = SlotCountOverview(open = 0, processing = 0, total = 0)
+              slots = SlotCountOverview(open = 0, total = 0)
             )
           )
 
