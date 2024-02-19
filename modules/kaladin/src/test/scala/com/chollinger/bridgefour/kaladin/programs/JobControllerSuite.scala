@@ -127,6 +127,9 @@ class JobControllerSuite extends CatsEffectSuite {
       // No data results available
       r <- srv.calculateResults(jobId)
       _  = assertEquals(r.left.toOption.get, ExecutionStatus.InProgress)
+      // List
+      l <- srv.listRunningJobs()
+      _  = assertEquals(l.size, 1)
     } yield ()
   }
 

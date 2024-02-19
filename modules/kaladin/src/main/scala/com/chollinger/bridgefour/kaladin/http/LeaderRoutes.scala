@@ -36,6 +36,7 @@ case class LeaderRoutes[F[_]: Concurrent](controller: JobController[F], healthMo
   protected val prefixPath: String                            = "/"
   given EntityDecoder[F, UserJobConfig]                       = accumulatingJsonOf[F, UserJobConfig]
   given EntityEncoder[F, JobDetails]                          = jsonEncoderOf[F, JobDetails]
+  given EntityEncoder[F, List[JobDetails]]                    = jsonEncoderOf[F, List[JobDetails]]
   given EntityEncoder[F, ExecutionStatus]                     = jsonEncoderOf[F, ExecutionStatus]
   given EntityEncoder[F, Json]                                = jsonEncoderOf[F, Json]
   given EntityEncoder[F, Map[WorkerId, WorkerStatus]]         = jsonEncoderOf[F, Map[WorkerId, WorkerStatus]]
@@ -45,9 +46,8 @@ case class LeaderRoutes[F[_]: Concurrent](controller: JobController[F], healthMo
   protected def httpRoutes(): HttpRoutes[F] = {
     HttpRoutes.of[F] {
       // Job States
-      case GET -> Root / "list" / IntVar(jobId) => ???
-      case GET -> Root / "listAll"              => ???
-      case GET -> Root / "job" / IntVar(jobId)  => Ok(controller.getJobDetails(jobId))
+      case GET -> Root / "job" / "list"        => Ok(controller.listRunningJobs())
+      case GET -> Root / "job" / IntVar(jobId) => Ok(controller.getJobDetails(jobId))
       // Job Lifecycle
       case req @ POST -> Root / "start" =>
         Ok(for {
