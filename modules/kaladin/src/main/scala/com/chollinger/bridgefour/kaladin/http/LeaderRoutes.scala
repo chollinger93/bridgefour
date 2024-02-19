@@ -44,9 +44,11 @@ case class LeaderRoutes[F[_]: Concurrent](controller: JobController[F], healthMo
 
   protected def httpRoutes(): HttpRoutes[F] = {
     HttpRoutes.of[F] {
+      // Job States
       case GET -> Root / "list" / IntVar(jobId) => ???
       case GET -> Root / "listAll"              => ???
       case GET -> Root / "job" / IntVar(jobId)  => Ok(controller.getJobDetails(jobId))
+      // Job Lifecycle
       case req @ POST -> Root / "start" =>
         Ok(for {
           jCfg            <- req.as[UserJobConfig]
@@ -61,6 +63,7 @@ case class LeaderRoutes[F[_]: Concurrent](controller: JobController[F], healthMo
             case Left(s)     => Ok(s)
             case Right(data) => Ok(data)
           }
+      // Health
       case GET -> Root / "cluster" => Ok(healthMonitor.checkClusterStatus())
     }
   }

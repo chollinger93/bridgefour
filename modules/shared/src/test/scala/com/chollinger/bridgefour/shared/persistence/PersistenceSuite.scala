@@ -3,7 +3,8 @@ package com.chollinger.bridgefour.shared.persistence
 import cats.effect.IO
 import cats.effect.std.Random
 import cats.implicits.*
-import com.chollinger.bridgefour.shared.persistence.{Counter, InMemoryCounter}
+import com.chollinger.bridgefour.shared.persistence.Counter
+import com.chollinger.bridgefour.shared.persistence.InMemoryCounter
 import munit.CatsEffectSuite
 
 import java.util.concurrent.TimeUnit
@@ -11,72 +12,47 @@ import scala.concurrent.duration.*
 
 class PersistenceSuite extends CatsEffectSuite {
 
-  test("InMemoryCounter counts up, down, handles misses") {
+  test("InMemoryPersistence works in a happy path") {
     for {
-      ctr <- InMemoryCounter.makeF[IO]()
-      _   <- ctr.inc(0)
-      v   <- ctr.get(0)
-      _    = assertEquals(v, 1L)
-      _   <- ctr.dec(0)
-      v   <- ctr.get(0)
-      _    = assertEquals(v, 0L)
-      // A miss here is valid, since the default size is 10k
-      v <- ctr.get(1)
-      _  = assertEquals(v, 0L)
+      p <- InMemoryPersistence.makeF[IO, Int, Int]()
+      v <- p.get(0)
+      _  = assertEquals(v, None)
+      _ <- p.put(0, 0)
+      v <- p.get(0)
+      _  = assertEquals(v, Some(0))
+      _ <- p.put(0, 1)
+      v <- p.get(0)
+      _  = assertEquals(v, Some(1))
+      k <- p.keys()
+      _  = assertEquals(k, List(0))
+      _ <- p.del(0)
+      v <- p.get(0)
+      _  = assertEquals(v, None)
     } yield ()
   }
 
-  test("Set works") {
-    val id = 0
-    for {
-      ctr <- InMemoryCounter.makeF[IO]()
-      _   <- ctr.inc(id)
-      v   <- ctr.get(id)
-      _    = assertEquals(v, 1L)
-      _   <- ctr.set(id, 50)
-      v   <- ctr.get(id)
-      _    = assertEquals(v, 50L)
-      _   <- ctr.inc(id)
-      v   <- ctr.get(id)
-      _    = assertEquals(v, 51L)
-    } yield ()
-  }
-
-  test("InMemoryCounter works across threads") {
+  test("InMemoryPersistence works across threads") {
     Random
       .scalaUtilRandom[IO]
       .map { ev =>
         Range(0, 11).toList.traverse { _ =>
-          def countT(ctr: Counter[IO, Int], i: Int, key: Int = 0): IO[Unit] = for {
+          def countT(ctr: Persistence[IO, Int, Int], i: Int, key: Int): IO[Unit] = for {
             r <- Random[IO](ev).betweenInt(1, 25)
             _ <- IO.sleep(FiniteDuration(r, TimeUnit.MILLISECONDS))
-            _ <- if (i == 1) ctr.inc(key) else ctr.dec(key)
+            _ <- ctr.update(0)(key, x => x + 1)
             r <- Random[IO](ev).betweenInt(1, 25)
             _ <- IO.sleep(FiniteDuration(r, TimeUnit.MILLISECONDS))
           } yield ()
           for {
-            ctr <- InMemoryCounter.makeF[IO]()
-            f1  <- Range(0, 1001).toList.map(_ => countT(ctr, 1, 0).start).sequence
-            f2  <- countT(ctr, -1).start
+            ctr <- InMemoryPersistence.makeF[IO, Int, Int]()
+            f1  <- Range(0, 1000).toList.map(x => countT(ctr, x, 0).start).sequence
             _   <- f1.traverse(_.join)
-            _   <- f2.join
             r   <- ctr.get(0)
-            _    = assertEquals(r, 1000L)
+            _    = assertEquals(r, Some(1000))
           } yield ()
         }
       }
       .flatten
-  }
-
-  test("InMemoryCounter works with size <= N") {
-    for {
-      ctr <- InMemoryCounter.makeF[IO](size = 1)
-      _   <- ctr.inc(0)
-      v   <- ctr.get(0)
-      _    = assertEquals(v, 1L)
-      _   <- ctr.inc(10)
-      _    = assertIO(ctr.get(10).handleError(_ => Integer.MAX_VALUE.toLong), Integer.MAX_VALUE.toLong)
-    } yield ()
   }
 
 }
