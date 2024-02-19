@@ -8,8 +8,6 @@ import cats.effect.Concurrent
 import cats.syntax.flatMap.toFlatMapOps
 import cats.syntax.functor.toFunctorOps
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
-import com.chollinger.bridgefour.kaladin.services.ClusterOverseer
-import com.chollinger.bridgefour.kaladin.services.IdMaker
 import com.chollinger.bridgefour.kaladin.services.JobSplitter
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
 import com.chollinger.bridgefour.shared.extensions.*
