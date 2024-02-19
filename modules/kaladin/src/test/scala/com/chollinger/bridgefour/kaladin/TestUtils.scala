@@ -142,7 +142,6 @@ object TestUtils {
               else if (doneSlotIds.contains(slotId)) ExecutionStatus.Done
               else ExecutionStatus.Missing
             )
-        case GET -> Root / "worker" / "status" => Ok()
       }
 
     private def httpApp(

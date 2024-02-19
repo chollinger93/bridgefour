@@ -1,31 +1,20 @@
 package com.chollinger.bridgefour.kaladin.services
 
+import cats.Parallel
 import cats.effect.kernel.Async
 import cats.effect.Concurrent
-import cats.effect.IO
 import cats.effect.Sync
 import cats.implicits.*
-import cats.syntax.parallel.*
-import cats.Monad
-import cats.Parallel
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
 import com.chollinger.bridgefour.shared.exceptions.Exceptions.MisconfiguredClusterException
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
 import com.chollinger.bridgefour.shared.models.Config.WorkerConfig
-import com.chollinger.bridgefour.shared.models.IDs.*
-import com.chollinger.bridgefour.shared.models.Job.UserJobConfig
 import com.chollinger.bridgefour.shared.models.Worker.*
-import com.chollinger.bridgefour.shared.models.ClusterStatus
-import com.chollinger.bridgefour.shared.models.WorkerStatus
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
 import org.http4s.EntityDecoder
-import org.http4s.EntityEncoder
-import org.http4s.Status
-import org.http4s.circe.JsonDecoder
+import org.http4s.circe.accumulatingJsonOf
 import org.http4s.client.Client
 import org.typelevel.log4cats.Logger
-import io.circe.disjunctionCodecs.encodeEither
-import org.http4s.circe.accumulatingJsonOf
 
 sealed trait HealthMonitorService[F[_]] {
 

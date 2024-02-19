@@ -30,12 +30,10 @@ case class WorkerRoutes[F[_]: Monad](workerSrv: WorkerService[F]) extends Http4s
   protected val prefixPath: String = "/worker"
 
   protected def httpRoutes(): HttpRoutes[F] = {
-    HttpRoutes.of[F] {
-      case GET -> Root / "status" => Ok()
-      case GET -> Root / "state" =>
-        workerSrv.state().flatMap { (state: WorkerState) =>
-          Ok(state.asJson)
-        }
+    HttpRoutes.of[F] { case GET -> Root / "state" =>
+      workerSrv.state().flatMap { (state: WorkerState) =>
+        Ok(state.asJson)
+      }
     }
   }
 

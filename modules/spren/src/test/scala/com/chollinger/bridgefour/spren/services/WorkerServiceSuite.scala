@@ -106,7 +106,7 @@ class WorkerServiceSuite extends CatsEffectSuite {
             s,
             expS
           )
-      _ = assertEquals(s.allSlots, List(slotId, openSlotId))
+      _ = assertEquals(s.allSlotIds, List(slotId, openSlotId))
       _ = assertEquals(s.availableSlots, List(openSlotId))
     } yield ()
   }
@@ -140,7 +140,7 @@ class WorkerServiceSuite extends CatsEffectSuite {
             state,
             expS
           )
-      _ = assertEquals(state.allSlots, List(slotId, openSlotId))
+      _ = assertEquals(state.allSlotIds, List(slotId, openSlotId))
       // One slot should be occupied
       _ = assertEquals(state.availableSlots, List(openSlotId))
     } yield ()
@@ -166,7 +166,7 @@ class WorkerServiceSuite extends CatsEffectSuite {
             state,
             expS
           )
-      _ = assertEquals(state.allSlots, List(slotId, openSlotId))
+      _ = assertEquals(state.allSlotIds, List(slotId, openSlotId))
       // Both are available
       _ = assertEquals(state.availableSlots, List(slotId, openSlotId))
     } yield ()
@@ -199,7 +199,7 @@ class WorkerServiceSuite extends CatsEffectSuite {
             state,
             expS
           )
-      _ = assertEquals(state.allSlots, List(slotId, openSlotId))
+      _ = assertEquals(state.allSlotIds, List(slotId, openSlotId))
       // Both are available
       _ = assertEquals(state.availableSlots, List(slotId, openSlotId))
     } yield ()
