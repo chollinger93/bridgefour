@@ -3,7 +3,7 @@ package com.chollinger.bridgefour.kaladin.services
 import cats.Applicative
 import cats.effect.Sync
 import cats.effect.std.UUIDGen
-import cats.implicits._
+import cats.implicits.*
 
 trait IdMaker[F[_], A] {
 

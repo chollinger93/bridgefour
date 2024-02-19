@@ -17,7 +17,7 @@ import com.chollinger.bridgefour.shared.jobs.*
 import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
 import com.chollinger.bridgefour.shared.models.IDs.TaskIdTuple
 import com.chollinger.bridgefour.shared.models.Job.*
-import com.chollinger.bridgefour.shared.models.Task._
+import com.chollinger.bridgefour.shared.models.Task.*
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import munit.CatsEffectSuite
 import org.typelevel.log4cats.slf4j.Slf4jLogger

@@ -1,10 +1,14 @@
 package com.chollinger.bridgefour.kaladin.programs
 
+import scala.language.postfixOps
+
 import cats.*
 import cats.effect.implicits.*
+import cats.effect.kernel.Fiber
 import cats.effect.std.Mutex
 import cats.effect.Async
 import cats.effect.Concurrent
+import cats.effect.Sync
 import cats.implicits.*
 import cats.syntax.flatMap.toFlatMapOps
 import cats.syntax.functor.toFunctorOps
@@ -19,7 +23,7 @@ import com.chollinger.bridgefour.shared.exceptions.Exceptions.InvalidWorkerConfi
 import com.chollinger.bridgefour.shared.exceptions.Exceptions.OrphanTaskException
 import com.chollinger.bridgefour.shared.extensions.StronglyConsistent
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
-import com.chollinger.bridgefour.shared.models.IDs._
+import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.JobDetails
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
@@ -31,6 +35,8 @@ import org.http4s.circe.accumulatingJsonOf
 import org.http4s.client.Client
 import org.typelevel.log4cats.Logger
 
+import concurrent.duration.DurationDouble
+
 sealed trait ClusterController[F[_]] {
 
   @StronglyConsistent
@@ -41,6 +47,8 @@ sealed trait ClusterController[F[_]] {
 
   @StronglyConsistent
   def rebalanceUnassignedTasks(): F[List[JobDetails]]
+
+  def startFibers(): F[Unit]
 
 }
 
@@ -219,5 +227,18 @@ case class ClusterControllerImpl[F[_]: ThrowableMonadError: Concurrent: Async: L
       _         <- newStates.parTraverse(jd => jobState.put(jd.jobId, jd))
     } yield newStates
   }
+
+  def bgThread(): F[Unit] = for {
+    _ <- err.handleErrorWith(updateClusterStatus().void)(t => Logger[F].error(s"Failed to update cluster status: $t"))
+    _ <- err.handleErrorWith(rebalanceUnassignedTasks().void)(t => Logger[F].error(s"Failed to balance tasks: $t"))
+    _ <- err.handleErrorWith(updateAllJobStates().void)(t => Logger[F].error(s"Failed to update job states: $t"))
+    _ <- Logger[F].debug("Kaladin Background threads finished")
+    _ <- Sync[F].sleep(5 seconds) // TODO: cfg
+  } yield ()
+
+  override def startFibers(): F[Unit] = for {
+    _ <- Logger[F].debug("Starting Kaladin background threads")
+    _ <- bgThread().foreverM
+  } yield ()
 
 }

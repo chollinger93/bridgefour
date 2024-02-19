@@ -29,7 +29,7 @@ import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.*
 import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import com.chollinger.bridgefour.shared.models.Task._
+import com.chollinger.bridgefour.shared.models.Task.*
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
 import com.comcast.ip4s.*
@@ -51,8 +51,6 @@ import org.http4s.server.Router
 import org.http4s.server.middleware.Logger
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-
-import concurrent.duration.DurationDouble
 object TestUtils {
 
   def createTmpFile(dir: File, prefix: String = "test-", suffix: String = ".csv"): IO[File] = IO(

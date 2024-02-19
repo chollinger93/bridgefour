@@ -11,7 +11,7 @@ import com.comcast.ip4s.SocketAddress
 import munit.CatsEffectSuite
 class ConfigSuite extends CatsEffectSuite {
 
-  import cats.effect._
+  import cats.effect.*
   test("URI parsing is safe") {
     for {
       cfg       <- Config.load[IO]()
