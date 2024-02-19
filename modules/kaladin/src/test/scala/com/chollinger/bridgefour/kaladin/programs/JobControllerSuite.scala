@@ -119,7 +119,7 @@ class JobControllerSuite extends CatsEffectSuite {
             )
           )
       // Check get job
-      s <- srv.getJobResult(jobId)
+      s <- srv.getJobResultAndUpdateState(jobId)
       _  = assertEquals(s, ExecutionStatus.InProgress)
       // Check that it matches the state
       s2 <- state.get(jobId)
@@ -164,7 +164,7 @@ class JobControllerSuite extends CatsEffectSuite {
       srv = JobControllerService(client, ids, wrkSrv, splitter, state, stateMachine, leader, lock, cfg)
       _  <- srv.startJob(jCfg)
       // Check get job
-      s <- srv.getJobResult(jobId)
+      s <- srv.getJobResultAndUpdateState(jobId)
       _  = assertEquals(s, ExecutionStatus.InProgress)
       // The mock environment has one available slot out of two total - same as last test
       // Set a new client where everything is done
@@ -180,8 +180,7 @@ class JobControllerSuite extends CatsEffectSuite {
               cfg
             )
       // The job should now be done
-      _ <- srv.checkAndUpdateJobProgress(jobId)
-      s <- srv.getJobResult(jobId)
+      s <- srv.getJobResultAndUpdateState(jobId)
       _  = assertEquals(s, ExecutionStatus.Done)
     } yield ()
   }
@@ -210,16 +209,14 @@ class JobControllerSuite extends CatsEffectSuite {
       // Program
       srv = JobControllerService(client, ids, wrkSrv, splitter, state, stateMachine, leader, lock, cfg)
       _  <- srv.startJob(jCfg)
-      _  <- srv.checkAndUpdateJobProgress(jobId)
       // Check get job
-      s <- srv.getJobResult(jobId)
+      s <- srv.getJobResultAndUpdateState(jobId)
       _  = assertEquals(s, ExecutionStatus.Done)
       // Check that it matches the state
       s2 <- state.get(jobId)
       _   = assertEquals(s, s2.get.executionStatus)
       // Now update the progress a bunch of times, which should be a NoOp
-      _ <- srv.checkAndUpdateJobProgress(jobId)
-      _ <- srv.checkAndUpdateJobProgress(jobId)
+      _ <- srv.getJobResultAndUpdateState(jobId)
       // Get results
       r <- srv.calculateResults(jobId)
       // SampleLeaderJob just returns the jobId

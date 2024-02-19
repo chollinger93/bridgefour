@@ -58,9 +58,7 @@ sealed trait JobController[F[_]] {
 
   def stopJob(jobId: JobId): F[ExecutionStatus]
 
-  def getJobResult(jobId: JobId): F[ExecutionStatus]
-
-  def checkAndUpdateJobProgress(jobId: JobId): F[ExecutionStatus]
+  def getJobResultAndUpdateState(jobId: JobId): F[ExecutionStatus]
 
   def getJobDetails(jobId: JobId): F[Either[ExecutionStatus, JobDetails]]
 
@@ -231,17 +229,7 @@ case class JobControllerService[F[_]: ThrowableMonadError: Concurrent: Async: Lo
 
   override def stopJob(jobId: JobId): F[ExecutionStatus] = ???
 
-  override def getJobResult(jobId: JobId): F[ExecutionStatus] = for {
-    _  <- Logger[F].debug(s"Getting job result for $jobId")
-    jd <- state.get(jobId)
-    jdN <- sF.blocking(jd match {
-             case Some(j) => j.executionStatus
-             case _       => ExecutionStatus.Missing
-           })
-    _ <- Logger[F].debug(s"Job result for $jdN")
-  } yield jdN
-
-  def checkAndUpdateJobProgress(jobId: JobId): F[ExecutionStatus] =
+  override def getJobResultAndUpdateState(jobId: JobId): F[ExecutionStatus] = {
     lock.lock.surround {
       for {
         _  <- Logger[F].debug(s"Updating job status for $jobId")
@@ -252,9 +240,10 @@ case class JobControllerService[F[_]: ThrowableMonadError: Concurrent: Async: Lo
                  case Some(j) => sF.blocking(j.executionStatus)
                  case _       => sF.blocking(ExecutionStatus.Missing)
                }
+        _ <- Logger[F].debug(s"Job result for $jdN")
       } yield jdN
     }
-
+  }
   def getJobDetails(jobId: JobId): F[Either[ExecutionStatus, JobDetails]] = for {
     _  <- Logger[F].debug(s"Updating job status for $jobId")
     jd <- state.get(jobId)

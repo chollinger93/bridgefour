@@ -52,9 +52,8 @@ case class LeaderRoutes[F[_]: Concurrent](controller: JobController[F], healthMo
           jCfg            <- req.as[UserJobConfig]
           res: JobDetails <- controller.startJob(jCfg)
         } yield res)
-      case PUT -> Root / "stop" / IntVar(jobId)    => Ok(controller.stopJob(jobId))
-      case GET -> Root / "status" / IntVar(jobId)  => Ok(controller.getJobResult(jobId))
-      case GET -> Root / "refresh" / IntVar(jobId) => Ok(controller.checkAndUpdateJobProgress(jobId))
+      case PUT -> Root / "stop" / IntVar(jobId)   => Ok(controller.stopJob(jobId))
+      case GET -> Root / "status" / IntVar(jobId) => Ok(controller.getJobResultAndUpdateState(jobId))
       case GET -> Root / "data" / IntVar(jobId) =>
         controller
           .calculateResults(jobId)

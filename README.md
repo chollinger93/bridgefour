@@ -105,7 +105,3 @@ Checking results
   "": 16663,
   "to": 16324,
 ```
-
-## Commits
-
-Please note that this repository is synced from an internal Git server and can't accept contributions at this time.
