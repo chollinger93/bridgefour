@@ -4,7 +4,7 @@ import scala.language.postfixOps
 
 import cats.Parallel
 import cats.effect.Sync
-import cats.implicits.*
+import cats.implicits._
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState

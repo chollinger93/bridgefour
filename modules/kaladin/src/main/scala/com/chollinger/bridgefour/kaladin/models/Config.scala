@@ -1,11 +1,11 @@
 package com.chollinger.bridgefour.kaladin.models
 
 import cats.effect.Sync
-import com.chollinger.bridgefour.shared.models.Config.*
+import com.chollinger.bridgefour.shared.models.Config._
 import com.chollinger.bridgefour.shared.models.IDs.ClusterId
-import pureconfig.*
-import pureconfig.generic.derivation.default.*
-import pureconfig.module.catseffect.syntax.*
+import pureconfig._
+import pureconfig.generic.derivation.default._
+import pureconfig.module.catseffect.syntax._
 object Config {
 
   case class ServiceConfig(

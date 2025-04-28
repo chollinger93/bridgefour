@@ -2,12 +2,10 @@ package com.chollinger.bridgefour.kaladin.services
 
 import cats.effect.IO
 import com.chollinger.bridgefour.kaladin.Main.logger
-import com.chollinger.bridgefour.kaladin.TestUtils.Http.halfUsedWorkerState
-import com.chollinger.bridgefour.kaladin.TestUtils.Http.mockClient
+import com.chollinger.bridgefour.kaladin.TestUtils.Http.{halfUsedWorkerState, mockClient}
 import com.chollinger.bridgefour.kaladin.models.Config
 import com.chollinger.bridgefour.shared.exceptions.Exceptions.MisconfiguredClusterException
-import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
-import com.chollinger.bridgefour.shared.models.Cluster.SlotCountOverview
+import com.chollinger.bridgefour.shared.models.Cluster.{ClusterState, SlotCountOverview}
 import com.chollinger.bridgefour.shared.models.ClusterStatus
 import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
@@ -15,7 +13,7 @@ import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import munit.CatsEffectSuite
 import org.http4s.HttpRoutes
 import org.http4s.client.Client
-import org.http4s.dsl.io.*
+import org.http4s.dsl.io._
 class ClusterOverseerSuite extends CatsEffectSuite {
 
   test("checkClusterStatus reports valid status if cluster is up") {

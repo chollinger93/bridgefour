@@ -9,17 +9,16 @@ ThisBuild / name         := "bridgefour"
 ThisBuild / semanticdbEnabled := true
 ThisBuild / semanticdbVersion := scalafixSemanticdb.revision
 
-
 // Build
 ThisBuild / usePipelining := true
-
 
 // Compiler
 ThisBuild / scalacOptions ++= Seq(
   "-deprecation",      // Warn about deprecated APIs
   "-feature",          // Warn about feature usage
   "-new-syntax:false", // Prevents rewriting braces to indentation syntax
-  "-Wunused:all"       // Warn about unused imports
+  "-Wunused:all",       // Warn about unused imports
+  "-source:3.4-migration", "-rewrite"
 )
 
 lazy val commonSettings = Seq(

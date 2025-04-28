@@ -1,28 +1,18 @@
 package com.chollinger.bridgefour.spren.http
 
-import cats.Monad
-import cats.effect.kernel.Sync
-import cats.effect.{Async, Concurrent, IO}
-import cats.syntax.all.*
+import cats.effect.Concurrent
+import cats.syntax.all._
 import com.chollinger.bridgefour.shared.http.Route
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
-import com.chollinger.bridgefour.shared.models.IDs.{SlotIdTuple, TaskId}
+import com.chollinger.bridgefour.shared.models.IDs.TaskId
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
-import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.spren.programs.TaskExecutor
-import com.comcast.ip4s.*
-import fs2.io.net.Network
-import org.http4s.*
+import org.http4s._
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
-import org.http4s.circe.CirceEntityDecoder.circeEntityDecoder
 import org.http4s.circe.{accumulatingJsonOf, jsonEncoderOf}
 import org.http4s.dsl.Http4sDsl
-import org.http4s.ember.client.EmberClientBuilder
-import org.http4s.ember.server.EmberServerBuilder
-import org.http4s.implicits.*
 import org.http4s.server.Router
-import org.http4s.server.middleware.Logger
 case class TaskRoutes[F[_]: Concurrent](cfg: SprenConfig, executor: TaskExecutor[F])
     extends Http4sDsl[F]
     with Route[F] {

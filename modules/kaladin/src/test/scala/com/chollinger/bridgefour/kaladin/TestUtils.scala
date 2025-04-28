@@ -4,46 +4,23 @@ import java.io.File
 import java.nio.file.Files
 
 import scala.collection.immutable.List
-import scala.concurrent.duration.{DurationDouble, FiniteDuration}
 import scala.language.postfixOps
 
-import cats.data.Kleisli
-import cats.effect.*
-import cats.effect.kernel.Fiber
-import cats.effect.std.UUIDGen
-import cats.implicits.*
-import cats.syntax.all.*
-import cats.syntax.traverse.toTraverseOps
-import cats.{Monad, Parallel}
-import com.chollinger.bridgefour.kaladin.TestUtils.{MockIDMaker, createTmpDir, createTmpFile}
-import com.chollinger.bridgefour.kaladin.models.Config
+import cats.effect._
+import cats.implicits._
 import com.chollinger.bridgefour.kaladin.services.{IdMaker, JobConfigParser}
-import com.chollinger.bridgefour.shared.background.BackgroundWorker
-import com.chollinger.bridgefour.shared.models.Config.SprenConfig
-import com.chollinger.bridgefour.shared.models.IDs.*
-import com.chollinger.bridgefour.shared.models.Job.*
+import com.chollinger.bridgefour.shared.models.IDs._
+import com.chollinger.bridgefour.shared.models.Job._
 import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import com.chollinger.bridgefour.shared.models.Task.*
+import com.chollinger.bridgefour.shared.models.Task._
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
-import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
-import com.comcast.ip4s.*
-import fs2.io.net.Network
-import munit.CatsEffectSuite
-import org.http4s.*
+import org.http4s._
 import org.http4s.circe.CirceEntityCodec.{circeEntityDecoder, circeEntityEncoder}
-import org.http4s.circe.CirceEntityDecoder.circeEntityDecoder
-import org.http4s.circe.CirceEntityEncoder.circeEntityEncoder
 import org.http4s.circe.{accumulatingJsonOf, jsonEncoderOf}
 import org.http4s.client.Client
-import org.http4s.dsl.io.*
-import org.http4s.ember.client.EmberClientBuilder
-import org.http4s.ember.server.EmberServerBuilder
-import org.http4s.implicits.*
-import org.http4s.server.Router
-import org.http4s.server.middleware.Logger
-import org.typelevel.log4cats.SelfAwareStructuredLogger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
+import org.http4s.dsl.io._
+import org.http4s.implicits._
 object TestUtils {
 
   def createTmpFile(dir: File, prefix: String = "test-", suffix: String = ".csv"): IO[File] = IO(
@@ -87,7 +64,7 @@ object TestUtils {
     val jobId                               = 100
     val workerId                            = 0
     val taskId                              = 10
-    val taskIdTuple                         = TaskIdTuple(id = 10, jobId = 0)
+    val taskIdTuple: TaskIdTuple                         = TaskIdTuple(id = 10, jobId = 0)
     val inProgressTask: BackgroundTaskState = BackgroundTaskState(taskId, status = ExecutionStatus.InProgress)
     val usedSlot: SlotState =
       SlotState(

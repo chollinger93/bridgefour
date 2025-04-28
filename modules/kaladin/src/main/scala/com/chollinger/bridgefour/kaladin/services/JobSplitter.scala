@@ -1,12 +1,12 @@
 package com.chollinger.bridgefour.kaladin.services
 
 import cats.Monad
-import cats.implicits.*
+import cats.implicits._
 import com.chollinger.bridgefour.shared.exceptions.Exceptions.NoFilesAvailableException
 import com.chollinger.bridgefour.shared.extensions.takeN
-import com.chollinger.bridgefour.shared.models.IDs.*
-import com.chollinger.bridgefour.shared.models.Job.*
-import com.chollinger.bridgefour.shared.models.Task.*
+import com.chollinger.bridgefour.shared.models.IDs._
+import com.chollinger.bridgefour.shared.models.Job._
+import com.chollinger.bridgefour.shared.models.Task._
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
 import org.typelevel.log4cats.Logger

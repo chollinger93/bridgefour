@@ -3,14 +3,14 @@ package com.chollinger.bridgefour.kaladin.programs
 import scala.collection.immutable.List
 
 import cats.effect.{IO, Sync}
-import com.chollinger.bridgefour.kaladin.TestUtils.*
-import com.chollinger.bridgefour.kaladin.services.*
+import com.chollinger.bridgefour.kaladin.TestUtils._
+import com.chollinger.bridgefour.kaladin.services._
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
-import com.chollinger.bridgefour.shared.jobs.*
+import com.chollinger.bridgefour.shared.jobs._
 import com.chollinger.bridgefour.shared.models.IDs.{JobId, SlotIdTuple, TaskIdTuple}
-import com.chollinger.bridgefour.shared.models.Job.*
+import com.chollinger.bridgefour.shared.models.Job._
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import com.chollinger.bridgefour.shared.models.Task.*
+import com.chollinger.bridgefour.shared.models.Task._
 import munit.CatsEffectSuite
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -23,11 +23,7 @@ class JobDetailsStateMachineSuite extends CatsEffectSuite {
   val splitter: JobSplitter[IO]                                       = JobSplitterService.make[IO]()
 
   val jCfg: UserJobConfig = UserJobConfig(
-    name = "unit-test",
-    jobClass = JobClass.SampleJob,
-    input = "fakedir",
-    output = "fakedir",
-    userSettings = Map()
+    name = "unit-test", jobClass = JobClass.SampleJob, input = "fakedir", output = "fakedir", userSettings = Map()
   )
   val sCfg: SystemJobConfig = SystemJobConfig.apply(baseId, jCfg)
   val t1: AssignedTaskConfig = AssignedTaskConfig(
@@ -67,12 +63,8 @@ class JobDetailsStateMachineSuite extends CatsEffectSuite {
       _ = assertEquals(
             init,
             JobDetails(
-              jobId = baseId,
-              jobConfig = sCfg,
-              executionStatus = ExecutionStatus.NotStarted,
-              assignmentStatus = AssignmentStatus.NotAssigned,
-              assignedTasks = List.empty,
-              openTasks = notAssignedTasks,
+              jobId = baseId, jobConfig = sCfg, executionStatus = ExecutionStatus.NotStarted,
+              assignmentStatus = AssignmentStatus.NotAssigned, assignedTasks = List.empty, openTasks = notAssignedTasks,
               completedTasks = List.empty
             )
           )
@@ -86,12 +78,8 @@ class JobDetailsStateMachineSuite extends CatsEffectSuite {
       _ = assertEquals(
             init,
             JobDetails(
-              jobId = baseId,
-              jobConfig = sCfg,
-              executionStatus = ExecutionStatus.NotStarted,
-              assignmentStatus = AssignmentStatus.NotAssigned,
-              assignedTasks = List.empty,
-              openTasks = List.empty,
+              jobId = baseId, jobConfig = sCfg, executionStatus = ExecutionStatus.NotStarted,
+              assignmentStatus = AssignmentStatus.NotAssigned, assignedTasks = List.empty, openTasks = List.empty,
               completedTasks = List.empty
             )
           )
@@ -101,13 +89,9 @@ class JobDetailsStateMachineSuite extends CatsEffectSuite {
   test("JobDetailsStateMachine moves through a happy path execution without flaws") {
     val stateMachine = JobDetailsStateMachine.make(ids, cfgParser, splitter)
     val startJd = JobDetails(
-      jobId = baseId,
-      jobConfig = sCfg,
-      executionStatus = ExecutionStatus.NotStarted,
-      assignmentStatus = AssignmentStatus.NotAssigned,
-      assignedTasks = List.empty,
-      openTasks = List(UnassignedTaskConfig(t1)),
-      completedTasks = List.empty
+      jobId = baseId, jobConfig = sCfg, executionStatus = ExecutionStatus.NotStarted,
+      assignmentStatus = AssignmentStatus.NotAssigned, assignedTasks = List.empty,
+      openTasks = List(UnassignedTaskConfig(t1)), completedTasks = List.empty
     )
     // No change in progress, reports job as stuck
     val s1 = stateMachine.transition(jd = startJd, Map())
@@ -131,11 +115,8 @@ class JobDetailsStateMachineSuite extends CatsEffectSuite {
     assertEquals(
       s4,
       s3.copy(
-        executionStatus = ExecutionStatus.Done,
-        assignmentStatus = AssignmentStatus.NotAssigned,
-        assignedTasks = List.empty,
-        openTasks = List.empty,
-        completedTasks = List(t1)
+        executionStatus = ExecutionStatus.Done, assignmentStatus = AssignmentStatus.NotAssigned,
+        assignedTasks = List.empty, openTasks = List.empty, completedTasks = List(t1)
       )
     )
     // Another transition attempt makes no difference
@@ -235,11 +216,8 @@ class JobDetailsStateMachineSuite extends CatsEffectSuite {
     assertEquals(
       s7,
       s6.copy(
-        executionStatus = ExecutionStatus.Halted,
-        assignmentStatus = AssignmentStatus.NotAssigned,
-        assignedTasks = List.empty,
-        openTasks = List(ut2),
-        completedTasks = List(t1)
+        executionStatus = ExecutionStatus.Halted, assignmentStatus = AssignmentStatus.NotAssigned,
+        assignedTasks = List.empty, openTasks = List(ut2), completedTasks = List(t1)
       )
     )
     // Happy ending: Both complete

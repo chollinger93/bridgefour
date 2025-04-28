@@ -1,13 +1,7 @@
 package com.chollinger.bridgefour.kaladin.models
 
-import cats.effect.IO
-import cats.effect.kernel.Outcome.Succeeded
-import cats.effect.kernel.Resource.ExitCase
-import cats.syntax.all.*
 import com.chollinger.bridgefour.shared.models.Config.LeaderConfig
-import com.comcast.ip4s.Host
-import com.comcast.ip4s.Port
-import com.comcast.ip4s.SocketAddress
+import com.comcast.ip4s.{Host, Port, SocketAddress}
 import munit.CatsEffectSuite
 class ConfigSuite extends CatsEffectSuite {
 

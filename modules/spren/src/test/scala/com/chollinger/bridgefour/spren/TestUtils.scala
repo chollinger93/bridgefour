@@ -1,25 +1,25 @@
 package com.chollinger.bridgefour.spren
 
-import scala.concurrent.duration.{DurationDouble, FiniteDuration}
+import scala.concurrent.duration.DurationDouble
 import scala.language.postfixOps
 
 import cats.effect.IO
-import com.chollinger.bridgefour.shared.jobs.*
+import com.chollinger.bridgefour.shared.jobs._
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
-import com.chollinger.bridgefour.shared.models.IDs.*
+import com.chollinger.bridgefour.shared.models.IDs._
 import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
 object TestUtils {
 
-  val sprenCfg = SprenConfig(0, "http", "0.0.0.0", 5555, 2, 0.2 seconds)
+  val sprenCfg: SprenConfig = SprenConfig(0, "http", "0.0.0.0", 5555, 2, 0.2.seconds)
 
   val jobId       = 100
   val taskId      = 200
   val workerId    = 0
   val slotId      = 0
-  val taskIdTuple = TaskIdTuple(taskId, jobId)
-  val slotIdTuple = SlotIdTuple(slotId, workerId)
+  val taskIdTuple: TaskIdTuple = TaskIdTuple(taskId, jobId)
+  val slotIdTuple: SlotIdTuple = SlotIdTuple(slotId, workerId)
 
   val sampleTask: AssignedTaskConfig = AssignedTaskConfig(
     taskId = taskIdTuple,
@@ -54,7 +54,7 @@ object TestUtils {
 
     case class FakeJobCreator() extends JobCreator[IO] {
 
-      def makeJob(cfg: AssignedTaskConfig) = AlwaysOkBridgeFourJob(cfg)
+      def makeJob(cfg: AssignedTaskConfig): BridgeFourJob[IO] = AlwaysOkBridgeFourJob(cfg)
 
     }
 
