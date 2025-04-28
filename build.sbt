@@ -2,11 +2,25 @@ import Dependencies.*
 import com.typesafe.sbt.packager.docker.ExecCmd
 
 ThisBuild / organization := "com.chollinger"
-ThisBuild / scalaVersion := "3.3.0"
+ThisBuild / scalaVersion := "3.6.4"
 ThisBuild / name         := "bridgefour"
 
 // Scalafix
-ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % ScalafixOrganizeImportsVersion
+ThisBuild / semanticdbEnabled := true
+ThisBuild / semanticdbVersion := scalafixSemanticdb.revision
+
+
+// Build
+ThisBuild / usePipelining := true
+
+
+// Compiler
+ThisBuild / scalacOptions ++= Seq(
+  "-deprecation",      // Warn about deprecated APIs
+  "-feature",          // Warn about feature usage
+  "-new-syntax:false", // Prevents rewriting braces to indentation syntax
+  "-Wunused:all"       // Warn about unused imports
+)
 
 lazy val commonSettings = Seq(
   libraryDependencies   ++= sharedDeps,
@@ -42,7 +56,9 @@ lazy val worker = (project in file("modules/spren"))
   .dependsOn(shared)
   .enablePlugins(JavaAppPackaging, DockerPlugin)
 
-addCommandAlias("lint", ";scalafixAll --rules OrganizeImports")
-addCommandAlias("format", ";scalafmtAll")
+addCommandAlias("lint", "scalafixAll")
+addCommandAlias("fmt", "scalafmtAll")
+addCommandAlias("testAll", "testQuick")
+
 // Plugins
 enablePlugins(JavaAppPackaging, DockerPlugin)
