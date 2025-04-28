@@ -1,24 +1,18 @@
 package com.chollinger.bridgefour.spren.programs
 
-import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 
-import cats.effect.kernel.Fiber
 import cats.effect.{IO, Sync}
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.FiberContainer
 import com.chollinger.bridgefour.shared.background.{BackgroundWorker, BackgroundWorkerService}
-import com.chollinger.bridgefour.shared.jobs.*
-import com.chollinger.bridgefour.shared.models.IDs.*
+import com.chollinger.bridgefour.shared.models.IDs._
 import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState
-import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Status
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
 import com.chollinger.bridgefour.spren.TestUtils
 import com.chollinger.bridgefour.spren.TestUtils.Jobs.FakeJobCreator
-import com.chollinger.bridgefour.spren.TestUtils.*
-import com.chollinger.bridgefour.spren.programs.TaskExecutorService
+import com.chollinger.bridgefour.spren.TestUtils._
 import munit.CatsEffectSuite
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger

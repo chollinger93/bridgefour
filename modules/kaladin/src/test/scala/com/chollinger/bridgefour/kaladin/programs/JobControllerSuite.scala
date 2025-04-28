@@ -1,28 +1,26 @@
 package com.chollinger.bridgefour.kaladin.programs
 
-import java.io.File
-
 import scala.language.postfixOps
 
-import cats.effect.*
+import cats.effect._
 import cats.effect.std.Mutex
-import cats.implicits.*
-import com.chollinger.bridgefour.kaladin.TestUtils.Http.*
-import com.chollinger.bridgefour.kaladin.TestUtils.*
+import cats.implicits._
+import com.chollinger.bridgefour.kaladin.TestUtils.Http._
+import com.chollinger.bridgefour.kaladin.TestUtils._
 import com.chollinger.bridgefour.kaladin.models.Config
-import com.chollinger.bridgefour.kaladin.services.*
+import com.chollinger.bridgefour.kaladin.services._
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
-import com.chollinger.bridgefour.shared.jobs.*
+import com.chollinger.bridgefour.shared.jobs._
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
-import com.chollinger.bridgefour.shared.models.IDs.*
-import com.chollinger.bridgefour.shared.models.Job.*
+import com.chollinger.bridgefour.shared.models.IDs._
+import com.chollinger.bridgefour.shared.models.Job._
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import com.chollinger.bridgefour.shared.models.Task.*
+import com.chollinger.bridgefour.shared.models.Task._
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
-import io.circe.syntax.*
+import io.circe.syntax._
 import munit.CatsEffectSuite
-import org.http4s.*
+import org.http4s._
 import org.http4s.circe.accumulatingJsonOf
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -43,11 +41,8 @@ class JobControllerSuite extends CatsEffectSuite {
       f1     <- createTmpFile(dir, suffix = ".f1")
       f2     <- createTmpFile(dir, suffix = ".f2")
       jCfg = UserJobConfig(
-               name = "unit-test",
-               jobClass = JobClass.SampleJob,
-               input = dir.getAbsolutePath,
-               output = outDir.getAbsolutePath,
-               userSettings = Map()
+               name = "unit-test", jobClass = JobClass.SampleJob, input = dir.getAbsolutePath,
+               output = outDir.getAbsolutePath, userSettings = Map()
              )
       wrkSrv       = ClusterOverseer.make[IO](cfg, client)
       jState      <- InMemoryPersistence.makeF[IO, JobId, JobDetails]()
@@ -130,11 +125,8 @@ class JobControllerSuite extends CatsEffectSuite {
       _ <- createTmpFile(dir, suffix = ".f1")
       _ <- createTmpFile(dir, suffix = ".f3")
       jCfg = UserJobConfig(
-               name = "unit-test",
-               jobClass = JobClass.SampleJob,
-               input = dir.getAbsolutePath,
-               output = outDir.getAbsolutePath,
-               userSettings = Map()
+               name = "unit-test", jobClass = JobClass.SampleJob, input = dir.getAbsolutePath,
+               output = outDir.getAbsolutePath, userSettings = Map()
              )
       wrkSrv       = ClusterOverseer.make[IO](cfg, client)
       jState      <- InMemoryPersistence.makeF[IO, JobId, JobDetails]()
@@ -178,11 +170,8 @@ class JobControllerSuite extends CatsEffectSuite {
       outDir <- createTmpDir("jobcontrollersuite-out")
       _      <- createTmpFile(dir, suffix = ".f3")
       jCfg = UserJobConfig(
-               name = "unit-test",
-               jobClass = JobClass.SampleJob,
-               input = dir.getAbsolutePath,
-               output = outDir.getAbsolutePath,
-               userSettings = Map()
+               name = "unit-test", jobClass = JobClass.SampleJob, input = dir.getAbsolutePath,
+               output = outDir.getAbsolutePath, userSettings = Map()
              )
       wrkSrv       = ClusterOverseer.make[IO](cfg, client)
       jState      <- InMemoryPersistence.makeF[IO, JobId, JobDetails]()

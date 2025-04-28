@@ -2,7 +2,7 @@ package com.chollinger.bridgefour.spren.http
 
 import cats.data.Kleisli
 import cats.effect.{Async, Resource}
-import cats.syntax.all.*
+import cats.syntax.all._
 import cats.{Monad, Parallel}
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.FiberContainer
 import com.chollinger.bridgefour.shared.background.{BackgroundWorker, BackgroundWorkerService}
@@ -14,11 +14,11 @@ import com.chollinger.bridgefour.spren.models.Config
 import com.chollinger.bridgefour.spren.models.Config.ServiceConfig
 import com.chollinger.bridgefour.spren.programs.TaskExecutorService
 import com.chollinger.bridgefour.spren.services.WorkerService
-import com.comcast.ip4s.*
+import com.comcast.ip4s._
 import fs2.io.net.Network
 import org.http4s.ember.server.EmberServerBuilder
-import org.http4s.implicits.*
-import org.http4s.server.middleware.Logger as Http4sLogger
+import org.http4s.implicits._
+import org.http4s.server.middleware.{Logger => Http4sLogger}
 import org.http4s.{HttpApp, Request, Response}
 import org.typelevel.log4cats.Logger
 object Server {

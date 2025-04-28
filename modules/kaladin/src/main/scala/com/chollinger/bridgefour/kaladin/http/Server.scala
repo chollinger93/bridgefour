@@ -6,19 +6,19 @@ import cats.effect.std.Mutex
 import cats.effect.{Async, Resource}
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
 import com.chollinger.bridgefour.kaladin.programs.{ClusterControllerImpl, JobControllerService}
-import com.chollinger.bridgefour.kaladin.services.*
+import com.chollinger.bridgefour.kaladin.services._
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
 import com.chollinger.bridgefour.shared.jobs.LeaderCreatorService
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
 import com.chollinger.bridgefour.shared.models.IDs.{ClusterId, JobId}
 import com.chollinger.bridgefour.shared.models.Job.JobDetails
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
-import com.comcast.ip4s.*
+import com.comcast.ip4s._
 import fs2.io.net.Network
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.ember.server.EmberServerBuilder
-import org.http4s.implicits.*
-import org.http4s.server.middleware.Logger as Http4sLogger
+import org.http4s.implicits._
+import org.http4s.server.middleware.{Logger => Http4sLogger}
 import org.http4s.{HttpApp, Request, Response}
 import org.typelevel.log4cats.Logger
 

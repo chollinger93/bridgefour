@@ -1,17 +1,13 @@
 package com.chollinger.bridgefour.kaladin.services
 
 import cats.effect.{IO, Sync}
-import cats.implicits.*
-import cats.syntax.all.{toTraverseOps, _}
-import cats.syntax.traverse.toTraverseOps
-import cats.{Monad, Parallel}
-import com.chollinger.bridgefour.kaladin.TestUtils.Http.*
+import cats.implicits._
+import com.chollinger.bridgefour.kaladin.TestUtils.Http._
 import com.chollinger.bridgefour.kaladin.TestUtils.{MockIDMaker, createTmpDir, createTmpFile}
-import com.chollinger.bridgefour.kaladin.models.Config
-import com.chollinger.bridgefour.shared.jobs.*
+import com.chollinger.bridgefour.shared.jobs._
 import com.chollinger.bridgefour.shared.models.IDs.{SlotIdTuple, TaskIdTuple}
-import com.chollinger.bridgefour.shared.models.Job.*
-import com.chollinger.bridgefour.shared.models.Task.*
+import com.chollinger.bridgefour.shared.models.Job._
+import com.chollinger.bridgefour.shared.models.Task._
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import munit.CatsEffectSuite
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -27,12 +23,8 @@ class JobSplitterSuite extends CatsEffectSuite {
       outDir <- createTmpDir("splitJobIntoTasks-out")
       outDirS = outDir.getAbsolutePath
       jCfg = SystemJobConfig(
-               id = 100,
-               name = "test",
-               jobClass = JobClass.SampleJob,
-               input = dir.getAbsolutePath,
-               output = outDir.getAbsolutePath,
-               userSettings = Map()
+               id = 100, name = "test", jobClass = JobClass.SampleJob, input = dir.getAbsolutePath,
+               output = outDir.getAbsolutePath, userSettings = Map()
              )
       _              <- Range(0, 2).toList.parTraverse(_ => createTmpFile(dir))
       jobConfigParser = JobConfigParserService.make[IO]()
@@ -79,12 +71,8 @@ class JobSplitterSuite extends CatsEffectSuite {
       dir    <- createTmpDir("splitJobIntoTasks")
       outDir <- createTmpDir("splitJobIntoTasks-out")
       jCfg = SystemJobConfig(
-               id = 100,
-               name = "test",
-               jobClass = JobClass.SampleJob,
-               input = dir.getAbsolutePath,
-               output = outDir.getAbsolutePath,
-               userSettings = Map()
+               id = 100, name = "test", jobClass = JobClass.SampleJob, input = dir.getAbsolutePath,
+               output = outDir.getAbsolutePath, userSettings = Map()
              )
       workers  = List.empty[WorkerState]
       splitter = JobSplitterService.make[IO]()

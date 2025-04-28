@@ -2,37 +2,30 @@ package com.chollinger.bridgefour.kaladin.programs
 
 import scala.concurrent.duration.DurationDouble
 import scala.language.postfixOps
-import scala.util.boundary
 
-import cats.*
-import cats.effect.implicits.*
+import cats._
+import cats.effect.implicits._
 import cats.effect.std.Mutex
 import cats.effect.{Async, Concurrent, Sync}
-import cats.implicits.*
-import cats.syntax.flatMap.toFlatMapOps
-import cats.syntax.functor.toFunctorOps
-import cats.syntax.parallel.catsSyntaxParallelTraverse1
-import cats.syntax.traverse.toTraverseOps
+import cats.implicits._
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
 import com.chollinger.bridgefour.kaladin.services.{ClusterOverseer, IdMaker, JobSplitter}
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
 import com.chollinger.bridgefour.shared.exceptions.Exceptions.{InvalidWorkerConfigException, OrphanTaskException}
 import com.chollinger.bridgefour.shared.extensions.StronglyConsistent
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
-import com.chollinger.bridgefour.shared.models.IDs.*
+import com.chollinger.bridgefour.shared.models.IDs._
 import com.chollinger.bridgefour.shared.models.Job.JobDetails
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.{AssignedTaskConfig, AssignmentStatus}
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.Persistence
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
-import org.http4s.*
+import org.http4s._
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.circe.accumulatingJsonOf
 import org.http4s.client.Client
 import org.typelevel.log4cats.Logger
-
-import boundary.break
 
 sealed trait ClusterController[F[_]] {
 
@@ -243,7 +236,7 @@ case class ClusterControllerImpl[F[_]: ThrowableMonadError: Concurrent: Async: L
     _ <- err.handleErrorWith(rebalanceUnassignedTasks().void)(t => Logger[F].error(s"Failed to balance tasks: $t"))
     _ <- err.handleErrorWith(updateAllJobStates().void)(t => Logger[F].error(s"Failed to update job states: $t"))
     _ <- Logger[F].debug("Kaladin Background threads finished")
-    _ <- Sync[F].sleep(5 seconds) // TODO: cfg
+    _ <- Sync[F].sleep(5.seconds) // TODO: cfg
   } yield ()
 
   override def startFibers(): F[Unit] = for {

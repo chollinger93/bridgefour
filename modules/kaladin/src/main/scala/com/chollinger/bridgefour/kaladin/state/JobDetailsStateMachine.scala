@@ -6,9 +6,9 @@ import cats.Monad
 import cats.syntax.flatMap.toFlatMapOps
 import cats.syntax.functor.toFunctorOps
 import com.chollinger.bridgefour.kaladin.services.{IdMaker, JobConfigParser, JobSplitter}
-import com.chollinger.bridgefour.shared.models.Job.*
+import com.chollinger.bridgefour.shared.models.Job._
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import com.chollinger.bridgefour.shared.models.Task.*
+import com.chollinger.bridgefour.shared.models.Task._
 import com.chollinger.bridgefour.shared.state.StateMachine
 import org.typelevel.log4cats.Logger
 
@@ -52,9 +52,9 @@ class JobListsChangeStateMachine extends StateMachine[JobDetails, Map[AssignedTa
 
   // Move open/progress/done tasks between states, based on recently submitted jobs
   override def transition(jd: JobDetails, event: Map[AssignedTaskConfig, ExecutionStatus]): JobDetails = {
-    var done     = ArrayBuffer[AssignedTaskConfig](jd.completedTasks: _*)
-    var open     = ArrayBuffer[UnassignedTaskConfig](jd.openTasks: _*)
-    var progress = ArrayBuffer[AssignedTaskConfig](jd.assignedTasks: _*)
+    var done     = ArrayBuffer[AssignedTaskConfig](jd.completedTasks*)
+    var open     = ArrayBuffer[UnassignedTaskConfig](jd.openTasks*)
+    var progress = ArrayBuffer[AssignedTaskConfig](jd.assignedTasks*)
     event.foreach { case (cfg, s) =>
       val uCfg = UnassignedTaskConfig(cfg)
       // TODO: need to rethink the whole ID system. comparing by input file isn't good
@@ -106,12 +106,8 @@ object JobDetailsStateMachine {
         tmpJd      = JobDetails.empty(jobId, sCfg, unassigned)
         tasks     <- splitter.splitJobIntoTasks(tmpJd, List.empty, ids)
       } yield JobDetails(
-        jobId = jobId,
-        jobConfig = sCfg,
-        executionStatus = ExecutionStatus.NotStarted,
-        assignmentStatus = AssignmentStatus.NotAssigned,
-        assignedTasks = tasks.assigned,
-        openTasks = tasks.notAssigned,
+        jobId = jobId, jobConfig = sCfg, executionStatus = ExecutionStatus.NotStarted,
+        assignmentStatus = AssignmentStatus.NotAssigned, assignedTasks = tasks.assigned, openTasks = tasks.notAssigned,
         completedTasks = List.empty
       )
     }

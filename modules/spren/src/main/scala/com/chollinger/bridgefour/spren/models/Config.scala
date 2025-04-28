@@ -1,12 +1,11 @@
 package com.chollinger.bridgefour.spren.models
 
-import cats.effect.unsafe.implicits.*
-import cats.effect.{IO, Sync}
+import cats.effect.Sync
+import cats.effect.unsafe.implicits._
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
-import com.comcast.ip4s.{Host, Port}
-import pureconfig.*
-import pureconfig.generic.derivation.default.*
-import pureconfig.module.catseffect.syntax.*
+import pureconfig._
+import pureconfig.generic.derivation.default._
+import pureconfig.module.catseffect.syntax._
 
 object Config {
 

@@ -3,13 +3,13 @@ package com.chollinger.bridgefour.kaladin.services
 import cats.Parallel
 import cats.effect.kernel.Async
 import cats.effect.{Concurrent, Sync}
-import cats.implicits.*
+import cats.implicits._
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
 import com.chollinger.bridgefour.shared.exceptions.Exceptions.MisconfiguredClusterException
 import com.chollinger.bridgefour.shared.extensions.StronglyConsistent
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
 import com.chollinger.bridgefour.shared.models.Config.WorkerConfig
-import com.chollinger.bridgefour.shared.models.Worker.*
+import com.chollinger.bridgefour.shared.models.Worker._
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
 import org.http4s.EntityDecoder
 import org.http4s.circe.accumulatingJsonOf
@@ -50,7 +50,7 @@ object ClusterOverseer {
             err.raiseError(
               MisconfiguredClusterException(
                 s"Worker ID mismatch: Expected ${workerCfg.id} from ${workerCfg.uri()} but got ${res.id}! " +
-                  s"Check the worker's configuration and ensure that the worker is properly configured."
+                  "Check the worker's configuration and ensure that the worker is properly configured."
               )
             )
         } else {
