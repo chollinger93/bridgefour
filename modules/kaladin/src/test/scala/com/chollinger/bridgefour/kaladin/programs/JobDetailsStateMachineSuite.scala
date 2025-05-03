@@ -3,10 +3,10 @@ package com.chollinger.bridgefour.kaladin.programs
 import scala.collection.immutable.List
 
 import cats.effect.{IO, Sync}
+import com.chollinger.bridgefour.kaladin.Jobs
 import com.chollinger.bridgefour.kaladin.TestUtils._
 import com.chollinger.bridgefour.kaladin.services._
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
-import com.chollinger.bridgefour.shared.jobs._
 import com.chollinger.bridgefour.shared.models.IDs.{JobId, SlotIdTuple, TaskIdTuple}
 import com.chollinger.bridgefour.shared.models.Job._
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
@@ -23,7 +23,7 @@ class JobDetailsStateMachineSuite extends CatsEffectSuite {
   val splitter: JobSplitter[IO]                                       = JobSplitterService.make[IO]()
 
   val jCfg: UserJobConfig = UserJobConfig(
-    name = "unit-test", jobClass = JobClass.SampleJob, input = "fakedir", output = "fakedir", userSettings = Map()
+    name = "unit-test", jobClass = Jobs.sampleJobClass, input = "fakedir", output = "fakedir", userSettings = Map()
   )
   val sCfg: SystemJobConfig = SystemJobConfig.apply(baseId, jCfg)
   val t1: AssignedTaskConfig = AssignedTaskConfig(
@@ -31,7 +31,7 @@ class JobDetailsStateMachineSuite extends CatsEffectSuite {
     slotId = SlotIdTuple(200, 300),
     input = "sample1",
     output = "out",
-    jobClass = JobClass.SampleJob,
+    jobClass = Jobs.sampleJobClass,
     userSettings = Map()
   )
   val t2: AssignedTaskConfig    = t1.copy(taskId = TaskIdTuple(1, 100), slotId = SlotIdTuple(201, 300), input = "sample2")
@@ -45,7 +45,7 @@ class JobDetailsStateMachineSuite extends CatsEffectSuite {
       f1     <- createTmpFile(dir, suffix = ".f1")
       jCfg = UserJobConfig(
                name = "unit-test",
-               jobClass = JobClass.SampleJob,
+               jobClass = Jobs.sampleJobClass,
                input = dir.getAbsolutePath,
                output = outDir.getAbsolutePath,
                userSettings = Map("my" -> "config")
@@ -55,7 +55,7 @@ class JobDetailsStateMachineSuite extends CatsEffectSuite {
                            UnassignedTaskConfig(
                              input = f1.getAbsolutePath,
                              output = outDir.getAbsolutePath,
-                             jobClass = JobClass.SampleJob,
+                             jobClass = Jobs.sampleJobClass,
                              userSettings = Map("my" -> "config")
                            )
                          )

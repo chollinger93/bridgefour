@@ -1,10 +1,11 @@
 package com.chollinger.bridgefour.shared.persistence
 
+import java.util.concurrent.ConcurrentHashMap
+
+import scala.jdk.CollectionConverters._
+
 import cats.effect.{Ref, Sync}
 import cats.implicits.{toFlatMapOps, toFunctorOps}
-
-import java.util.concurrent.ConcurrentHashMap
-import scala.jdk.CollectionConverters.*
 
 sealed trait ReadOnlyPersistence[F[_], K, V] {
 

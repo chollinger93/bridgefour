@@ -6,8 +6,8 @@ import scala.language.postfixOps
 
 import cats.effect._
 import cats.implicits._
+import com.chollinger.bridgefour.kaladin.Jobs
 import com.chollinger.bridgefour.kaladin.TestUtils.{createTmpDir, createTmpFile}
-import com.chollinger.bridgefour.shared.jobs._
 import com.chollinger.bridgefour.shared.models.Job.UserJobConfig
 import munit.CatsEffectSuite
 
@@ -20,7 +20,7 @@ class JobConfigParserSuite extends CatsEffectSuite {
       outDir <- createTmpDir("jobcontrollersuite-out")
       files  <- Range(0, 10).toList.parTraverse(_ => createTmpFile(dir))
       cfg = UserJobConfig(
-              name = "unit-test", jobClass = JobClass.SampleJob, input = dir.getAbsolutePath,
+              name = "unit-test", jobClass = Jobs.sampleJobClass, input = dir.getAbsolutePath,
               output = outDir.getAbsolutePath, userSettings = Map()
             )
       listedFiles <- srv.splitJobIntoFiles(cfg)
@@ -33,7 +33,7 @@ class JobConfigParserSuite extends CatsEffectSuite {
   test("JobConfigParserService.splitJobIntoFiles accepts empty dirs") {
     val srv = JobConfigParserService.make[IO]()
     val cfg = UserJobConfig(
-      name = "unit-test", jobClass = JobClass.SampleJob, input = "fake", output = "fake", userSettings = Map()
+      name = "unit-test", jobClass = Jobs.sampleJobClass, input = "fake", output = "fake", userSettings = Map()
     )
     for {
       listedFiles <- srv.splitJobIntoFiles(cfg)

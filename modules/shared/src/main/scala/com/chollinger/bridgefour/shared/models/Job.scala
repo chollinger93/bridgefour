@@ -1,6 +1,5 @@
 package com.chollinger.bridgefour.shared.models
 
-import com.chollinger.bridgefour.shared.jobs.JobClass
 import com.chollinger.bridgefour.shared.models.IDs.{JobId, TaskId}
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.{AssignedTaskConfig, AssignmentStatus, UnassignedTaskConfig}
@@ -13,6 +12,8 @@ object Job {
   type FilePath = String
 
   type JobName = String
+
+  type JobClass = String
 
   sealed trait JobConfig {
 
@@ -34,9 +35,7 @@ object Job {
       input: DirPath,
       output: DirPath,
       userSettings: Map[String, String]
-  ) extends JobConfig
-      derives Encoder.AsObject,
-        Decoder
+  ) extends JobConfig derives Encoder.AsObject, Decoder
 
   // The machine-generated JobConfig, with assigned tasks
   case class SystemJobConfig(
@@ -79,12 +78,8 @@ object Job {
         jobConfig: SystemJobConfig,
         openTasks: List[UnassignedTaskConfig]
     ): JobDetails = JobDetails(
-      jobId = jobId,
-      jobConfig = jobConfig,
-      executionStatus = ExecutionStatus.NotStarted,
-      assignmentStatus = AssignmentStatus.NotAssigned,
-      assignedTasks = List.empty,
-      openTasks = openTasks,
+      jobId = jobId, jobConfig = jobConfig, executionStatus = ExecutionStatus.NotStarted,
+      assignmentStatus = AssignmentStatus.NotAssigned, assignedTasks = List.empty, openTasks = openTasks,
       completedTasks = List.empty
     )
 

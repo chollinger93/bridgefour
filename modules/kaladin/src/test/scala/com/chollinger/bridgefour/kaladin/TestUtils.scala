@@ -8,7 +8,8 @@ import scala.language.postfixOps
 
 import cats.effect._
 import cats.implicits._
-import com.chollinger.bridgefour.kaladin.services.{IdMaker, JobConfigParser}
+import com.chollinger.bridgefour.kaladin.services.IdMaker
+import com.chollinger.bridgefour.kaladin.services.JobConfigParser
 import com.chollinger.bridgefour.shared.models.IDs._
 import com.chollinger.bridgefour.shared.models.Job._
 import com.chollinger.bridgefour.shared.models.States.SlotState
@@ -16,8 +17,10 @@ import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task._
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import org.http4s._
-import org.http4s.circe.CirceEntityCodec.{circeEntityDecoder, circeEntityEncoder}
-import org.http4s.circe.{accumulatingJsonOf, jsonEncoderOf}
+import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
+import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
+import org.http4s.circe.accumulatingJsonOf
+import org.http4s.circe.jsonEncoderOf
 import org.http4s.client.Client
 import org.http4s.dsl.io._
 import org.http4s.implicits._
@@ -64,7 +67,7 @@ object TestUtils {
     val jobId                               = 100
     val workerId                            = 0
     val taskId                              = 10
-    val taskIdTuple: TaskIdTuple                         = TaskIdTuple(id = 10, jobId = 0)
+    val taskIdTuple: TaskIdTuple            = TaskIdTuple(id = 10, jobId = 0)
     val inProgressTask: BackgroundTaskState = BackgroundTaskState(taskId, status = ExecutionStatus.InProgress)
     val usedSlot: SlotState =
       SlotState(
@@ -124,5 +127,12 @@ object TestUtils {
     ): Client[IO] = Client.fromHttpApp(httpApp(workerState, usedSlotIds, doneSlotIds))
 
   }
+
+}
+
+object Jobs {
+
+  val sampleJobClass       = "com.chollinger.bridgefour.shared.jobs.SampleBridgeFourJob"
+  val sampleLeaderJobClass = "com.chollinger.bridgefour.shared.jobs.SampleLeaderJob"
 
 }

@@ -13,7 +13,6 @@ import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
-import com.chollinger.bridgefour.spren.TestUtils.Jobs.FakeJobCreator
 import com.chollinger.bridgefour.spren.TestUtils._
 import com.chollinger.bridgefour.spren.programs.TaskExecutorService
 import munit.CatsEffectSuite
@@ -69,7 +68,8 @@ class WorkerServiceSuite extends CatsEffectSuite {
       )
     // Services
     val bgSrv     = MockBackgroundWorkerService(task, slotId)
-    val taskSrv   = TaskExecutorService.make(sprenCfg, bgSrv, FakeJobCreator())
+    val creator   = BridgeFourJobCreatorService.make[IO]()
+    val taskSrv   = TaskExecutorService.make(sprenCfg, bgSrv, creator)
     val workerSrv = WorkerService.make[IO](sprenCfg, taskSrv)
     for {
       s <- workerSrv.state()
@@ -93,9 +93,10 @@ class WorkerServiceSuite extends CatsEffectSuite {
     for {
       bg       <- InMemoryPersistence.makeF[IO, Long, FiberContainer[IO, BackgroundTaskState, TaskId]]()
       bgSrv     = BackgroundWorkerService.make[IO, BackgroundTaskState, TaskId](bg)
-      taskSrv   = TaskExecutorService.make(sprenCfg, bgSrv, FakeJobCreator())
+      creator   = BridgeFourJobCreatorService.make[IO]()
+      taskSrv   = TaskExecutorService.make(sprenCfg, bgSrv, creator)
       workerSrv = WorkerService.make[IO](sprenCfg, taskSrv)
-      execSrv   = TaskExecutorService.make[IO](sprenCfg, bgSrv, JobCreatorService.make())
+      execSrv   = TaskExecutorService.make[IO](sprenCfg, bgSrv, creator)
       // Start a task
       statusMap <- execSrv.start(List(delayedTask(1)))
       _          = assertEquals(statusMap, Map(200 -> ExecutionStatus.InProgress))
@@ -125,7 +126,8 @@ class WorkerServiceSuite extends CatsEffectSuite {
     for {
       bg       <- InMemoryPersistence.makeF[IO, Long, FiberContainer[IO, BackgroundTaskState, TaskId]]()
       bgSrv     = BackgroundWorkerService.make[IO, BackgroundTaskState, TaskId](bg)
-      taskSrv   = TaskExecutorService.make(sprenCfg, bgSrv, FakeJobCreator())
+      creator   = BridgeFourJobCreatorService.make[IO]()
+      taskSrv   = TaskExecutorService.make(sprenCfg, bgSrv, creator)
       workerSrv = WorkerService.make[IO](sprenCfg, taskSrv)
       // Get status
       state <- workerSrv.state()
@@ -152,9 +154,10 @@ class WorkerServiceSuite extends CatsEffectSuite {
     for {
       bg       <- InMemoryPersistence.makeF[IO, Long, FiberContainer[IO, BackgroundTaskState, TaskId]]()
       bgSrv     = BackgroundWorkerService.make[IO, BackgroundTaskState, TaskId](bg)
-      taskSrv   = TaskExecutorService.make(sprenCfg, bgSrv, FakeJobCreator())
+      creator   = BridgeFourJobCreatorService.make[IO]()
+      taskSrv   = TaskExecutorService.make(sprenCfg, bgSrv, creator)
       workerSrv = WorkerService.make[IO](sprenCfg, taskSrv)
-      execSrv   = TaskExecutorService.make[IO](sprenCfg, bgSrv, JobCreatorService.make())
+      execSrv   = TaskExecutorService.make[IO](sprenCfg, bgSrv, creator)
       // Start a task
       statusMap <- execSrv.start(List(sampleTask))
       _          = assertEquals(statusMap, Map(200 -> ExecutionStatus.InProgress))

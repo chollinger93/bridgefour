@@ -1,17 +1,15 @@
 package com.chollinger.bridgefour.shared.background
 
-import cats.effect.{IO, Sync, SyncIO}
-import cats.effect.kernel.Fiber
-import com.chollinger.bridgefour.shared.background.BackgroundWorker
+import scala.concurrent.duration.DurationInt
+import scala.language.postfixOps
+
+import cats.effect.{IO, Sync}
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.FiberContainer
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
 import munit.CatsEffectSuite
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-
-import scala.concurrent.duration.DurationInt
-import scala.language.postfixOps
 
 // TODO: consider a Supervisor[F]
 class BackgroundWorkerSuite extends CatsEffectSuite {

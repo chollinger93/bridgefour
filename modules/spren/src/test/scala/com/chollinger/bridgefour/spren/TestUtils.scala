@@ -14,10 +14,10 @@ object TestUtils {
 
   val sprenCfg: SprenConfig = SprenConfig(0, "http", "0.0.0.0", 5555, 2, 0.2.seconds)
 
-  val jobId       = 100
-  val taskId      = 200
-  val workerId    = 0
-  val slotId      = 0
+  val jobId                    = 100
+  val taskId                   = 200
+  val workerId                 = 0
+  val slotId                   = 0
   val taskIdTuple: TaskIdTuple = TaskIdTuple(taskId, jobId)
   val slotIdTuple: SlotIdTuple = SlotIdTuple(slotId, workerId)
 
@@ -26,7 +26,7 @@ object TestUtils {
     slotId = slotIdTuple,
     input = "sample",
     output = "out",
-    jobClass = JobClass.SampleJob,
+    jobClass = Jobs.sampleJobClass,
     userSettings = Map("taskId" -> taskId.toString)
   )
 
@@ -35,26 +35,21 @@ object TestUtils {
     slotId = slotIdTuple,
     input = "sample",
     output = "out",
-    jobClass = JobClass.DelayedWordCountJob,
+    jobClass = Jobs.alwaysOkJobClass,
     userSettings = Map("timeout" -> timeout.toString)
   )
 
   object Jobs {
 
-    case class AlwaysOkBridgeFourJob(config: AssignedTaskConfig) extends BridgeFourJob[IO] {
+    val sampleJobClass   = "com.chollinger.bridgefour.shared.jobs.SampleBridgeFourJob"
+    val alwaysOkJobClass = "com.chollinger.bridgefour.spren.AlwaysOkBridgeFourJob"
 
-      val jobClass: JobClass = JobClass.AlwaysOkJob
+    case class AlwaysOkBridgeFourJob(cfg: AssignedTaskConfig) extends BridgeFourJob[IO] {
 
       def run(): IO[BackgroundTaskState] = IO.println("Starting") >>
         IO.pure(
-          BackgroundTaskState(id = config.userSettings("taskId").toInt, status = ExecutionStatus.Done)
+          BackgroundTaskState(id = cfg.userSettings("taskId").toInt, status = ExecutionStatus.Done)
         ) <* IO.println("Done")
-
-    }
-
-    case class FakeJobCreator() extends JobCreator[IO] {
-
-      def makeJob(cfg: AssignedTaskConfig): BridgeFourJob[IO] = AlwaysOkBridgeFourJob(cfg)
 
     }
 

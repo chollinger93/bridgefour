@@ -3,8 +3,7 @@ package com.chollinger.bridgefour.shared.persistence
 import cats.Applicative
 import cats.effect.Async
 import cats.effect.std.MapRef
-import cats.implicits.*
-import cats.syntax.traverse.toTraverseOps
+import cats.implicits._
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
 
 sealed trait Counter[F[_], K] {
@@ -26,7 +25,7 @@ object InMemoryCounter {
   private def init[F[_]: Applicative](s: MR[F], size: Int): F[Unit] = for {
     _ <- Range.inclusive(0, size).toList.traverse(i => s(i).set(Some(0L)))
   } yield ()
-  def makeF[F[_]: Async: Applicative: ThrowableMonadError](size: Int = 10000) = {
+  def makeF[F[_]: Async: Applicative: ThrowableMonadError](size: Int = 10000): F[Counter[F, Int]] = {
     for {
       storage <- MapRef.ofScalaConcurrentTrieMap[F, Int, Long]
       _       <- init(storage, size)

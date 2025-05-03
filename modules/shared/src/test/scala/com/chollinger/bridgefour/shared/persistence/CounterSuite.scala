@@ -1,13 +1,13 @@
 package com.chollinger.bridgefour.shared.persistence
 
+import java.util.concurrent.TimeUnit
+
+import scala.concurrent.duration._
+
 import cats.effect.IO
 import cats.effect.std.Random
-import cats.implicits.*
-import com.chollinger.bridgefour.shared.persistence.{Counter, InMemoryCounter}
+import cats.implicits._
 import munit.CatsEffectSuite
-
-import java.util.concurrent.TimeUnit
-import scala.concurrent.duration.*
 
 class CounterSuite extends CatsEffectSuite {
 

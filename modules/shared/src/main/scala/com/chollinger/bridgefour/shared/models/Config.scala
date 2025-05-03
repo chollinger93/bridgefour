@@ -1,12 +1,12 @@
 package com.chollinger.bridgefour.shared.models
 
-import com.chollinger.bridgefour.shared.models.IDs.WorkerId
-import org.http4s.Uri
-import pureconfig.*
-import pureconfig.generic.derivation.default.*
-
 import scala.concurrent.duration.{DurationDouble, FiniteDuration}
 import scala.language.postfixOps
+
+import com.chollinger.bridgefour.shared.models.IDs.WorkerId
+import org.http4s.Uri
+import pureconfig._
+import pureconfig.generic.derivation.default._
 
 object Config {
 

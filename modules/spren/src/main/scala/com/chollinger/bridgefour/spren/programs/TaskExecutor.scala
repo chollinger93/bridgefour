@@ -4,7 +4,7 @@ import cats.Monad
 import cats.effect.kernel.Sync
 import cats.implicits._
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
-import com.chollinger.bridgefour.shared.jobs.JobCreator
+import com.chollinger.bridgefour.shared.jobs.BridgeFourJobCreator
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
 import com.chollinger.bridgefour.shared.models.IDs._
 import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState
@@ -36,13 +36,13 @@ object TaskExecutorService {
   def make[F[_]: ThrowableMonadError: Sync: Monad: Logger](
       sCfg: SprenConfig,
       bg: BackgroundWorker[F, BackgroundTaskState, TaskId],
-      jc: JobCreator[F]
+      jc: BridgeFourJobCreator[F]
   ): TaskExecutor[F] = new TaskExecutor[F]:
 
     val err: ThrowableMonadError[F] = implicitly[ThrowableMonadError[F]]
 
     private def startTask(cfg: AssignedTaskConfig): F[(TaskId, ExecutionStatus)] = {
-      val task = jc.makeJob(cfg)
+      val task = jc.makeJob(cfg.jobClass, cfg)
       for {
         _ <- Logger[F].debug(s"Starting worker task $task in slot ${cfg.slotId}")
         r <-

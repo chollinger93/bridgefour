@@ -1,16 +1,14 @@
 package com.chollinger.bridgefour.shared.models
 
-import com.chollinger.bridgefour.shared.jobs.JobClass
-import com.chollinger.bridgefour.shared.models.IDs.*
+import com.chollinger.bridgefour.shared.TestJobs
+import com.chollinger.bridgefour.shared.models.IDs._
 import com.chollinger.bridgefour.shared.models.Job.UserJobConfig
-import com.chollinger.bridgefour.shared.models.Status
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
-import io.circe.*
-import io.circe.parser.*
-import io.circe.syntax.*
+import io.circe._
+import io.circe.parser._
+import io.circe.syntax._
 import munit.CatsEffectSuite
-import org.latestbit.circe.adt.codec.*
 class ModelSuite extends CatsEffectSuite {
 
   val taskId   = 100
@@ -24,18 +22,18 @@ class ModelSuite extends CatsEffectSuite {
       slotId = SlotIdTuple(slotId, workerId),
       input = "sample",
       output = "out",
-      jobClass = JobClass.SampleJob,
+      jobClass = TestJobs.sampleJobClass,
       userSettings = Map()
     )
     val s = task.asJson.noSpaces
     assertEquals(
       s,
-      "{\"taskId\":{\"id\":100,\"jobId\":0},\"slotId\":{\"id\":0,\"workerId\":200},\"input\":\"sample\",\"output\":\"out\",\"jobClass\":{\"type\":\"SampleJob\"},\"userSettings\":{}}"
+      "{\"taskId\":{\"id\":100,\"jobId\":0},\"slotId\":{\"id\":0,\"workerId\":200},\"input\":\"sample\",\"output\":\"out\",\"jobClass\":\"com.chollinger.bridgefour.shared.jobs.SampleBridgeFourJob\",\"userSettings\":{}}"
     )
 
     val tl = decode[List[AssignedTaskConfig]](
       """[
-        |    {"taskId":{"id":100,"jobId":0},"slotId":{"id":0,"workerId":200},"input":"sample","output":"out","jobClass":{"type":"SampleJob"},"userSettings":{}}
+        |    {"taskId":{"id":100,"jobId":0},"slotId":{"id":0,"workerId":200},"input":"sample","output":"out","jobClass":"com.chollinger.bridgefour.shared.jobs.SampleBridgeFourJob","userSettings":{}}
         |]""".stripMargin
     ).toOption.get
     assertEquals(tl, List(task))
@@ -47,14 +45,10 @@ class ModelSuite extends CatsEffectSuite {
 
   test("UserJobConfig SerDe") {
     val cfg = UserJobConfig(
-      name = "unit-test",
-      jobClass = JobClass.SampleJob,
-      input = "/tmp/in",
-      output = "/tmp/out",
-      userSettings = Map()
+      name = "unit-test", jobClass = TestJobs.sampleJobClass, input = "/tmp/in", output = "/tmp/out", userSettings = Map()
     )
     val asStr =
-      "{\"name\":\"unit-test\",\"jobClass\":{\"type\":\"SampleJob\"},\"input\":\"/tmp/in\",\"output\":\"/tmp/out\",\"userSettings\":{}}"
+      "{\"name\":\"unit-test\",\"jobClass\":\"com.chollinger.bridgefour.shared.jobs.SampleBridgeFourJob\",\"input\":\"/tmp/in\",\"output\":\"/tmp/out\",\"userSettings\":{}}"
     assertEquals(
       cfg.asJson.noSpaces,
       asStr
