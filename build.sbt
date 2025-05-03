@@ -55,6 +55,7 @@ lazy val worker = (project in file("modules/spren"))
   .dependsOn(shared)
   .enablePlugins(JavaAppPackaging, DockerPlugin)
 
+
 addCommandAlias("lint", "scalafixAll")
 addCommandAlias("fmt", "scalafmtAll")
 addCommandAlias("testAll", "testQuick")

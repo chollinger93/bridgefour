@@ -1,8 +1,6 @@
 package com.chollinger.bridgefour.shared.http
 
-import org.http4s.*
-import org.http4s.dsl.Http4sDsl
-import org.http4s.server.Router
+import org.http4s._
 
 trait Route[F[_]] {
   protected def prefixPath: String

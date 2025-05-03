@@ -5,6 +5,7 @@ import scala.language.postfixOps
 import cats.effect._
 import cats.effect.std.Mutex
 import cats.implicits._
+import com.chollinger.bridgefour.kaladin.Jobs
 import com.chollinger.bridgefour.kaladin.TestUtils.Http._
 import com.chollinger.bridgefour.kaladin.TestUtils._
 import com.chollinger.bridgefour.kaladin.models.Config
@@ -41,7 +42,7 @@ class JobControllerSuite extends CatsEffectSuite {
       f1     <- createTmpFile(dir, suffix = ".f1")
       f2     <- createTmpFile(dir, suffix = ".f2")
       jCfg = UserJobConfig(
-               name = "unit-test", jobClass = JobClass.SampleJob, input = dir.getAbsolutePath,
+               name = "unit-test", jobClass = Jobs.sampleJobClass, input = dir.getAbsolutePath,
                output = outDir.getAbsolutePath, userSettings = Map()
              )
       wrkSrv       = ClusterOverseer.make[IO](cfg, client)
@@ -77,7 +78,7 @@ class JobControllerSuite extends CatsEffectSuite {
                   slotId = SlotIdTuple(openSlot.id, halfUsedWorkerState.id),
                   input = f1.getAbsolutePath,
                   output = outDir.getAbsolutePath,
-                  jobClass = JobClass.SampleJob,
+                  jobClass = Jobs.sampleJobClass,
                   userSettings = Map()
                 )
               ),
@@ -85,7 +86,7 @@ class JobControllerSuite extends CatsEffectSuite {
                 UnassignedTaskConfig(
                   input = f2.getAbsolutePath,
                   outDir.getAbsolutePath,
-                  jobClass = JobClass.SampleJob,
+                  jobClass = Jobs.sampleJobClass,
                   userSettings = Map()
                 )
               ),
@@ -125,7 +126,7 @@ class JobControllerSuite extends CatsEffectSuite {
       _ <- createTmpFile(dir, suffix = ".f1")
       _ <- createTmpFile(dir, suffix = ".f3")
       jCfg = UserJobConfig(
-               name = "unit-test", jobClass = JobClass.SampleJob, input = dir.getAbsolutePath,
+               name = "unit-test", jobClass = Jobs.sampleJobClass, input = dir.getAbsolutePath,
                output = outDir.getAbsolutePath, userSettings = Map()
              )
       wrkSrv       = ClusterOverseer.make[IO](cfg, client)
@@ -170,7 +171,7 @@ class JobControllerSuite extends CatsEffectSuite {
       outDir <- createTmpDir("jobcontrollersuite-out")
       _      <- createTmpFile(dir, suffix = ".f3")
       jCfg = UserJobConfig(
-               name = "unit-test", jobClass = JobClass.SampleJob, input = dir.getAbsolutePath,
+               name = "unit-test", jobClass = Jobs.sampleLeaderJobClass, input = dir.getAbsolutePath,
                output = outDir.getAbsolutePath, userSettings = Map()
              )
       wrkSrv       = ClusterOverseer.make[IO](cfg, client)

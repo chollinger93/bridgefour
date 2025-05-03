@@ -6,7 +6,7 @@ import cats.syntax.all._
 import cats.{Monad, Parallel}
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.FiberContainer
 import com.chollinger.bridgefour.shared.background.{BackgroundWorker, BackgroundWorkerService}
-import com.chollinger.bridgefour.shared.jobs.JobCreatorService
+import com.chollinger.bridgefour.shared.jobs.BridgeFourJobCreatorService
 import com.chollinger.bridgefour.shared.models.IDs.TaskId
 import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
@@ -32,7 +32,7 @@ object Server {
           mF.unit
         )
       bgSrv     = BackgroundWorkerService.make[F, BackgroundTaskState, TaskId](state)
-      jcSrv     = JobCreatorService.make[F]()
+      jcSrv     = BridgeFourJobCreatorService.make[F]()
       execSrv   = TaskExecutorService.make[F](cfg.self, bgSrv, jcSrv)
       workerSrv = WorkerService.make[F](cfg.self, execSrv)
       httpApp: Kleisli[F, Request[F], Response[F]] = (

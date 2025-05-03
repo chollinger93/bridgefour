@@ -1,10 +1,9 @@
 package com.chollinger.bridgefour.shared.models
 
-import com.chollinger.bridgefour.shared.jobs.*
-import com.chollinger.bridgefour.shared.models.IDs.*
-import com.chollinger.bridgefour.shared.models.Job.*
+import com.chollinger.bridgefour.shared.models.IDs._
+import com.chollinger.bridgefour.shared.models.Job._
 import io.circe.{Decoder, Encoder}
-import org.latestbit.circe.adt.codec.*
+import org.latestbit.circe.adt.codec._
 
 object Task {
 
@@ -30,9 +29,7 @@ object Task {
       output: DirPath,
       jobClass: JobClass,
       userSettings: Map[String, String]
-  ) extends TaskConfig
-      derives Encoder.AsObject,
-        Decoder {
+  ) extends TaskConfig derives Encoder.AsObject, Decoder {
 
     val outputFile: FilePath =
       s"$output/part-${taskId.id}-${taskId.jobId}.txt"
@@ -49,11 +46,7 @@ object Task {
         userSettings: Map[String, String]
     ): AssignedTaskConfig =
       AssignedTaskConfig(
-        taskId = taskId,
-        slotId = slotId,
-        input = input,
-        output = job.output,
-        jobClass = job.jobClass,
+        taskId = taskId, slotId = slotId, input = input, output = job.output, jobClass = job.jobClass,
         userSettings = userSettings
       )
 
@@ -64,9 +57,7 @@ object Task {
       output: DirPath,
       jobClass: JobClass,
       userSettings: Map[String, String]
-  ) extends TaskConfig
-      derives Encoder.AsObject,
-        Decoder
+  ) extends TaskConfig derives Encoder.AsObject, Decoder
 
   object UnassignedTaskConfig {
 

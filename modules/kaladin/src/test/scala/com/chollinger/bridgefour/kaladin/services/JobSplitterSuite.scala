@@ -2,9 +2,9 @@ package com.chollinger.bridgefour.kaladin.services
 
 import cats.effect.{IO, Sync}
 import cats.implicits._
+import com.chollinger.bridgefour.kaladin.Jobs
 import com.chollinger.bridgefour.kaladin.TestUtils.Http._
 import com.chollinger.bridgefour.kaladin.TestUtils.{MockIDMaker, createTmpDir, createTmpFile}
-import com.chollinger.bridgefour.shared.jobs._
 import com.chollinger.bridgefour.shared.models.IDs.{SlotIdTuple, TaskIdTuple}
 import com.chollinger.bridgefour.shared.models.Job._
 import com.chollinger.bridgefour.shared.models.Task._
@@ -23,7 +23,7 @@ class JobSplitterSuite extends CatsEffectSuite {
       outDir <- createTmpDir("splitJobIntoTasks-out")
       outDirS = outDir.getAbsolutePath
       jCfg = SystemJobConfig(
-               id = 100, name = "test", jobClass = JobClass.SampleJob, input = dir.getAbsolutePath,
+               id = 100, name = "test", jobClass = Jobs.sampleJobClass, input = dir.getAbsolutePath,
                output = outDir.getAbsolutePath, userSettings = Map()
              )
       _              <- Range(0, 2).toList.parTraverse(_ => createTmpFile(dir))
@@ -48,7 +48,7 @@ class JobSplitterSuite extends CatsEffectSuite {
                   slotId = SlotIdTuple(openSlot.id, halfUsedWorkerState.id),
                   input = files.head.getAbsolutePath,
                   output = outDirS,
-                  jobClass = JobClass.SampleJob,
+                  jobClass = Jobs.sampleJobClass,
                   userSettings = Map()
                 )
               ),
@@ -56,7 +56,7 @@ class JobSplitterSuite extends CatsEffectSuite {
                 UnassignedTaskConfig(
                   input = files.last.getAbsolutePath,
                   output = outDirS,
-                  jobClass = JobClass.SampleJob,
+                  jobClass = Jobs.sampleJobClass,
                   userSettings = Map()
                 )
               )
@@ -71,7 +71,7 @@ class JobSplitterSuite extends CatsEffectSuite {
       dir    <- createTmpDir("splitJobIntoTasks")
       outDir <- createTmpDir("splitJobIntoTasks-out")
       jCfg = SystemJobConfig(
-               id = 100, name = "test", jobClass = JobClass.SampleJob, input = dir.getAbsolutePath,
+               id = 100, name = "test", jobClass = Jobs.sampleJobClass, input = dir.getAbsolutePath,
                output = outDir.getAbsolutePath, userSettings = Map()
              )
       workers  = List.empty[WorkerState]

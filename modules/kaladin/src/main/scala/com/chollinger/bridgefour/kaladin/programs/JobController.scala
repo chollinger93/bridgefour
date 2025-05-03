@@ -99,7 +99,7 @@ case class JobControllerService[F[_]: ThrowableMonadError: Concurrent: Async: Lo
     jdN <- jd match {
              // TODO: worker queue
              case Some(j) if ExecutionStatus.finished(j.executionStatus) =>
-               leaderJob.makeJob(j).collectResults().map(r => Right(r))
+               leaderJob.makeJob(j.jobConfig.jobClass, j).collectResults().map(r => Right(r))
              case Some(j) => sF.blocking(Left(j.executionStatus))
              case _       => sF.blocking(Left(ExecutionStatus.Missing))
            }
