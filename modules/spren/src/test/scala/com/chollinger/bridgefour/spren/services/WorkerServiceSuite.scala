@@ -2,22 +2,26 @@ package com.chollinger.bridgefour.spren.services
 
 import scala.concurrent.duration.FiniteDuration
 import scala.language.postfixOps
-
-import cats.effect._
-import com.chollinger.bridgefour.shared.background.BackgroundWorker.{BackgroundWorkerResult, FiberContainer}
-import com.chollinger.bridgefour.shared.background.{BackgroundWorker, BackgroundWorkerService}
-import com.chollinger.bridgefour.shared.jobs._
-import com.chollinger.bridgefour.shared.models.IDs._
+import cats.effect.*
+import com.chollinger.bridgefour.shared.background.BackgroundWorker.BackgroundWorkerResult
+import com.chollinger.bridgefour.shared.background.BackgroundWorker.FiberContainer
+import com.chollinger.bridgefour.shared.background.BackgroundWorker
+import com.chollinger.bridgefour.shared.background.BackgroundWorkerService
+import com.chollinger.bridgefour.shared.jobs.*
+import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState
 import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
-import com.chollinger.bridgefour.spren.TestUtils._
+import com.chollinger.bridgefour.spren.AlwaysOkBridgeFourJobJobCreatorService
+import com.chollinger.bridgefour.spren.TestUtils
+import com.chollinger.bridgefour.spren.TestUtils.*
 import com.chollinger.bridgefour.spren.programs.TaskExecutorService
 import munit.CatsEffectSuite
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import org.typelevel.log4cats.{Logger, SelfAwareStructuredLogger}
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.SelfAwareStructuredLogger
 
 class WorkerServiceSuite extends CatsEffectSuite {
 
@@ -89,17 +93,18 @@ class WorkerServiceSuite extends CatsEffectSuite {
   // At this point, we're re-testing the BackgroundWorkerSuite, which one could argue is unnecessary, but it's also
   // concurrency, and concurrency is a horror show
   test("WorkerService should work with a real background worker, returning a valid WorkerState") {
-    val taskIdTuple = TaskIdTuple(taskId, jobId)
     for {
-      bg       <- InMemoryPersistence.makeF[IO, Long, FiberContainer[IO, BackgroundTaskState, TaskId]]()
-      bgSrv     = BackgroundWorkerService.make[IO, BackgroundTaskState, TaskId](bg)
-      creator   = BridgeFourJobCreatorService.make[IO]()
-      taskSrv   = TaskExecutorService.make(sprenCfg, bgSrv, creator)
-      workerSrv = WorkerService.make[IO](sprenCfg, taskSrv)
-      execSrv   = TaskExecutorService.make[IO](sprenCfg, bgSrv, creator)
+      bg   <- InMemoryPersistence.makeF[IO, Long, FiberContainer[IO, BackgroundTaskState, TaskId]]()
+      bgSrv = BackgroundWorkerService.make[IO, BackgroundTaskState, TaskId](bg)
+      // FakeJobCreator
+      fakeCreator = AlwaysOkBridgeFourJobJobCreatorService.make[IO]()
+      taskSrv     = TaskExecutorService.make(sprenCfg, bgSrv, fakeCreator)
+      workerSrv   = WorkerService.make[IO](sprenCfg, taskSrv)
+      creator     = BridgeFourJobCreatorService.make[IO]()
+      execSrv     = TaskExecutorService.make[IO](sprenCfg, bgSrv, creator)
       // Start a task
       statusMap <- execSrv.start(List(delayedTask(1)))
-      _          = assertEquals(statusMap, Map(200 -> ExecutionStatus.InProgress))
+      _          = assertEquals(statusMap, Map(TestUtils.taskId -> ExecutionStatus.InProgress))
       // Get status
       state <- workerSrv.state()
       _     <- Logger[IO].info(s"state: $state")
@@ -160,7 +165,7 @@ class WorkerServiceSuite extends CatsEffectSuite {
       execSrv   = TaskExecutorService.make[IO](sprenCfg, bgSrv, creator)
       // Start a task
       statusMap <- execSrv.start(List(sampleTask))
-      _          = assertEquals(statusMap, Map(200 -> ExecutionStatus.InProgress))
+      _          = assertEquals(statusMap, Map(TestUtils.taskId -> ExecutionStatus.InProgress))
       // Block until the task completes to make sure we get no race conditions
       _ <- bgSrv.getResult(sampleTask.slotId.id)
       // Get status

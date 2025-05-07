@@ -1,12 +1,19 @@
 package com.chollinger.bridgefour.shared.jobs
 
-import scala.language.postfixOps
+import cats.effect.kernel.Async
 
-import com.chollinger.bridgefour.shared.models.Job._
+import scala.language.postfixOps
+import com.chollinger.bridgefour.shared.models.Job.*
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
 
 // TODO: this is super basic and not very abstracted
-trait BridgeFourJob[F[_]] {
+
+/** The base job interface. Since these jobs are summoned, they need a concrete effect type in their implementation
+  *
+  * @tparam F
+  *   Effect, e.g. IO
+  */
+trait BridgeFourJob[F[_]: Async] {
 
   /** Each job must work on exactly one file and write to one directory
     *

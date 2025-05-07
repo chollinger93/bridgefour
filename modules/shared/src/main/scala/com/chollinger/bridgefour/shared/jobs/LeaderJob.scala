@@ -15,7 +15,7 @@ import org.http4s.circe.accumulatingJsonOf
 /** Runs on leader. Reads each input file and returns a result as String, because of the shitty way we construct these
   * tasks. Once the system accepts JARs, this all goes into the trash
   */
-trait LeaderJob[F[_]] {
+trait LeaderJob[F[_]: Async] {
 
   def job: JobDetails
 
