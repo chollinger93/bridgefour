@@ -1,12 +1,10 @@
 package com.chollinger.bridgefour.shared.jobs
 
-import scala.language.postfixOps
-import cats.effect.Temporal
 import cats.effect.kernel.Async
-import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState
 import com.chollinger.bridgefour.shared.models.Job.JobDetails
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
-import org.typelevel.log4cats.Logger
+
+import scala.language.postfixOps
 
 trait BridgeFourJobCreator[F[_]] {
 
@@ -18,6 +16,7 @@ trait BridgeFourJobCreator[F[_]] {
   }
 
 }
+
 trait LeaderCreator[F[_]]() {
 
   def makeJob(className: String, job: JobDetails): LeaderJob[F] = {
@@ -31,12 +30,12 @@ trait LeaderCreator[F[_]]() {
 
 object LeaderCreatorService {
 
-  def make[F[_]](): LeaderCreator[F] = new LeaderCreator[F] {}
+  def make[F[_]: Async](): LeaderCreator[F] = new LeaderCreator[F] {}
 
 }
 
 object BridgeFourJobCreatorService {
 
-  def make[F[_]](): BridgeFourJobCreator[F] = new BridgeFourJobCreator[F] {}
+  def make[F[_]: Async](): BridgeFourJobCreator[F] = new BridgeFourJobCreator[F] {}
 
 }
