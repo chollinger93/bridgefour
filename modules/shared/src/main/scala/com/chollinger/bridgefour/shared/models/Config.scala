@@ -1,6 +1,7 @@
 package com.chollinger.bridgefour.shared.models
 
-import scala.concurrent.duration.{DurationDouble, FiniteDuration}
+import scala.concurrent.duration.DurationDouble
+import scala.concurrent.duration.FiniteDuration
 import scala.language.postfixOps
 
 import com.chollinger.bridgefour.shared.models.IDs.WorkerId
@@ -27,16 +28,14 @@ object Config {
       schema: String,
       host: String,
       port: Int = 5555
-  ) extends HostnameConfig
-      derives ConfigReader
+  ) extends HostnameConfig derives ConfigReader
 
   case class WorkerConfig(
       id: WorkerId,
       schema: String,
       host: String,
       port: Int = 5554
-  ) extends HostnameConfig
-      derives ConfigReader
+  ) extends HostnameConfig derives ConfigReader
 
   case class SprenConfig(
       id: WorkerId,
@@ -44,8 +43,7 @@ object Config {
       host: String,
       port: Int = 5554,
       maxSlots: Int = 2,
-      probingTimeout: FiniteDuration = 0.2 seconds
-  ) extends HostnameConfig
-      derives ConfigReader
+      probingTimeout: FiniteDuration = 0.2.seconds
+  ) extends HostnameConfig derives ConfigReader
 
 }

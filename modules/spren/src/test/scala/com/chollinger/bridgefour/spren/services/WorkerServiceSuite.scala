@@ -2,22 +2,23 @@ package com.chollinger.bridgefour.spren.services
 
 import scala.concurrent.duration.FiniteDuration
 import scala.language.postfixOps
-import cats.effect.*
+
+import cats.effect._
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.BackgroundWorkerResult
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.FiberContainer
 import com.chollinger.bridgefour.shared.background.BackgroundWorker
 import com.chollinger.bridgefour.shared.background.BackgroundWorkerService
-import com.chollinger.bridgefour.shared.jobs.*
-import com.chollinger.bridgefour.shared.models.IDs.*
+import com.chollinger.bridgefour.shared.jobs._
+import com.chollinger.bridgefour.shared.models.IDs._
 import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState
 import com.chollinger.bridgefour.shared.models.States.SlotState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
+import com.chollinger.bridgefour.spren.TestUtils._
+import com.chollinger.bridgefour.spren.programs.TaskExecutorService
 import com.chollinger.bridgefour.spren.AlwaysOkBridgeFourJobJobCreatorService
 import com.chollinger.bridgefour.spren.TestUtils
-import com.chollinger.bridgefour.spren.TestUtils.*
-import com.chollinger.bridgefour.spren.programs.TaskExecutorService
 import munit.CatsEffectSuite
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.Logger

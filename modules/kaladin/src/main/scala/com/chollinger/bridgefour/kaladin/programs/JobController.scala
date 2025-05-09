@@ -3,7 +3,8 @@ package com.chollinger.bridgefour.kaladin.programs
 import scala.collection.immutable
 
 import cats._
-import cats.effect.{Async, Concurrent}
+import cats.effect.Async
+import cats.effect.Concurrent
 import cats.syntax.flatMap.toFlatMapOps
 import cats.syntax.functor.toFunctorOps
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig

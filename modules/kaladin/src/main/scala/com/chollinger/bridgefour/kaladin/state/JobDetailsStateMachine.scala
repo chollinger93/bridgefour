@@ -5,7 +5,9 @@ import scala.collection.mutable.ArrayBuffer
 import cats.Monad
 import cats.syntax.flatMap.toFlatMapOps
 import cats.syntax.functor.toFunctorOps
-import com.chollinger.bridgefour.kaladin.services.{IdMaker, JobConfigParser, JobSplitter}
+import com.chollinger.bridgefour.kaladin.services.IdMaker
+import com.chollinger.bridgefour.kaladin.services.JobConfigParser
+import com.chollinger.bridgefour.kaladin.services.JobSplitter
 import com.chollinger.bridgefour.shared.models.Job._
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task._

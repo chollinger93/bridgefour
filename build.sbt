@@ -28,7 +28,7 @@ lazy val commonSettings = Seq(
 )
 
 lazy val root = Project(id = "bridgefour", base = file("."))
-  .aggregate(leader, worker)
+  .aggregate(shared, leader, worker)
 
 lazy val shared = (project in file("modules/shared")).settings(
   commonSettings,

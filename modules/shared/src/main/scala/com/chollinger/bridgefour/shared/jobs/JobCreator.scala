@@ -1,10 +1,10 @@
 package com.chollinger.bridgefour.shared.jobs
 
+import scala.language.postfixOps
+
 import cats.effect.kernel.Async
 import com.chollinger.bridgefour.shared.models.Job.JobDetails
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
-
-import scala.language.postfixOps
 
 trait BridgeFourJobCreator[F[_]] {
 

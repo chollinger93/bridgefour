@@ -3,12 +3,8 @@ package com.chollinger.bridgefour.shared.jobs
 import scala.language.postfixOps
 
 import cats.effect.kernel.Async
-import cats.implicits._
 import com.chollinger.bridgefour.shared.models.Job._
 import io.circe._
-import io.circe.syntax._
-import org.http4s.EntityDecoder
-import org.http4s.circe.accumulatingJsonOf
 
 // TODO: See all the other "TODOs" in this file + the other job files (there are 8) - this is a placeholder
 

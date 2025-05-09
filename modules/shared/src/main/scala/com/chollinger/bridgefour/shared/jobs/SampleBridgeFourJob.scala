@@ -1,11 +1,10 @@
 package com.chollinger.bridgefour.shared.jobs
 
-import cats.effect.IO
-
 import scala.language.postfixOps
-import cats.effect.kernel.Async
-import cats.implicits.*
-import com.chollinger.bridgefour.shared.models.Job.*
+
+import cats.effect.IO
+import cats.implicits._
+import com.chollinger.bridgefour.shared.models.Job._
 import com.chollinger.bridgefour.shared.models.Status
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig

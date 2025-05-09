@@ -2,12 +2,15 @@ package com.chollinger.bridgefour.kaladin.programs
 
 import scala.collection.immutable.List
 
-import cats.effect.{IO, Sync}
+import cats.effect.IO
+import cats.effect.Sync
 import com.chollinger.bridgefour.kaladin.Jobs
 import com.chollinger.bridgefour.kaladin.TestUtils._
 import com.chollinger.bridgefour.kaladin.services._
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
-import com.chollinger.bridgefour.shared.models.IDs.{JobId, SlotIdTuple, TaskIdTuple}
+import com.chollinger.bridgefour.shared.models.IDs.JobId
+import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
+import com.chollinger.bridgefour.shared.models.IDs.TaskIdTuple
 import com.chollinger.bridgefour.shared.models.Job._
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task._

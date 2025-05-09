@@ -45,7 +45,8 @@ class ModelSuite extends CatsEffectSuite {
 
   test("UserJobConfig SerDe") {
     val cfg = UserJobConfig(
-      name = "unit-test", jobClass = TestJobs.sampleJobClass, input = "/tmp/in", output = "/tmp/out", userSettings = Map()
+      name = "unit-test", jobClass = TestJobs.sampleJobClass, input = "/tmp/in", output = "/tmp/out",
+      userSettings = Map()
     )
     val asStr =
       "{\"name\":\"unit-test\",\"jobClass\":\"com.chollinger.bridgefour.shared.jobs.SampleBridgeFourJob\",\"input\":\"/tmp/in\",\"output\":\"/tmp/out\",\"userSettings\":{}}"

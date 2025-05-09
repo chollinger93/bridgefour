@@ -1,10 +1,9 @@
 package com.chollinger.bridgefour.shared.jobs
 
-import cats.effect.kernel.Async
-
 import scala.language.postfixOps
-import com.chollinger.bridgefour.shared.models.Job.*
-import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
+
+import cats.effect.kernel.Async
+import com.chollinger.bridgefour.shared.models.Job._
 
 // TODO: this is super basic and not very abstracted
 

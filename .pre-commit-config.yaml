@@ -1,0 +1,12 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: https://github.com/chollinger93/scala-pre-commit-hooks
+    rev: aee4b610e2395bd8ea2fdcbe6829db85feec96ca #v0.5.0
+    hooks:
+      - id: sbt-scalafmt-apply
+        args: [ --no-clean ]
