@@ -7,7 +7,8 @@ import scala.language.postfixOps
 import cats.effect._
 import cats.implicits._
 import com.chollinger.bridgefour.kaladin.Jobs
-import com.chollinger.bridgefour.kaladin.TestUtils.{createTmpDir, createTmpFile}
+import com.chollinger.bridgefour.kaladin.TestUtils.createTmpDir
+import com.chollinger.bridgefour.kaladin.TestUtils.createTmpFile
 import com.chollinger.bridgefour.shared.models.Job.UserJobConfig
 import munit.CatsEffectSuite
 

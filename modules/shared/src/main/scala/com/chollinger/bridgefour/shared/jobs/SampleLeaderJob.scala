@@ -1,15 +1,14 @@
 package com.chollinger.bridgefour.shared.jobs
 
+import scala.language.postfixOps
+
 import cats.effect.IO
-import cats.effect.kernel.Async
-import cats.implicits.*
-import com.chollinger.bridgefour.shared.models.Job.*
-import io.circe.*
-import io.circe.syntax.*
+import cats.implicits._
+import com.chollinger.bridgefour.shared.models.Job._
+import io.circe._
+import io.circe.syntax._
 import org.http4s.EntityDecoder
 import org.http4s.circe.accumulatingJsonOf
-
-import scala.language.postfixOps
 
 case class SampleLeaderJob(job: JobDetails) extends LeaderJob[IO] {
 

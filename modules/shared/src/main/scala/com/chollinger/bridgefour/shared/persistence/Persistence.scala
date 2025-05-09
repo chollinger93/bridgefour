@@ -4,8 +4,10 @@ import java.util.concurrent.ConcurrentHashMap
 
 import scala.jdk.CollectionConverters._
 
-import cats.effect.{Ref, Sync}
-import cats.implicits.{toFlatMapOps, toFunctorOps}
+import cats.effect.Ref
+import cats.effect.Sync
+import cats.implicits.toFlatMapOps
+import cats.implicits.toFunctorOps
 
 sealed trait ReadOnlyPersistence[F[_], K, V] {
 

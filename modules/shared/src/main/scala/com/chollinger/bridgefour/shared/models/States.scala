@@ -2,7 +2,8 @@ package com.chollinger.bridgefour.shared.models
 
 import com.chollinger.bridgefour.shared.models.IDs._
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import io.circe.{Decoder, Encoder}
+import io.circe.Decoder
+import io.circe.Encoder
 
 object States {
 

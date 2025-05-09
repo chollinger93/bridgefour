@@ -1,6 +1,7 @@
 package com.chollinger.bridgefour.shared.models
 
-import io.circe.{Decoder, Encoder}
+import io.circe.Decoder
+import io.circe.Encoder
 
 object IDs {
 

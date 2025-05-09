@@ -1,7 +1,9 @@
 package com.chollinger.bridgefour.kaladin.models
 
 import com.chollinger.bridgefour.shared.models.Config.LeaderConfig
-import com.comcast.ip4s.{Host, Port, SocketAddress}
+import com.comcast.ip4s.Host
+import com.comcast.ip4s.Port
+import com.comcast.ip4s.SocketAddress
 import munit.CatsEffectSuite
 class ConfigSuite extends CatsEffectSuite {
 

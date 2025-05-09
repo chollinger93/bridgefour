@@ -6,18 +6,24 @@ import scala.language.postfixOps
 import cats._
 import cats.effect.implicits._
 import cats.effect.std.Mutex
-import cats.effect.{Async, Concurrent, Sync}
+import cats.effect.Async
+import cats.effect.Concurrent
+import cats.effect.Sync
 import cats.implicits._
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
-import com.chollinger.bridgefour.kaladin.services.{ClusterOverseer, IdMaker, JobSplitter}
+import com.chollinger.bridgefour.kaladin.services.ClusterOverseer
+import com.chollinger.bridgefour.kaladin.services.IdMaker
+import com.chollinger.bridgefour.kaladin.services.JobSplitter
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
-import com.chollinger.bridgefour.shared.exceptions.Exceptions.{InvalidWorkerConfigException, OrphanTaskException}
+import com.chollinger.bridgefour.shared.exceptions.Exceptions.InvalidWorkerConfigException
+import com.chollinger.bridgefour.shared.exceptions.Exceptions.OrphanTaskException
 import com.chollinger.bridgefour.shared.extensions.StronglyConsistent
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
 import com.chollinger.bridgefour.shared.models.IDs._
 import com.chollinger.bridgefour.shared.models.Job.JobDetails
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import com.chollinger.bridgefour.shared.models.Task.{AssignedTaskConfig, AssignmentStatus}
+import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
+import com.chollinger.bridgefour.shared.models.Task.AssignmentStatus
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.Persistence
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError

@@ -3,7 +3,8 @@ package com.chollinger.bridgefour.shared.background
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 
-import cats.effect.{IO, Sync}
+import cats.effect.IO
+import cats.effect.Sync
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.FiberContainer
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
@@ -18,7 +19,7 @@ class BackgroundWorkerSuite extends CatsEffectSuite {
   private val stateF                                                  = InMemoryPersistence.makeF[IO, Long, FiberContainer[IO, Int, String]]()
 
   test("Background worker gets result of a task") {
-    def test(): IO[Int] = IO.println("Starting") >> IO.sleep(50 millisecond) >> IO.pure(1) <* IO.println("Done")
+    def test(): IO[Int] = IO.println("Starting") >> IO.sleep(50.millisecond) >> IO.pure(1) <* IO.println("Done")
     for {
       state <- stateF
       worker = BackgroundWorkerService.make[IO, Int, String](state)
@@ -34,7 +35,7 @@ class BackgroundWorkerSuite extends CatsEffectSuite {
   }
 
   test("BackgroundWorkerService.probeResult gets metadata, even if the task won't finish") {
-    def neverFinish(): IO[Int] = IO.println("Starting") >> IO.sleep(50 hour) >> IO.pure(1) <* IO.println("Done")
+    def neverFinish(): IO[Int] = IO.println("Starting") >> IO.sleep(50.hour) >> IO.pure(1) <* IO.println("Done")
 
     for {
       state <- stateF
@@ -42,7 +43,7 @@ class BackgroundWorkerSuite extends CatsEffectSuite {
       _     <- worker.start(0, neverFinish(), Some("metadata"))
       r     <- worker.get(0)
       _      = assertEquals(r.isDefined, true)
-      res   <- worker.probeResult(0, 1 millisecond)
+      res   <- worker.probeResult(0, 1.millisecond)
       // No result yet
       _ = assertEquals(res.res.left.toOption.get, ExecutionStatus.InProgress)
       _ = assertEquals(res.res.toOption.isDefined, false)
@@ -52,7 +53,7 @@ class BackgroundWorkerSuite extends CatsEffectSuite {
 
   test("Background worker takes multiple tasks") {
     def test(id: Int): IO[Int] =
-      IO.println(s"Starting $id") >> IO.sleep(50 millisecond) >> IO.pure(id) <* IO.println(s"Done $id")
+      IO.println(s"Starting $id") >> IO.sleep(50.millisecond) >> IO.pure(id) <* IO.println(s"Done $id")
 
     for {
       state <- stateF

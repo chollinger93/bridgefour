@@ -10,7 +10,8 @@ import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
 import com.chollinger.bridgefour.spren.programs.TaskExecutor
 import org.http4s._
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
-import org.http4s.circe.{accumulatingJsonOf, jsonEncoderOf}
+import org.http4s.circe.accumulatingJsonOf
+import org.http4s.circe.jsonEncoderOf
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 case class TaskRoutes[F[_]: Concurrent](cfg: SprenConfig, executor: TaskExecutor[F])

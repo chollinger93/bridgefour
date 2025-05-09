@@ -3,7 +3,8 @@ package com.chollinger.bridgefour.shared.models
 import com.chollinger.bridgefour.shared.models.Config.WorkerConfig
 import com.chollinger.bridgefour.shared.models.IDs.WorkerId
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
-import io.circe.{Decoder, Encoder}
+import io.circe.Decoder
+import io.circe.Encoder
 import org.latestbit.circe.adt.codec.JsonTaggedAdt
 
 enum ClusterStatus derives JsonTaggedAdt.Codec {

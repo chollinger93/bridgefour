@@ -1,23 +1,23 @@
 package com.chollinger.bridgefour.spren
 
+import java.util.concurrent.TimeUnit
+
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.duration.FiniteDuration
 import scala.language.postfixOps
-import cats.effect.IO
-import cats.effect.Sync
-import cats.effect.Temporal
+
 import cats.effect.kernel.Async
-import com.chollinger.bridgefour.shared.jobs.*
+import cats.effect.IO
+import cats.effect.Temporal
+import com.chollinger.bridgefour.shared.jobs._
 import com.chollinger.bridgefour.shared.models.Config.SprenConfig
-import com.chollinger.bridgefour.shared.models.IDs.*
+import com.chollinger.bridgefour.shared.models.IDs._
 import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.SelfAwareStructuredLogger
-
-import java.util.concurrent.TimeUnit
 object TestUtils {
 
   val sprenCfg: SprenConfig = SprenConfig(0, "http", "0.0.0.0", 5555, 2, 0.2.seconds)
@@ -81,7 +81,7 @@ case class DelayedBridgeFourJob(cfg: AssignedTaskConfig) extends BridgeFourJob[I
 
   def run(): IO[BackgroundTaskState] =
     for {
-      _        <- Logger[IO].info(s"Starting delayed job")
+      _        <- Logger[IO].info("Starting delayed job")
       waitTimeS = cfg.userSettings.getOrElse("timeout", "30").toInt
       _        <- Temporal[IO].sleep(FiniteDuration(waitTimeS, TimeUnit.SECONDS))
       _        <- Logger[IO].info(s"Done with job after $waitTimeS")

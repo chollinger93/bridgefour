@@ -1,11 +1,8 @@
 package com.chollinger.bridgefour.shared.jobs
 
-import cats.effect.Async
 import cats.effect.IO
 import cats.effect.Sync
 import com.chollinger.bridgefour.shared.TestJobs
-import com.chollinger.bridgefour.shared.models.IDs.SlotIdTuple
-import com.chollinger.bridgefour.shared.models.IDs.TaskIdTuple
 import com.chollinger.bridgefour.shared.models.Job
 import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus

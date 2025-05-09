@@ -2,9 +2,11 @@ package com.chollinger.bridgefour.spren.programs
 
 import scala.language.postfixOps
 
-import cats.effect.{IO, Sync}
+import cats.effect.IO
+import cats.effect.Sync
 import com.chollinger.bridgefour.shared.background.BackgroundWorker.FiberContainer
-import com.chollinger.bridgefour.shared.background.{BackgroundWorker, BackgroundWorkerService}
+import com.chollinger.bridgefour.shared.background.BackgroundWorker
+import com.chollinger.bridgefour.shared.background.BackgroundWorkerService
 import com.chollinger.bridgefour.shared.jobs.BridgeFourJobCreatorService
 import com.chollinger.bridgefour.shared.models.IDs._
 import com.chollinger.bridgefour.shared.models.Job.BackgroundTaskState

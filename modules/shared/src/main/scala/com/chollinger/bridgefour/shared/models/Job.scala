@@ -1,9 +1,13 @@
 package com.chollinger.bridgefour.shared.models
 
-import com.chollinger.bridgefour.shared.models.IDs.{JobId, TaskId}
+import com.chollinger.bridgefour.shared.models.IDs.JobId
+import com.chollinger.bridgefour.shared.models.IDs.TaskId
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import com.chollinger.bridgefour.shared.models.Task.{AssignedTaskConfig, AssignmentStatus, UnassignedTaskConfig}
-import io.circe.{Decoder, Encoder}
+import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
+import com.chollinger.bridgefour.shared.models.Task.AssignmentStatus
+import com.chollinger.bridgefour.shared.models.Task.UnassignedTaskConfig
+import io.circe.Decoder
+import io.circe.Encoder
 
 object Job {
 
