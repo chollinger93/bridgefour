@@ -8,20 +8,23 @@ import cats.effect.Resource
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
 import com.chollinger.bridgefour.kaladin.programs.ClusterControllerImpl
 import com.chollinger.bridgefour.kaladin.programs.JobControllerService
-import com.chollinger.bridgefour.kaladin.services._
+import com.chollinger.bridgefour.kaladin.services.*
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
 import com.chollinger.bridgefour.shared.jobs.LeaderCreatorService
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
+import com.chollinger.bridgefour.shared.models.Config.WorkerConfig
 import com.chollinger.bridgefour.shared.models.IDs.ClusterId
 import com.chollinger.bridgefour.shared.models.IDs.JobId
+import com.chollinger.bridgefour.shared.models.IDs.WorkerId
 import com.chollinger.bridgefour.shared.models.Job.JobDetails
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
-import com.comcast.ip4s._
+import com.chollinger.bridgefour.shared.persistence.Persistence
+import com.comcast.ip4s.*
 import fs2.io.net.Network
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.ember.server.EmberServerBuilder
-import org.http4s.implicits._
-import org.http4s.server.middleware.{Logger => Http4sLogger}
+import org.http4s.implicits.*
+import org.http4s.server.middleware.Logger as Http4sLogger
 import org.http4s.HttpApp
 import org.http4s.Request
 import org.http4s.Response
@@ -31,19 +34,22 @@ object Server {
 
   def run[F[_]: Async: Parallel: Network: Logger](cfg: ServiceConfig): F[Nothing] = {
     for {
-      client       <- EmberClientBuilder.default[F].build
-      ids           = NaiveUUIDMaker.make[F]()
-      cfgParser     = JobConfigParserService.make[F]()
-      splitter      = JobSplitterService.make()
-      stateMachine  = JobDetailsStateMachine.make(ids, cfgParser, splitter)
-      jState       <- Resource.make(InMemoryPersistence.makeF[F, JobId, JobDetails]())(_ => Async[F].unit)
-      cState       <- Resource.make(InMemoryPersistence.makeF[F, ClusterId, ClusterState]())(_ => Async[F].unit)
+      client      <- EmberClientBuilder.default[F].build
+      ids          = NaiveUUIDMaker.make[F]()
+      cfgParser    = JobConfigParserService.make[F]()
+      splitter     = JobSplitterService.make()
+      stateMachine = JobDetailsStateMachine.make(ids, cfgParser, splitter)
+      jState      <- Resource.make(InMemoryPersistence.makeF[F, JobId, JobDetails]())(_ => Async[F].unit)
+      cState      <- Resource.make(InMemoryPersistence.makeF[F, ClusterId, ClusterState]())(_ => Async[F].unit)
+      // TODO: ref
+      wState       <- Resource.make(InMemoryPersistence.makeF[F, WorkerId, WorkerConfig]())(_ => Async[F].unit)
+      wCache       <- Resource.make(WorkerCache.makeF[F](cfg, wState))(_ => Async[F].unit)
       leader        = LeaderCreatorService.make[F]()
       lock         <- Resource.make(Mutex[F])(_ => Async[F].unit)
-      healthMonitor = ClusterOverseer.make[F](cfg, client)
+      healthMonitor = ClusterOverseer.make[F](wCache, client)
       jobController = JobControllerService(client, jState, stateMachine, leader, cfg)
       clusterController =
-        ClusterControllerImpl(client, healthMonitor, splitter, jState, cState, ids, stateMachine, lock, cfg)
+        ClusterControllerImpl(client, healthMonitor, splitter, jState, cState, wCache, ids, stateMachine, lock, cfg)
       // Kaladin's main threads
       _ <- Resource.make(clusterController.startFibers())(_ => Async[F].unit).start
       // External interface

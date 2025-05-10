@@ -1,27 +1,27 @@
 package com.chollinger.bridgefour.kaladin.programs
 
 import scala.language.postfixOps
-
-import cats.effect._
+import cats.effect.*
 import cats.effect.std.Mutex
-import cats.implicits._
+import cats.implicits.*
 import com.chollinger.bridgefour.kaladin.Jobs
-import com.chollinger.bridgefour.kaladin.TestUtils.Http._
-import com.chollinger.bridgefour.kaladin.TestUtils._
+import com.chollinger.bridgefour.kaladin.TestUtils.Http.*
+import com.chollinger.bridgefour.kaladin.TestUtils.*
 import com.chollinger.bridgefour.kaladin.models.Config
-import com.chollinger.bridgefour.kaladin.services._
+import com.chollinger.bridgefour.kaladin.services.*
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
-import com.chollinger.bridgefour.shared.jobs._
+import com.chollinger.bridgefour.shared.jobs.*
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
-import com.chollinger.bridgefour.shared.models.IDs._
-import com.chollinger.bridgefour.shared.models.Job._
+import com.chollinger.bridgefour.shared.models.Config.WorkerConfig
+import com.chollinger.bridgefour.shared.models.IDs.*
+import com.chollinger.bridgefour.shared.models.Job.*
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import com.chollinger.bridgefour.shared.models.Task._
+import com.chollinger.bridgefour.shared.models.Task.*
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
-import io.circe.syntax._
+import io.circe.syntax.*
 import munit.CatsEffectSuite
-import org.http4s._
+import org.http4s.*
 import org.http4s.circe.accumulatingJsonOf
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -45,7 +45,9 @@ class JobControllerSuite extends CatsEffectSuite {
                name = "unit-test", jobClass = Jobs.sampleJobClass, input = dir.getAbsolutePath,
                output = outDir.getAbsolutePath, userSettings = Map()
              )
-      wrkSrv       = ClusterOverseer.make[IO](cfg, client)
+      wState      <- InMemoryPersistence.makeF[IO, WorkerId, WorkerConfig]()
+      wCache      <- WorkerCache.makeF[IO](cfg, wState)
+      wrkSrv       = ClusterOverseer.make[IO](wCache, client)
       jState      <- InMemoryPersistence.makeF[IO, JobId, JobDetails]()
       cState      <- InMemoryPersistence.makeF[IO, ClusterId, ClusterState]()
       splitter     = JobSplitterService.make[IO]()
@@ -54,7 +56,7 @@ class JobControllerSuite extends CatsEffectSuite {
       lock        <- Mutex[IO]
       // Program
       srv      = JobControllerService(client, jState, stateMachine, leader, cfg)
-      ctrl     = ClusterControllerImpl[IO](client, wrkSrv, splitter, jState, cState, ids, stateMachine, lock, cfg)
+      ctrl     = ClusterControllerImpl[IO](client, wrkSrv, splitter, jState, cState, wCache, ids, stateMachine, lock, cfg)
       initial <- srv.submitJob(jCfg)
       _        = assertEquals(initial.executionStatus, ExecutionStatus.NotStarted)
       _        = assertEquals(initial.assignmentStatus, AssignmentStatus.NotAssigned)
@@ -129,7 +131,9 @@ class JobControllerSuite extends CatsEffectSuite {
                name = "unit-test", jobClass = Jobs.sampleJobClass, input = dir.getAbsolutePath,
                output = outDir.getAbsolutePath, userSettings = Map()
              )
-      wrkSrv       = ClusterOverseer.make[IO](cfg, client)
+      wState      <- InMemoryPersistence.makeF[IO, WorkerId, WorkerConfig]()
+      wCache      <- WorkerCache.makeF[IO](cfg, wState)
+      wrkSrv       = ClusterOverseer.make[IO](wCache, client)
       jState      <- InMemoryPersistence.makeF[IO, JobId, JobDetails]()
       cState      <- InMemoryPersistence.makeF[IO, ClusterId, ClusterState]()
       splitter     = JobSplitterService.make[IO]()
@@ -138,7 +142,7 @@ class JobControllerSuite extends CatsEffectSuite {
       lock        <- Mutex[IO]
       // Program
       srv      = JobControllerService(client, jState, stateMachine, leader, cfg)
-      ctrl     = ClusterControllerImpl[IO](client, wrkSrv, splitter, jState, cState, ids, stateMachine, lock, cfg)
+      ctrl     = ClusterControllerImpl[IO](client, wrkSrv, splitter, jState, cState, wCache, ids, stateMachine, lock, cfg)
       initial <- srv.submitJob(jCfg)
       _        = assertEquals(initial.executionStatus, ExecutionStatus.NotStarted)
       _        = assertEquals(initial.assignmentStatus, AssignmentStatus.NotAssigned)
@@ -153,7 +157,7 @@ class JobControllerSuite extends CatsEffectSuite {
       srv = JobControllerService(
               mClient, jState, stateMachine, leader, cfg
             )
-      ctrl = ClusterControllerImpl[IO](mClient, wrkSrv, splitter, jState, cState, ids, stateMachine, lock, cfg)
+      ctrl = ClusterControllerImpl[IO](mClient, wrkSrv, splitter, jState, cState, wCache, ids, stateMachine, lock, cfg)
       // The job should now be done
       _ <- ctrl.rebalanceUnassignedTasks()
       _ <- ctrl.updateAllJobStates()
@@ -174,7 +178,9 @@ class JobControllerSuite extends CatsEffectSuite {
                name = "unit-test", jobClass = Jobs.sampleLeaderJobClass, input = dir.getAbsolutePath,
                output = outDir.getAbsolutePath, userSettings = Map()
              )
-      wrkSrv       = ClusterOverseer.make[IO](cfg, client)
+      wState      <- InMemoryPersistence.makeF[IO, WorkerId, WorkerConfig]()
+      wCache      <- WorkerCache.makeF[IO](cfg, wState)
+      wrkSrv       = ClusterOverseer.make[IO](wCache, client)
       jState      <- InMemoryPersistence.makeF[IO, JobId, JobDetails]()
       cState      <- InMemoryPersistence.makeF[IO, ClusterId, ClusterState]()
       splitter     = JobSplitterService.make[IO]()
@@ -183,7 +189,7 @@ class JobControllerSuite extends CatsEffectSuite {
       lock        <- Mutex[IO]
       // Program
       srv      = JobControllerService(client, jState, stateMachine, leader, cfg)
-      ctrl     = ClusterControllerImpl[IO](client, wrkSrv, splitter, jState, cState, ids, stateMachine, lock, cfg)
+      ctrl     = ClusterControllerImpl[IO](client, wrkSrv, splitter, jState, cState, wCache, ids, stateMachine, lock, cfg)
       initial <- srv.submitJob(jCfg)
       _        = assertEquals(initial.executionStatus, ExecutionStatus.NotStarted)
       _        = assertEquals(initial.assignmentStatus, AssignmentStatus.NotAssigned)

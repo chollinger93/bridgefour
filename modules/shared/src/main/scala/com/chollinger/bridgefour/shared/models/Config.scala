@@ -3,11 +3,12 @@ package com.chollinger.bridgefour.shared.models
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.duration.FiniteDuration
 import scala.language.postfixOps
-
 import com.chollinger.bridgefour.shared.models.IDs.WorkerId
+import io.circe.Decoder
+import io.circe.Encoder
 import org.http4s.Uri
-import pureconfig._
-import pureconfig.generic.derivation.default._
+import pureconfig.*
+import pureconfig.generic.derivation.default.*
 
 object Config {
 
@@ -35,7 +36,7 @@ object Config {
       schema: String,
       host: String,
       port: Int = 5554
-  ) extends HostnameConfig derives ConfigReader
+  ) extends HostnameConfig derives ConfigReader, Encoder.AsObject, Decoder
 
   case class SprenConfig(
       id: WorkerId,
