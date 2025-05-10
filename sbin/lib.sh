@@ -1,7 +1,32 @@
 #!/bin/bash
 
-set -eou pipefail
+set -eo pipefail
 trap cleanUp INT
+
+JOB_CLASS="com.chollinger.bridgefour.jobs.example.DelayedWordCountBridgeFourJob"
+sleep=10
+LEADER_PORT=6550
+WORKER1_PORT=6551
+WORKER2_PORT=6552
+
+function uploadJar() {
+  if [ ! -z "$JAR_PATH" ]; then
+    echo "Jar path already set to $JAR_PATH"
+  else
+    read -p "Enter jar path: " JAR_PATH
+  fi
+  if [ ! -f "$JAR_PATH" ]; then
+    echo "File does not exist."
+    exit 1
+  fi
+  jar=$(tar -tf "$JAR_PATH" | grep "$JOB_CLASS")
+  if [ -z "$jar" ]; then
+    echo "Jar does not contain $JOB_CLASS"
+    exit 1
+  fi
+  mkdir -p /tmp/jars
+  cp "${JAR_PATH}" /tmp/jars/
+}
 
 function createData() {
   rm -rf /tmp/data/in
@@ -15,9 +40,12 @@ function createData() {
   split -l 16500 /tmp/war_and_peace.txt /tmp/data/in/war_and_peace.txt.
 }
 
-function startCluster(){
-  sbt docker:publishLocal
-  docker-compose up -d
+function startCluster() {
+  if [ -n "$BUILD" ]; then
+    echo "Building docker images"
+    sbt docker:publishLocal
+  fi
+  docker compose up -d
   echo "Sleeping for 10 seconds to let the cluster start"
   sleep 10
 }
@@ -25,32 +53,23 @@ function startCluster(){
 function startJob() {
   start=$(curl -sS --location "http://localhost:$LEADER_PORT/start" \
     --header 'Content-Type: application/json' \
-    --data '{
-                        "name": "Example job",
-                        "jobClass": {
-                            "type": "DelayedWordCountJob"
-                        },
-                        "input": "/tmp/in",
-                        "output": "/tmp/out",
-                        "userSettings": {"timeout": "2"}
-                    }')
+    --data "{
+          \"name\": \"Example job\",
+          \"jobClass\": \"$JOB_CLASS\",
+          \"input\": \"/data/in\",
+          \"output\": \"/data/out\",
+          \"userSettings\": {\"timeout\": \"2\"}
+      }")
   JOB_ID=$(echo "$start" | jq '.jobId')
   echo "${start}"
 }
 
 function cleanUp() {
   echo "Cleaning up"
-  docker-compose down
+  docker compose down
 }
 
 function printWorkerState() {
   local port=$1
   echo $(curl -Ss --location "http://localhost:$port/worker/state")
 }
-
-
-
-sleep=10
-LEADER_PORT=6550
-WORKER1_PORT=6551
-WORKER2_PORT=6552

@@ -6,7 +6,7 @@ The name is inspired by Brandon Sanderson's "The Stormlight Archive".
 
 It is explained in detail on my [blog](https://chollinger.com/blog/2023/06/building-a-functional-effectful-distributed-system-from-scratch-to-avoid-leetcode-part-1/), where I'm building out this system as a learning exercise instead of "grinding Leetcode".
 
-This is a work in progress, missing key features. It is, however, surprisingly [resilient](#Chaos Monkey). 
+This is a work in progress, missing key features. It is, however, surprisingly [resilient](#Chaos Monkey).
 
 ## Architecture
 
@@ -34,10 +34,10 @@ General purpose diagram for "starting a job":
 
 1. `POST` to `/start` to submit a job
 2. Leader accepts or rejects the job, adds it to the cache
-3. If a free slot on the cluster is available, it will assign the job; if the cluster capacity is < the required processing capacity for the job, it will do so piecemeal 
-4. The user can `GET` `/status/$jobId` or `GET` `/data/$jobId`, which will either return an `ExecutionStatus` or the result of the job 
+3. If a free slot on the cluster is available, it will assign the job; if the cluster capacity is < the required processing capacity for the job, it will do so piecemeal
+4. The user can `GET` `/status/$jobId` or `GET` `/data/$jobId`, which will either return an `ExecutionStatus` or the result of the job
 
-The user facing interface therefore is *eventually consistent*. 
+The user facing interface therefore is *eventually consistent*.
 
 ### Comparing it to `WordCount`
 
@@ -51,7 +51,7 @@ It reads *pre-split* files (assume e.g. a `Spark` output with properly sized fil
 
 That, of course, is not realistic - outside of **embarrassingly parallel problems**, most systems would run into amassive bottleneck at the leader's end. [1]
 
-However, consider a more computationally intense problem, such as [distributed.net](https://en.wikipedia.org/wiki/Distributed.net?useskin=vector) - brute forcing ciphers. 
+However, consider a more computationally intense problem, such as [distributed.net](https://en.wikipedia.org/wiki/Distributed.net?useskin=vector) - brute forcing ciphers.
 With minimal adjustments - namely, a mechanism for a worker to report definitive success, which would cause the leader to ignore other worker's output - our system here could feasibly model this, assuming we can pre-generate a set of *seed files*:
 
 For a naive brute force, task *A* tries all combinations starting with the letter "a", task `B` tries all starting with "b" and so on - the input file can be a single letter in a`txt` file. "Naive" is definitely the word of the hourhere.
@@ -64,7 +64,6 @@ Lastly, please check the last section for a retrofit of Partitioning into Bridge
 
 - **Partitioning**: File assignment is greedy and not optimal
 - **Worker Stages**: Jobs start and complete, the leader only checks their state, not intermediate *stages* (i.e., we can't build a shuffle stage like `Map/Reduce` right now)
-- A sane **job interface** and a way to provide jars - the `BridgeFourJob` trait + an `ADT` is pretty dumb and nothing  but a  stop gap. See the article for details
 - **Global leader locks**: The `BackgroundWorker` is concurrency-safe, but you can start two jobs that work on the same data, causing races - the leader job controller uses a simple `Mutex[F]` to compensate
 - **Atomic** operations / 2 Phase Commits
 - **Consensus**: Leader is a Single Point of Failure
@@ -86,13 +85,22 @@ And run `sbin/wordcount_docker.sh` to run a sample job.
 
 In separate terminals (or computers, provided you have an `NFS` share mounted - see above), run:
 
-```bash 
-BRIDGEFOUR_PORT=5553 WORKER_ID=0 sbt worker/run 
-BRIDGEFOUR_PORT=5554 WORKER_ID=1 sbt worker/run 
-WORKER1_PORT=5554 WORKER2_PORT=5553 sbt leader/run 
+```bash
+BRIDGEFOUR_PORT=5553 WORKER_ID=0 sbt worker/run
+BRIDGEFOUR_PORT=5554 WORKER_ID=1 sbt worker/run
+WORKER1_PORT=5554 WORKER2_PORT=5553 sbt leader/run
 ```
 
 ## Sample Jobs
+
+You'll need a job. I suggest using [wordcount](https://github.com/chollinger93/bridgefour-example-jobs).
+
+```bash
+git clone https://github.com/chollinger93/bridgefour-example-jobs.git
+cd bridgefour-example-jobs
+sbt assembly
+export JAR_PATH=`pwd`/target/scala-3.6.4/wordcount-assembly-0.1.0-SNAPSHOT.jar
+```
 
 ### Happy Path
 
@@ -103,7 +111,7 @@ WORKER1_PORT=5554 WORKER2_PORT=5553 sbt leader/run
 3. Print the output
 
 Sample output:
-```bash 
+```bash
 # ...
 {"id":1,"slots":[{"id":{"id":0,"workerId":1},"available":true,"status":{"type":"Done"},"taskId":{"id":1200393588,"jobId":-1368283400}},{"id":{"id":1,"workerId":1},"available":true,"status":{"type":"Done"},"taskId":{"id":1049728891,"jobId":-1368283400}}],"allSlots":[0,1],"availableSlots":[0,1],"runningTasks":[]}
 Sleeping for 10 seconds

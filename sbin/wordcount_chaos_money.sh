@@ -1,9 +1,9 @@
 #!/bin/bash
 
-set -eou pipefail
+set -eo pipefail
 trap cleanUp INT
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 source "${DIR}/lib.sh"
 
 function killOnPort() {
@@ -29,6 +29,8 @@ function killIf() {
   fi
 }
 
+# Read Jar to JAR_PATH, move to tmp
+uploadJar
 # Create data
 createData
 # Start one leader, 2 worker
@@ -37,7 +39,6 @@ startCluster
 # Start a job
 startJob
 echo "Started job $JOB_ID"
-
 
 # Observe status on the leader
 while true; do

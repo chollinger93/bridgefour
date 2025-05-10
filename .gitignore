@@ -35,3 +35,4 @@ classes/
 .vscode
 pg2600.txt
 tmp*
+*.semanticdb
