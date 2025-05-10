@@ -1,30 +1,34 @@
 package com.chollinger.bridgefour.kaladin.http
 
 import cats.effect.Concurrent
-import cats.syntax.all._
+import cats.syntax.all.*
 import com.chollinger.bridgefour.kaladin.programs.JobController
 import com.chollinger.bridgefour.kaladin.services.ClusterOverseer
 import com.chollinger.bridgefour.shared.http.Route
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
+import com.chollinger.bridgefour.shared.models.Config.WorkerConfig
 import com.chollinger.bridgefour.shared.models.IDs.WorkerId
 import com.chollinger.bridgefour.shared.models.Job.JobDetails
 import com.chollinger.bridgefour.shared.models.Job.UserJobConfig
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Job
+import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.models.WorkerStatus
 import io.circe.Json
 import io.circe.disjunctionCodecs.encodeEither
-import org.http4s._
+import org.http4s.*
 import org.http4s.circe.accumulatingJsonOf
 import org.http4s.circe.jsonEncoderOf
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
-case class LeaderRoutes[F[_]: Concurrent](controller: JobController[F], healthMonitor: ClusterOverseer[F])
+case class LeaderRoutes[F[_]: Concurrent](controller: JobController[F], clusterOverseer: ClusterOverseer[F])
     extends Http4sDsl[F]
     with Route[F] {
 
-  protected val prefixPath: String                            = "/"
-  given EntityDecoder[F, UserJobConfig]                       = accumulatingJsonOf[F, UserJobConfig]
+  protected val prefixPath: String      = "/"
+  given EntityDecoder[F, UserJobConfig] = accumulatingJsonOf[F, UserJobConfig]
+  given EntityDecoder[F, WorkerConfig]  = accumulatingJsonOf[F, WorkerConfig]
+
   given EntityEncoder[F, JobDetails]                          = jsonEncoderOf[F, JobDetails]
   given EntityEncoder[F, List[JobDetails]]                    = jsonEncoderOf[F, List[JobDetails]]
   given EntityEncoder[F, ExecutionStatus]                     = jsonEncoderOf[F, ExecutionStatus]
@@ -32,6 +36,7 @@ case class LeaderRoutes[F[_]: Concurrent](controller: JobController[F], healthMo
   given EntityEncoder[F, Map[WorkerId, WorkerStatus]]         = jsonEncoderOf[F, Map[WorkerId, WorkerStatus]]
   given EntityEncoder[F, Either[ExecutionStatus, JobDetails]] = jsonEncoderOf[F, Either[ExecutionStatus, JobDetails]]
   given EntityEncoder[F, ClusterState]                        = jsonEncoderOf[F, ClusterState]
+  given EntityEncoder[F, WorkerState]                         = jsonEncoderOf[F, WorkerState]
 
   protected def httpRoutes(): HttpRoutes[F] = {
     HttpRoutes.of[F] {
@@ -55,7 +60,13 @@ case class LeaderRoutes[F[_]: Concurrent](controller: JobController[F], healthMo
           }
       // Health
       // TODO: from cache
-      case GET -> Root / "cluster" => Ok(healthMonitor.getClusterState())
+      case GET -> Root / "cluster" => Ok(clusterOverseer.getClusterState())
+      // Cluster admin
+      case req @ POST -> Root / "cluster" / "addWorker" =>
+        Ok(for {
+          workerCfg <- req.as[WorkerConfig]
+          res       <- clusterOverseer.addWorker(workerCfg)
+        } yield res)
     }
   }
 

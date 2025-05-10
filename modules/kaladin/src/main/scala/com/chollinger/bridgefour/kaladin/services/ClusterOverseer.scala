@@ -4,14 +4,18 @@ import cats.Parallel
 import cats.effect.kernel.Async
 import cats.effect.Concurrent
 import cats.effect.Sync
-import cats.implicits._
+import cats.implicits.*
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
 import com.chollinger.bridgefour.shared.exceptions.Exceptions.MisconfiguredClusterException
+import com.chollinger.bridgefour.shared.extensions.EventuallyConsistent
 import com.chollinger.bridgefour.shared.extensions.StronglyConsistent
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
 import com.chollinger.bridgefour.shared.models.Config.WorkerConfig
-import com.chollinger.bridgefour.shared.models.Worker._
+import com.chollinger.bridgefour.shared.models.IDs.WorkerId
+import com.chollinger.bridgefour.shared.models.Worker.*
+import com.chollinger.bridgefour.shared.persistence.Persistence
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
+import io.circe.Json
 import org.http4s.EntityDecoder
 import org.http4s.circe.accumulatingJsonOf
 import org.http4s.client.Client
@@ -26,12 +30,15 @@ sealed trait ClusterOverseer[F[_]] {
   @StronglyConsistent
   def getClusterState(): F[ClusterState]
 
+  @EventuallyConsistent
+  def addWorker(workerCfg: WorkerConfig): F[WorkerState]
+
 }
 
 object ClusterOverseer {
 
   def make[F[_]: Async: Parallel: Concurrent: ThrowableMonadError: Logger](
-      cfg: ServiceConfig,
+      workers: WorkerCache[F],
       client: Client[F]
   ): ClusterOverseer[F] =
     new ClusterOverseer[F] {
@@ -81,14 +88,26 @@ object ClusterOverseer {
 
       override def getClusterState(): F[ClusterState] =
         for {
-          _ <- Logger[F].debug(s"Configured workers: ${cfg.workers}")
-          state <- cfg.workers
+          workerMap <- workers.list()
+          workers    = workerMap.values.toList
+          _         <- Logger[F].debug(s"Configured workers: $workers")
+          state <- workers
                      .parTraverse(c => checkWorkerState(c))
           _      <- Logger[F].debug(s"Worker responses: $state")
-          cluster = ClusterState(cfg.workers, state)
+          cluster = ClusterState(workers, state)
           _      <- Logger[F].debug(s"Cluster: $cluster")
         } yield cluster
 
+      override def addWorker(workerCfg: WorkerConfig): F[WorkerState] = {
+        for {
+          _ <- Logger[F].info(s"Trying to add new worker: $workerCfg")
+          // Doubles as validation
+          // TODO: find free ID
+          s <- checkWorkerState(workerCfg)
+          _ <- Logger[F].debug(s"New worker response: $s")
+          _ <- workers.add(workerCfg)
+        } yield s
+      }
     }
 
 }

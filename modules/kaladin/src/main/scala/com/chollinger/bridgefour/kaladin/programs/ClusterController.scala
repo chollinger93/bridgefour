@@ -2,24 +2,25 @@ package com.chollinger.bridgefour.kaladin.programs
 
 import scala.concurrent.duration.DurationDouble
 import scala.language.postfixOps
-
-import cats._
-import cats.effect.implicits._
+import cats.*
+import cats.effect.implicits.*
 import cats.effect.std.Mutex
 import cats.effect.Async
 import cats.effect.Concurrent
 import cats.effect.Sync
-import cats.implicits._
+import cats.implicits.*
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
 import com.chollinger.bridgefour.kaladin.services.ClusterOverseer
 import com.chollinger.bridgefour.kaladin.services.IdMaker
 import com.chollinger.bridgefour.kaladin.services.JobSplitter
+import com.chollinger.bridgefour.kaladin.services.WorkerCache
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
 import com.chollinger.bridgefour.shared.exceptions.Exceptions.InvalidWorkerConfigException
 import com.chollinger.bridgefour.shared.exceptions.Exceptions.OrphanTaskException
 import com.chollinger.bridgefour.shared.extensions.StronglyConsistent
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
-import com.chollinger.bridgefour.shared.models.IDs._
+import com.chollinger.bridgefour.shared.models.Config.WorkerConfig
+import com.chollinger.bridgefour.shared.models.IDs.*
 import com.chollinger.bridgefour.shared.models.Job.JobDetails
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
@@ -27,11 +28,13 @@ import com.chollinger.bridgefour.shared.models.Task.AssignmentStatus
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.Persistence
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
-import org.http4s._
+import org.http4s.*
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.circe.accumulatingJsonOf
 import org.http4s.client.Client
 import org.typelevel.log4cats.Logger
+
+import scala.collection.immutable
 
 sealed trait ClusterController[F[_]] {
 
@@ -54,6 +57,7 @@ case class ClusterControllerImpl[F[_]: ThrowableMonadError: Concurrent: Async: L
     splitter: JobSplitter[F],
     jobState: Persistence[F, JobId, JobDetails],
     clusterState: Persistence[F, ClusterId, ClusterState],
+    workers: WorkerCache[F],
     ids: IdMaker[F, Int],
     stateMachine: JobDetailsStateMachine[F],
     lck: Mutex[F],
@@ -83,21 +87,21 @@ case class ClusterControllerImpl[F[_]: ThrowableMonadError: Concurrent: Async: L
   private def startTasksOnWorkers(
       tasks: Map[WorkerId, List[AssignedTaskConfig]]
   ): F[Map[TaskId, ExecutionStatus]] = {
-    val reqs = tasks.map { case (wId, tasks) =>
-      val wCfg = cfg.workers.find(_.id == wId)
-      if (wCfg.isEmpty) err.raiseError(InvalidWorkerConfigException(s"Invalid worker config for id $wId"))
-      // TODO: unsafeFromString
-      (
-        wId,
-        Request[F](method = Method.POST, uri = Uri.unsafeFromString(s"${wCfg.get.uri()}/task/start")).withEntity(tasks)
-      )
-    }
-    reqs.map { case (wId, r) =>
-      err
-        .handleErrorWith(client.expect[Map[TaskId, ExecutionStatus]](r))(e =>
-          Logger[F].error(e)(s"Starting task on worker $wId failed") >>
-            sF.blocking(tasks(wId).map(t => (t.taskId.id, ExecutionStatus.Error)).toMap)
-        )
+    tasks.map { case (wId, tasks) =>
+      for {
+        cfg <- workers.get(wId)
+        wCfg <- cfg match {
+                  case Some(c) => sF.blocking(c)
+                  case _       => err.raiseError(InvalidWorkerConfigException(s"Invalid worker config for id $wId"))
+                }
+        req = Request[F](method = Method.POST, uri = Uri.unsafeFromString(s"${wCfg.uri()}/task/start"))
+                .withEntity(tasks)
+        r <- err
+               .handleErrorWith(client.expect[Map[TaskId, ExecutionStatus]](req))(e =>
+                 Logger[F].error(e)(s"Starting task on worker $wId failed") >>
+                   sF.blocking(tasks.map(t => (t.taskId.id, ExecutionStatus.Error)).toMap)
+               )
+      } yield r
     }.toList.sequence.map(_.foldLeft(Map[TaskId, ExecutionStatus]()) { case (m1, m2) => m1 ++ m2 })
   }
 
@@ -137,17 +141,21 @@ case class ClusterControllerImpl[F[_]: ThrowableMonadError: Concurrent: Async: L
   // Status
   // ############################
   private def getTaskStatus(tc: AssignedTaskConfig): F[(TaskId, ExecutionStatus)] = {
-    val wId  = tc.slotId.workerId
-    val wCfg = cfg.workers.find(_.id == wId)
-    if (wCfg.isEmpty) err.raiseError(InvalidWorkerConfigException(s"Invalid worker config for id $wId"))
-    val r =
-      Request[F](method = Method.GET, uri = Uri.unsafeFromString(s"${wCfg.get.uri()}/task/status/${tc.slotId.id}"))
-    err
-      .handleErrorWith(client.expect[ExecutionStatus](r))(e =>
-        Logger[F].error(e)(s"Getting task status for task ${tc.taskId} on worker $wId failed") >>
-          sF.blocking(ExecutionStatus.Error)
-      )
-      .map(s => (tc.taskId.id, s))
+    val wId = tc.slotId.workerId
+    for {
+      cfg <- workers.get(wId)
+      wCfg <- cfg match {
+                case Some(c) => sF.blocking(c)
+                case _       => err.raiseError(InvalidWorkerConfigException(s"Invalid worker config for id $wId"))
+              }
+      r = Request[F](method = Method.GET, uri = Uri.unsafeFromString(s"${wCfg.uri()}/task/status/${tc.slotId.id}"))
+      s <- err
+             .handleErrorWith(client.expect[ExecutionStatus](r))(e =>
+               Logger[F].error(e)(s"Getting task status for task ${tc.taskId} on worker $wId failed") >>
+                 sF.blocking(ExecutionStatus.Error)
+             )
+             .map(s => (tc.taskId.id, s))
+    } yield s
   }
 
   // Maps submitted execution status from the worker API back to its AssignedTaskConfig

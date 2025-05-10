@@ -46,7 +46,7 @@ lazy val shared = (project in file("modules/shared")).settings(
 lazy val leader = (project in file("modules/kaladin"))
   .settings(
     commonSettings ++ dockerSettings,
-    name := "kaladin"
+    name := "kaladin",
   )
   .dependsOn(shared)
   .enablePlugins(JavaAppPackaging, DockerPlugin)

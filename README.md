@@ -71,6 +71,7 @@ Lastly, please check the last section for a retrofit of Partitioning into Bridge
 - **Consensus**: Leader is a Single Point of Failure
 - I've been very heavy handed with `Sync[F].blocking`, which often isn't the correct effect
 - **File System Abstraction**: This assumes a UNIX-like + something like NFS to be available, which isn't ideal and has it's own locking problems
+- **Worker discovery**: Currently, those are hard-coded in the config
 
 ## Run application
 
