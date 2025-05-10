@@ -4,7 +4,9 @@ Bridge Four is a simple, functional, effectful, single-leader, multi worker, dis
 
 The name is inspired by Brandon Sanderson's "The Stormlight Archive".
 
-It is explained in detail on my [blog](https://chollinger.com/blog/2023/06/building-a-functional-effectful-distributed-system-from-scratch-to-avoid-leetcode-part-1/), where I'm building out this system as a learning exercise instead of "grinding Leetcode".
+It is explained in detail on my [blog](https://chollinger.com/blog/2023/06/building-a-functional-effectful-distributed-system-from-scratch-to-avoid-leetcode-part-1/), where I'm building out this system as a learning exercise instead of "grinding Leetcode":
+- [Part 1](https://chollinger.com/blog/2023/06/building-a-functional-effectful-distributed-system-from-scratch-in-scala-3-just-to-avoid-leetcode-part-1/): Intro
+- [Part 2](https://chollinger.com/blog/2024/02/improving-my-distributed-system-with-scala-3-consistency-guarantees-background-tasks-part-2/): Improvements
 
 This is a work in progress, missing key features. It is, however, surprisingly [resilient](#Chaos Monkey).
 
