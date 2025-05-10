@@ -4,8 +4,9 @@ services:
     ports:
       - "6550:6550"
     volumes:
-      - "/tmp/in:/tmp/in"
-      - "/tmp/out:/tmp/out"
+      - "/tmp/data/in:/data/in"
+      - "/tmp/data/out:/data/out"
+      - "/tmp/jars:/jars"
     environment:
       BRIDGEFOUR_HOST: 0.0.0.0
       BRIDGEFOUR_PORT: 6550
@@ -21,8 +22,9 @@ services:
     ports:
       - "6551:6551"
     volumes:
-      - "/tmp/in:/tmp/in"
-      - "/tmp/out:/tmp/out"
+      - "/tmp/data/in:/data/in"
+      - "/tmp/data/out:/data/out"
+      - "/tmp/jars:/jars"
     environment:
       WORKER_ID: 0
       BRIDGEFOUR_HOST: 0.0.0.0
@@ -39,8 +41,9 @@ services:
     ports:
       - "6552:6552"
     volumes:
-      - "/tmp/in:/tmp/in"
-      - "/tmp/out:/tmp/out"
+      - "/tmp/data/in:/data/in"
+      - "/tmp/data/out:/data/out"
+      - "/tmp/jars:/jars"
     environment:
       WORKER_ID: 1
       BRIDGEFOUR_HOST: 0.0.0.0
