@@ -101,11 +101,11 @@ object ClusterOverseer {
       override def addWorker(workerCfg: WorkerConfig): F[WorkerState] = {
         for {
           _ <- Logger[F].info(s"Trying to add new worker: $workerCfg")
+          _ <- workers.add(workerCfg)
           // Doubles as validation
           // TODO: find free ID
           s <- checkWorkerState(workerCfg)
           _ <- Logger[F].debug(s"New worker response: $s")
-          _ <- workers.add(workerCfg)
         } yield s
       }
     }

@@ -9,6 +9,7 @@ import com.chollinger.bridgefour.shared.exceptions.Exceptions.MisconfiguredClust
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
 import com.chollinger.bridgefour.shared.models.Cluster.SlotCountOverview
 import com.chollinger.bridgefour.shared.models.ClusterStatus
+import com.chollinger.bridgefour.shared.models.WorkerStatus
 import com.chollinger.bridgefour.shared.models.Config.WorkerConfig
 import com.chollinger.bridgefour.shared.models.IDs.WorkerId
 import com.chollinger.bridgefour.shared.models.States.SlotState
@@ -102,6 +103,62 @@ class ClusterOverseerSuite extends CatsEffectSuite {
       wCache <- WorkerCache.makeF[IO](cfg, wState)
       srv     = ClusterOverseer.make[IO](wCache, mockClient(halfUsedWorkerState))
       _      <- assertIO(srv.getWorkerState(cfg.workers.head), halfUsedWorkerState)
+    } yield ()
+  }
+
+  test("WorkerOverseerService.addWorker adds valid workers") {
+    val client = mockClient()
+    for {
+      cfg    <- Config.load[IO]()
+      wState <- InMemoryPersistence.makeF[IO, WorkerId, WorkerConfig]()
+      wCache <- WorkerCache.makeF[IO](cfg, wState)
+      srv     = ClusterOverseer.make[IO](wCache, client)
+      state <- srv.addWorker(
+                 WorkerConfig(
+                   id = 0,
+                   schema = "http",
+                   host = "horst",
+                   port = 1111
+                 )
+               )
+      // This depends on the mock client
+      _ = assertEquals(
+            state,
+            WorkerState(
+              id = 0,
+              slots = List(
+                SlotState(
+                  id = 0,
+                  status = ExecutionStatus.NotStarted
+                ),
+                SlotState(
+                  id = 1,
+                  status = ExecutionStatus.Missing
+                )
+              )
+            )
+          )
+    } yield ()
+  }
+
+  test("WorkerOverseerService.addWorker doesn't add invalid workers") {
+    val client = mockClient()
+    for {
+      cfg    <- Config.load[IO]()
+      wState <- InMemoryPersistence.makeF[IO, WorkerId, WorkerConfig]()
+      wCache <- WorkerCache.makeF[IO](cfg, wState)
+      srv     = ClusterOverseer.make[IO](wCache, client)
+      // Expected ID 10 from http://horst:7777 but got 0
+      _ <- interceptIO[MisconfiguredClusterException](
+             srv.addWorker(
+               WorkerConfig(
+                 id = 10,
+                 schema = "http",
+                 host = "horst",
+                 port = 7777
+               )
+             )
+           )
     } yield ()
   }
 
