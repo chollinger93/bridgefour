@@ -16,6 +16,10 @@ services:
       WORKER2_PORT: 6552
     networks:
       - bridgefour
+    depends_on:
+      - spren-01
+      - spren-02
+      - spren-03
 
   spren-01:
     image: spren:latest
@@ -26,15 +30,13 @@ services:
       - "/tmp/data/out:/data/out"
       - "/tmp/jars:/jars"
     environment:
-      WORKER_ID: 0
+      WORKER_ID: 1
       BRIDGEFOUR_HOST: 0.0.0.0
       BRIDGEFOUR_PORT: 6551
       LEADER_HOST: kaladin
       LEADER_PORT: 6550
     networks:
       - bridgefour
-    depends_on:
-      - kaladin
 
   spren-02:
     image: spren:latest
@@ -45,15 +47,30 @@ services:
       - "/tmp/data/out:/data/out"
       - "/tmp/jars:/jars"
     environment:
-      WORKER_ID: 1
+      WORKER_ID: 2
       BRIDGEFOUR_HOST: 0.0.0.0
       BRIDGEFOUR_PORT: 6552
       LEADER_HOST: kaladin
       LEADER_PORT: 6550
     networks:
       - bridgefour
-    depends_on:
-      - kaladin
+  # Unused until addWorker is called
+  spren-03:
+    image: spren:latest
+    ports:
+      - "6553:6553"
+    volumes:
+      - "/tmp/data/in:/data/in"
+      - "/tmp/data/out:/data/out"
+      - "/tmp/jars:/jars"
+    environment:
+      WORKER_ID: 3
+      BRIDGEFOUR_HOST: 0.0.0.0
+      BRIDGEFOUR_PORT: 6553
+      LEADER_HOST: kaladin
+      LEADER_PORT: 6550
+    networks:
+      - bridgefour
 
 networks:
   bridgefour:

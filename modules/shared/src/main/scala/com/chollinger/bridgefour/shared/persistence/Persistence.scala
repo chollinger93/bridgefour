@@ -19,6 +19,8 @@ sealed trait ReadOnlyPersistence[F[_], K, V] {
 
   def list(): F[Map[K, V]]
 
+  def size: F[Int]
+
 }
 sealed trait Persistence[F[_], K, V] extends ReadOnlyPersistence[F, K, V] {
 
@@ -57,6 +59,8 @@ object InMemoryPersistence {
         def values(): F[List[V]] = storage.get.map(_.values.toList)
 
         def list(): F[Map[K, V]] = storage.get
+
+        def size: F[Int] = storage.get.map(_.size)
       }
     }
   }
