@@ -17,6 +17,8 @@ sealed trait WorkerCache[F[_]] {
 
   def add(cfg: WorkerConfig): F[Unit]
 
+  def remove(id: WorkerId): F[Boolean]
+
   def list(): F[Map[WorkerId, WorkerConfig]]
 
 }
@@ -42,6 +44,15 @@ object WorkerCache {
         override def add(cfg: WorkerConfig): F[Unit] = workers.put(cfg.id, cfg)
 
         override def list(): F[Map[WorkerId, WorkerConfig]] = workers.list()
+
+        override def remove(id: WorkerId): F[Boolean] = workers
+          .del(id)
+          .map(v =>
+            v match {
+              case Some(_) => true
+              case _       => false
+            }
+          )
       }
     )
   }
