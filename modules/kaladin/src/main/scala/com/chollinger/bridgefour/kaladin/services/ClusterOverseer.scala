@@ -33,6 +33,9 @@ sealed trait ClusterOverseer[F[_]] {
   @EventuallyConsistent
   def addWorker(workerCfg: WorkerConfig): F[WorkerState]
 
+  @EventuallyConsistent
+  def removeWorker(workerId: WorkerId): F[Boolean]
+
 }
 
 object ClusterOverseer {
@@ -107,6 +110,13 @@ object ClusterOverseer {
           s <- checkWorkerState(workerCfg)
           _ <- Logger[F].debug(s"New worker response: $s")
         } yield s
+      }
+
+      override def removeWorker(workerId: WorkerId): F[Boolean] = {
+        for {
+          _ <- Logger[F].info(s"Trying to remove worker: $workerId")
+          w <- workers.remove(workerId)
+        } yield w
       }
     }
 

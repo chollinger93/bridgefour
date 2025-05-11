@@ -162,4 +162,20 @@ class ClusterOverseerSuite extends CatsEffectSuite {
     } yield ()
   }
 
+  test("WorkerOverseerService.removeWorker removes valid workers") {
+    val client = mockClient()
+    for {
+      cfg    <- Config.load[IO]()
+      wState <- InMemoryPersistence.makeF[IO, WorkerId, WorkerConfig]()
+      wCache <- WorkerCache.makeF[IO](cfg, wState)
+      srv     = ClusterOverseer.make[IO](wCache, client)
+      ok     <- srv.removeWorker(0)
+      _       = assertEquals(ok, true)
+      ok     <- srv.removeWorker(0)
+      _       = assertEquals(ok, false)
+      ok     <- srv.removeWorker(1000)
+      _       = assertEquals(ok, false)
+    } yield ()
+  }
+
 }

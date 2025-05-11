@@ -71,7 +71,6 @@ Lastly, please check the last section for a retrofit of Partitioning into Bridge
 - **Consensus**: Leader is a Single Point of Failure
 - I've been very heavy handed with `Sync[F].blocking`, which often isn't the correct effect
 - **File System Abstraction**: This assumes a UNIX-like + something like NFS to be available, which isn't ideal and has it's own locking problems
-- **Worker discovery**: Currently, those are hard-coded in the config
 
 ## Run application
 
@@ -133,3 +132,20 @@ Checking results
 `sbin/wordcount_chaos_monkey.sh` will gradually murder your cluster and then recover by restarting a single worker, finishing the job in a degraded cluster state.
 
 Run `curl --location 'http://localhost:6550/cluster'` to see the cluster state.
+
+### Scaling
+
+The `docker-compose` file starts with 3 workers (spren), but only 2 are active. This is to demonstrate dynamic scaling.
+
+You can scale this up and down by starting more Docker pods (or bare metal instances) and call
+
+```bash
+curl --location 'http://localhost:6550/cluster/addWorker' \
+--header 'Content-Type: application/json' \
+--data '{
+    "id": 3,
+    "schema": "http",
+    "host": "spren-03",
+    "port": 6553
+}'
+```

@@ -37,6 +37,7 @@ case class LeaderRoutes[F[_]: Concurrent](controller: JobController[F], clusterO
   given EntityEncoder[F, Either[ExecutionStatus, JobDetails]] = jsonEncoderOf[F, Either[ExecutionStatus, JobDetails]]
   given EntityEncoder[F, ClusterState]                        = jsonEncoderOf[F, ClusterState]
   given EntityEncoder[F, WorkerState]                         = jsonEncoderOf[F, WorkerState]
+  given EntityEncoder[F, Boolean]                             = jsonEncoderOf[F, Boolean]
 
   protected def httpRoutes(): HttpRoutes[F] = {
     HttpRoutes.of[F] {
@@ -67,6 +68,7 @@ case class LeaderRoutes[F[_]: Concurrent](controller: JobController[F], clusterO
           workerCfg <- req.as[WorkerConfig]
           res       <- clusterOverseer.addWorker(workerCfg)
         } yield res)
+      case DELETE -> Root / "cluster" / "removeWorker" / IntVar(workerId) => Ok(clusterOverseer.removeWorker(workerId))
     }
   }
 
