@@ -2,9 +2,11 @@ package com.chollinger.bridgefour.kaladin.http
 
 import cats.Parallel
 import cats.data.Kleisli
+import cats.effect.std.AtomicCell
 import cats.effect.std.Mutex
 import cats.effect.Async
 import cats.effect.Resource
+import cats.effect.kernel.Ref
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
 import com.chollinger.bridgefour.kaladin.programs.ClusterControllerImpl
 import com.chollinger.bridgefour.kaladin.programs.JobControllerService
@@ -29,6 +31,7 @@ import org.http4s.HttpApp
 import org.http4s.Request
 import org.http4s.Response
 import org.typelevel.log4cats.Logger
+import cats.syntax.semigroupk.* // for <+>
 
 object Server {
 
@@ -52,9 +55,13 @@ object Server {
         ClusterControllerImpl(client, healthMonitor, splitter, jState, cState, wCache, ids, stateMachine, lock, cfg)
       // Kaladin's main threads
       _ <- Resource.make(clusterController.startFibers())(_ => Async[F].unit).start
+      // Raft
+      raftState <- Resource.make(AtomicCell[F].of(RaftElectionState()))(_ => Async[F].unit)
+      raftSvc    = RaftService.make[F](raftState)
+      _         <- Resource.make(raftSvc.runElectionTimer())(_ => Async[F].unit).start
       // External interface
       httpApp: Kleisli[F, Request[F], Response[F]] =
-        LeaderRoutes[F](jobController, healthMonitor).routes.orNotFound
+        (LeaderRoutes[F](jobController, healthMonitor).routes <+> RaftRoutes[F](raftSvc).routes).orNotFound
 
       // With Middlewares in place
       finalHttpApp: HttpApp[F] = Http4sLogger.httpApp(true, true)(httpApp)
