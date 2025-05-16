@@ -4,6 +4,7 @@ import cats.effect.Concurrent
 import cats.syntax.all.*
 import com.chollinger.bridgefour.kaladin.programs.JobController
 import com.chollinger.bridgefour.kaladin.services.ClusterOverseer
+import com.chollinger.bridgefour.kaladin.services.RaftElectionState
 import com.chollinger.bridgefour.kaladin.services.RaftService
 import com.chollinger.bridgefour.shared.http.Route
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
@@ -14,6 +15,7 @@ import com.chollinger.bridgefour.shared.models.Job.UserJobConfig
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.models.Job
+import com.chollinger.bridgefour.shared.models.RaftState
 import com.chollinger.bridgefour.shared.models.RequestVote
 import com.chollinger.bridgefour.shared.models.RequestVoteResponse
 import com.chollinger.bridgefour.shared.models.WorkerStatus
@@ -35,6 +37,8 @@ case class RaftRoutes[F[_]: Concurrent](svc: RaftService[F]) extends Http4sDsl[F
 
   given EntityEncoder[F, RequestVoteResponse] = jsonEncoderOf[F, RequestVoteResponse]
 
+  given EntityEncoder[F, RaftElectionState] = jsonEncoderOf[F, RaftElectionState]
+
   protected def httpRoutes(): HttpRoutes[F] = {
     HttpRoutes.of[F] {
       case req @ POST -> Root / "requestVote" =>
@@ -49,7 +53,9 @@ case class RaftRoutes[F[_]: Concurrent](svc: RaftService[F]) extends Http4sDsl[F
           ts   <- req.as[Long]
           resp <- svc.handleHeartbeat(ts)
         } yield resp)
-
+      // Get state
+      case GET -> Root / "state" =>
+        Ok(svc.getState)
     }
   }
 

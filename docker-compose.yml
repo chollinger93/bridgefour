@@ -1,5 +1,5 @@
 services:
-  kaladin:
+  kaladin-01:
     image: kaladin:latest
     ports:
       - "6550:6550"
@@ -8,21 +8,24 @@ services:
       - "/tmp/data/out:/data/out"
       - "/tmp/jars:/jars"
     environment:
+      LEADER_ID: 0
       BRIDGEFOUR_HOST: 0.0.0.0
       BRIDGEFOUR_PORT: 6550
       WORKER1_HOST: spren-01
       WORKER1_PORT: 6551
       WORKER2_HOST: spren-02
       WORKER2_PORT: 6552
+      STANDBY_LEADER_ID: 1
+      STANDBY_LEADER_HOST: kaladin-02
+      STANDBY_LEADER_PORT: 6551
     networks:
       - bridgefour
     depends_on:
       - spren-01
       - spren-02
       - spren-03
-
-  spren-01:
-    image: spren:latest
+  kaladin-02:
+    image: kaladin:latest
     ports:
       - "6551:6551"
     volumes:
@@ -30,10 +33,35 @@ services:
       - "/tmp/data/out:/data/out"
       - "/tmp/jars:/jars"
     environment:
-      WORKER_ID: 1
+      LEADER_ID: 2
       BRIDGEFOUR_HOST: 0.0.0.0
       BRIDGEFOUR_PORT: 6551
-      LEADER_HOST: kaladin
+      WORKER1_HOST: spren-01
+      WORKER1_PORT: 6551
+      WORKER2_HOST: spren-02
+      WORKER2_PORT: 6552
+      STANDBY_LEADER_ID: 0
+      STANDBY_LEADER_HOST: kaladin-01
+      STANDBY_LEADER_PORT: 6550
+    networks:
+      - bridgefour
+    depends_on:
+      - spren-01
+      - spren-02
+      - spren-03
+  spren-01:
+    image: spren:latest
+    ports:
+      - "6651:6651"
+    volumes:
+      - "/tmp/data/in:/data/in"
+      - "/tmp/data/out:/data/out"
+      - "/tmp/jars:/jars"
+    environment:
+      WORKER_ID: 1
+      BRIDGEFOUR_HOST: 0.0.0.0
+      BRIDGEFOUR_PORT: 6651
+      LEADER_HOST: kaladin-01
       LEADER_PORT: 6550
     networks:
       - bridgefour
@@ -49,16 +77,16 @@ services:
     environment:
       WORKER_ID: 2
       BRIDGEFOUR_HOST: 0.0.0.0
-      BRIDGEFOUR_PORT: 6552
-      LEADER_HOST: kaladin
-      LEADER_PORT: 6550
+      BRIDGEFOUR_PORT: 6652
+      LEADER_HOST: kaladin-01
+      LEADER_PORT: 6652
     networks:
       - bridgefour
   # Unused until addWorker is called
   spren-03:
     image: spren:latest
     ports:
-      - "6553:6553"
+      - "6656:6656"
     volumes:
       - "/tmp/data/in:/data/in"
       - "/tmp/data/out:/data/out"
@@ -66,8 +94,8 @@ services:
     environment:
       WORKER_ID: 3
       BRIDGEFOUR_HOST: 0.0.0.0
-      BRIDGEFOUR_PORT: 6553
-      LEADER_HOST: kaladin
+      BRIDGEFOUR_PORT: 6656
+      LEADER_HOST: kaladin-01
       LEADER_PORT: 6550
     networks:
       - bridgefour

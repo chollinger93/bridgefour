@@ -2,9 +2,10 @@ package com.chollinger.bridgefour.shared.models
 
 import io.circe.Decoder
 import io.circe.Encoder
+import org.http4s.EntityDecoder
 import org.latestbit.circe.adt.codec.JsonTaggedAdt
 
-enum RaftState derives JsonTaggedAdt.Codec {
+enum RaftState {
 
   case Leader
   case Follower
