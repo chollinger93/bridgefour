@@ -10,6 +10,7 @@ object Config {
 
   case class ServiceConfig(
       self: LeaderConfig,
+      leaders: List[LeaderConfig],
       workers: List[WorkerConfig],
       clusterId: ClusterId = 0
   ) derives ConfigReader

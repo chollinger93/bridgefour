@@ -24,7 +24,7 @@ class ConfigSuite extends CatsEffectSuite {
     // Under the hood via the comcast library, which is apparently more strict
     for {
       cfg <- Config.load[IO]()
-      cfg2 = cfg.copy(self = LeaderConfig(schema = "http", host = "spren_01", port = 5555))
+      cfg2 = cfg.copy(self = LeaderConfig(id = 0, schema = "http", host = "spren_01", port = 5555))
       _    = assertEquals(cfg2.self.uri().toString, "http://spren_01:5555")
       h    = Host.fromString(cfg2.self.host)
       p    = Port.fromInt(cfg2.self.port)

@@ -19,7 +19,8 @@ ThisBuild / scalacOptions ++= Seq(
   "-feature",          // Warn about feature usage
   "-new-syntax:false", // Prevents rewriting braces to indentation syntax
   "-Wunused:all",      // Warn about unused imports
-  "-source:3.4-migration", "-rewrite"
+  "-source:3.4-migration", "-rewrite",
+  "-Xmax-inlines:128"
 )
 
 lazy val commonSettings = Seq(

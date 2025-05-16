@@ -26,10 +26,11 @@ object Config {
   }
 
   case class LeaderConfig(
+      id: Int,
       schema: String,
       host: String,
       port: Int = 5555
-  ) extends HostnameConfig derives ConfigReader
+  ) extends HostnameConfig derives ConfigReader, Encoder.AsObject, Decoder
 
   case class WorkerConfig(
       id: WorkerId,
