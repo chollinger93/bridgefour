@@ -59,7 +59,7 @@ object Server {
       raftLock  <- Resource.make(Mutex[F])(_ => Async[F].unit)
       raftState <- Resource.make(AtomicCell[F].of(RaftElectionState(cfg.self.id, cfg.leaders)))(_ => Async[F].unit)
       raftSvc    = RaftService.make[F](client, raftLock, raftState)
-      _         <- Resource.make(raftSvc.runElectionTimer())(_ => Async[F].unit).start
+      _         <- Resource.make(raftSvc.runFibers())(_ => Async[F].unit).start
       // External interface
       httpApp: Kleisli[F, Request[F], Response[F]] =
         (LeaderRoutes[F](jobController, healthMonitor).routes <+> RaftRoutes[F](raftSvc).routes).orNotFound

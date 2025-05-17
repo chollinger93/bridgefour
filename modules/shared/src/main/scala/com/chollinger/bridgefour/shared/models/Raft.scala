@@ -13,6 +13,13 @@ enum RaftState {
 
 }
 
+final case class HeartbeatRequest(
+    term: Int,
+    currentLeader: Int,
+    ts: Long
+) derives Encoder.AsObject,
+      Decoder
+
 final case class RequestVote(
     term: Int,
     candidateId: Int
