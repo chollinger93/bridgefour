@@ -12,7 +12,8 @@ object Config {
       self: LeaderConfig,
       leaders: List[LeaderConfig],
       workers: List[WorkerConfig],
-      clusterId: ClusterId = 0
+      clusterId: ClusterId = 0,
+      raft: RaftConfig = RaftConfig()
   ) derives ConfigReader
 
   def load[F[_]: Sync](): F[ServiceConfig] = ConfigSource.default.loadF[F, ServiceConfig]()

@@ -48,4 +48,10 @@ object Config {
       probingTimeout: FiniteDuration = 0.2.seconds
   ) extends HostnameConfig derives ConfigReader
 
+  case class RaftConfig(
+      minTimeout: FiniteDuration = 1.second,
+      maxTimeout: FiniteDuration = 3.seconds,
+      heartbeatInterval: FiniteDuration = 500.millis
+  ) derives ConfigReader
+
 }

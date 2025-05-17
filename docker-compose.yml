@@ -1,5 +1,5 @@
 services:
-  kaladin-01:
+  kaladin-00:
     image: kaladin:latest
     ports:
       - "6550:6550"
@@ -12,12 +12,43 @@ services:
       BRIDGEFOUR_HOST: 0.0.0.0
       BRIDGEFOUR_PORT: 6550
       WORKER1_HOST: spren-01
-      WORKER1_PORT: 6551
+      WORKER1_PORT: 6651
       WORKER2_HOST: spren-02
-      WORKER2_PORT: 6552
-      STANDBY_LEADER_ID: 1
-      STANDBY_LEADER_HOST: kaladin-02
-      STANDBY_LEADER_PORT: 6551
+      WORKER2_PORT: 6652
+      STANDBY_LEADER_1_ID: 1
+      STANDBY_LEADER_1_HOST: kaladin-01
+      STANDBY_LEADER_1_PORT: 6551
+      STANDBY_LEADER_2_ID: 2
+      STANDBY_LEADER_2_HOST: kaladin-02
+      STANDBY_LEADER_2_PORT: 6552
+    networks:
+      - bridgefour
+    depends_on:
+      - spren-01
+      - spren-02
+      - spren-03
+  kaladin-01:
+    image: kaladin:latest
+    ports:
+      - "6551:6551"
+    volumes:
+      - "/tmp/data/in:/data/in"
+      - "/tmp/data/out:/data/out"
+      - "/tmp/jars:/jars"
+    environment:
+      LEADER_ID: 1
+      BRIDGEFOUR_HOST: 0.0.0.0
+      BRIDGEFOUR_PORT: 6551
+      WORKER1_HOST: spren-01
+      WORKER1_PORT: 6651
+      WORKER2_HOST: spren-02
+      WORKER2_PORT: 6652
+      STANDBY_LEADER_1_ID: 0
+      STANDBY_LEADER_1_HOST: kaladin-00
+      STANDBY_LEADER_1_PORT: 6550
+      STANDBY_LEADER_2_ID: 2
+      STANDBY_LEADER_2_HOST: kaladin-02
+      STANDBY_LEADER_2_PORT: 6552
     networks:
       - bridgefour
     depends_on:
@@ -27,7 +58,7 @@ services:
   kaladin-02:
     image: kaladin:latest
     ports:
-      - "6551:6551"
+      - "6552:6552"
     volumes:
       - "/tmp/data/in:/data/in"
       - "/tmp/data/out:/data/out"
@@ -35,14 +66,17 @@ services:
     environment:
       LEADER_ID: 2
       BRIDGEFOUR_HOST: 0.0.0.0
-      BRIDGEFOUR_PORT: 6551
+      BRIDGEFOUR_PORT: 6552
       WORKER1_HOST: spren-01
-      WORKER1_PORT: 6551
+      WORKER1_PORT: 6651
       WORKER2_HOST: spren-02
-      WORKER2_PORT: 6552
-      STANDBY_LEADER_ID: 0
-      STANDBY_LEADER_HOST: kaladin-01
-      STANDBY_LEADER_PORT: 6550
+      WORKER2_PORT: 6652
+      STANDBY_LEADER_1_ID: 0
+      STANDBY_LEADER_1_HOST: kaladin-00
+      STANDBY_LEADER_1_PORT: 6550
+      STANDBY_LEADER_2_ID: 2
+      STANDBY_LEADER_2_HOST: kaladin-02
+      STANDBY_LEADER_2_PORT: 6552
     networks:
       - bridgefour
     depends_on:
@@ -69,7 +103,7 @@ services:
   spren-02:
     image: spren:latest
     ports:
-      - "6552:6552"
+      - "6652:6652"
     volumes:
       - "/tmp/data/in:/data/in"
       - "/tmp/data/out:/data/out"
@@ -79,7 +113,7 @@ services:
       BRIDGEFOUR_HOST: 0.0.0.0
       BRIDGEFOUR_PORT: 6652
       LEADER_HOST: kaladin-01
-      LEADER_PORT: 6652
+      LEADER_PORT: 6550
     networks:
       - bridgefour
   # Unused until addWorker is called

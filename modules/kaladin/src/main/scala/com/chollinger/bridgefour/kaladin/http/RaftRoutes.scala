@@ -14,6 +14,7 @@ import com.chollinger.bridgefour.shared.models.Job.JobDetails
 import com.chollinger.bridgefour.shared.models.Job.UserJobConfig
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
+import com.chollinger.bridgefour.shared.models.HeartbeatRequest
 import com.chollinger.bridgefour.shared.models.Job
 import com.chollinger.bridgefour.shared.models.RaftState
 import com.chollinger.bridgefour.shared.models.RequestVote
@@ -33,7 +34,7 @@ case class RaftRoutes[F[_]: Concurrent](svc: RaftService[F]) extends Http4sDsl[F
 
   given EntityDecoder[F, RequestVote] = accumulatingJsonOf[F, RequestVote]
 
-  given EntityDecoder[F, Long] = accumulatingJsonOf[F, Long]
+  given EntityDecoder[F, HeartbeatRequest] = accumulatingJsonOf[F, HeartbeatRequest]
 
   given EntityEncoder[F, RequestVoteResponse] = jsonEncoderOf[F, RequestVoteResponse]
 
@@ -50,8 +51,8 @@ case class RaftRoutes[F[_]: Concurrent](svc: RaftService[F]) extends Http4sDsl[F
       // Receive a heartbeat from the leader
       case req @ POST -> Root / "heartbeat" =>
         Ok(for {
-          ts   <- req.as[Long]
-          resp <- svc.handleHeartbeat(ts)
+          r    <- req.as[HeartbeatRequest]
+          resp <- svc.handleHeartbeat(r)
         } yield resp)
       // Get state
       case GET -> Root / "state" =>
