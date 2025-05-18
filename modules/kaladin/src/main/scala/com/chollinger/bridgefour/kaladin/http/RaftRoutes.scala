@@ -13,8 +13,6 @@ import org.http4s.server.Router
 
 case class RaftRoutes[F[_]: Concurrent](svc: RaftService[F]) extends Http4sDsl[F] with Route[F] with RaftEncoders[F] {
 
-  protected val prefixPath: String = "/raft/"
-
   protected def httpRoutes(): HttpRoutes[F] =
     HttpRoutes.of[F] {
       case req @ POST -> Root / "requestVote" =>
@@ -35,7 +33,7 @@ case class RaftRoutes[F[_]: Concurrent](svc: RaftService[F]) extends Http4sDsl[F
     }
 
   def routes: HttpRoutes[F] = Router(
-    prefixPath -> httpRoutes()
+    "raft" -> httpRoutes()
   )
 
 }

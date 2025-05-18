@@ -25,7 +25,6 @@ case class LeaderRoutes[F[_]: Concurrent](controller: JobController[F], clusterO
     extends Http4sDsl[F]
     with Route[F] {
 
-  protected val prefixPath: String      = "/"
   given EntityDecoder[F, UserJobConfig] = accumulatingJsonOf[F, UserJobConfig]
   given EntityDecoder[F, WorkerConfig]  = accumulatingJsonOf[F, WorkerConfig]
 
@@ -39,11 +38,11 @@ case class LeaderRoutes[F[_]: Concurrent](controller: JobController[F], clusterO
   given EntityEncoder[F, WorkerState]                         = jsonEncoderOf[F, WorkerState]
   given EntityEncoder[F, Boolean]                             = jsonEncoderOf[F, Boolean]
 
-  protected def httpRoutes(): HttpRoutes[F] = {
+  private def jobRoutes(): HttpRoutes[F] = {
     HttpRoutes.of[F] {
       // Job States
-      case GET -> Root / "job" / "list"        => Ok(controller.listRunningJobs())
-      case GET -> Root / "job" / IntVar(jobId) => Ok(controller.getJobDetails(jobId))
+      case GET -> Root / "list"        => Ok(controller.listRunningJobs())
+      case GET -> Root / IntVar(jobId) => Ok(controller.getJobDetails(jobId))
       // Job Lifecycle
       case req @ POST -> Root / "start" =>
         Ok(for {
@@ -59,21 +58,27 @@ case class LeaderRoutes[F[_]: Concurrent](controller: JobController[F], clusterO
             case Left(s)     => Ok(s)
             case Right(data) => Ok(data)
           }
+    }
+  }
+
+  private def clusterRoutes(): HttpRoutes[F] = {
+    HttpRoutes.of[F] {
       // Health
       // TODO: from cache
-      case GET -> Root / "cluster" => Ok(clusterOverseer.getClusterState())
+      case GET -> Root => Ok(clusterOverseer.getClusterState())
       // Cluster admin
-      case req @ POST -> Root / "cluster" / "addWorker" =>
+      case req @ POST -> Root / "addWorker" =>
         Ok(for {
           workerCfg <- req.as[WorkerConfig]
           res       <- clusterOverseer.addWorker(workerCfg)
         } yield res)
-      case DELETE -> Root / "cluster" / "removeWorker" / IntVar(workerId) => Ok(clusterOverseer.removeWorker(workerId))
+      case DELETE -> Root / "removeWorker" / IntVar(workerId) => Ok(clusterOverseer.removeWorker(workerId))
     }
   }
 
   def routes: HttpRoutes[F] = Router(
-    prefixPath -> httpRoutes()
+    "cluster" -> clusterRoutes(),
+    "job"     -> jobRoutes()
   )
 
 }

@@ -6,8 +6,8 @@ trap cleanUp INT
 JOB_CLASS="com.chollinger.bridgefour.jobs.example.DelayedWordCountBridgeFourJob"
 sleep=10
 LEADER_PORT=6550
-WORKER1_PORT=6551
-WORKER2_PORT=6552
+WORKER1_PORT=6651
+WORKER2_PORT=6652
 
 function uploadJar() {
   if [ ! -z "$JAR_PATH" ]; then
@@ -51,7 +51,7 @@ function startCluster() {
 }
 
 function startJob() {
-  start=$(curl -sS --location "http://localhost:$LEADER_PORT/start" \
+  start=$(curl -sS --location "http://localhost:$LEADER_PORT/job/start" \
     --header 'Content-Type: application/json' \
     --data "{
           \"name\": \"Example job\",

@@ -66,7 +66,8 @@ object RaftService {
   ): RaftService[F] =
     new RaftService[F] with RaftEncoders[F] {
 
-      given logger: Logger[F]                 = Slf4jLogger.getLogger[F]
+      given logger: Logger[F] = Slf4jLogger.getLogger[F]
+
       private val err: ThrowableMonadError[F] = implicitly[ThrowableMonadError[F]]
 
       override def runFibers(): F[Unit] =
@@ -290,34 +291,47 @@ object RaftService {
       override def getState: F[RaftElectionState] = state.get
 
       def withLeaderRedirect(routes: HttpRoutes[F]): HttpRoutes[F] = HttpRoutes.of[F] { req =>
-        state.get.flatMap {
-          case s if s.ownState == Leader =>
+        if (req.uri.path.renderString.contains("/raft/")) {
+          logger.debug(s"Request: ${req.uri.path.renderString}") >>
             routes(req).value.flatMap {
               case Some(response) => response.pure[F]
               case None           => Response[F](Status.NotFound).pure[F]
             }
-          case s =>
-            s.currentLeader match {
-              case Some(leaderId) =>
-                s.peers.find(_.id == leaderId) match {
-                  case Some(leaderCfg) =>
-                    val redirectUri =
-                      Uri.unsafeFromString(
-                        s"${leaderCfg.schema}://${leaderCfg.host}:${leaderCfg.port}${req.uri.path.renderString}"
-                      )
-                    Response[F](Status.TemporaryRedirect)
-                      .putHeaders(Header.Raw(ci"Location", redirectUri.renderString))
-                      .pure[F]
-                  case None =>
-                    Response[F](Status.ServiceUnavailable)
-                      .withEntity("Leader config missing")
-                      .pure[F]
-                }
-              case None =>
-                Response[F](Status.ServiceUnavailable)
-                  .withEntity("No known leader")
-                  .pure[F]
-            }
+        } else {
+          state.get.flatMap {
+            case s if s.ownState == Leader =>
+              routes(req).value.flatMap {
+                case Some(response) => response.pure[F]
+                case None           => Response[F](Status.NotFound).pure[F]
+              }
+            case s =>
+              s.currentLeader match {
+                case Some(leaderId) =>
+                  s.peers.find(_.id == leaderId) match {
+                    case Some(leaderCfg) =>
+                      val redirectUri = {
+//                        Uri.unsafeFromString(
+//                          s"${leaderCfg.schema}://${leaderCfg.host}:${leaderCfg.port}${req.uri.path.renderString}"
+//                        )
+                        // TODO: to run in compose
+                        Uri.unsafeFromString(
+                          s"${leaderCfg.schema}://localhost:${leaderCfg.port}${req.uri.path.renderString}"
+                        )
+                      }
+                      Response[F](Status.TemporaryRedirect)
+                        .putHeaders(Header.Raw(ci"Location", redirectUri.renderString))
+                        .pure[F]
+                    case None =>
+                      Response[F](Status.ServiceUnavailable)
+                        .withEntity("Leader config missing")
+                        .pure[F]
+                  }
+                case None =>
+                  Response[F](Status.ServiceUnavailable)
+                    .withEntity("No known leader")
+                    .pure[F]
+              }
+          }
         }
       }
     }

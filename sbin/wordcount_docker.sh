@@ -18,7 +18,7 @@ echo "Started job $JOB_ID"
 
 # Observe status on the leader
 while true; do
-  status=$(curl -sS --location "http://localhost:$LEADER_PORT/status/$JOB_ID")
+  status=$(curl -sS --location "http://localhost:$LEADER_PORT/job/status/$JOB_ID")
   echo "${status}"
   typ=$(echo "$status" | jq '.type')
   if [[ $typ != '"NotStarted"' && $typ != '"InProgress"' && $typ != '"Halted"' ]]; then
@@ -35,7 +35,7 @@ done
 
 # Get data
 echo "Checking results"
-curl -sS --location "http://localhost:$LEADER_PORT/data/$JOB_ID" | jq 'to_entries | sort_by(-.value) | from_entries' | head -n 5
+curl -sS --location "http://localhost:$LEADER_PORT/job/data/$JOB_ID" | jq 'to_entries | sort_by(-.value) | from_entries' | head -n 5
 
 # Cleanup
-cleanUp
+#cleanUp
