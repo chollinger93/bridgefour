@@ -4,8 +4,6 @@ import cats.effect.kernel.Concurrent
 import com.chollinger.bridgefour.shared.models.Config.LeaderConfig
 import io.circe.Decoder
 import io.circe.Encoder
-import org.http4s.EntityDecoder
-import org.latestbit.circe.adt.codec.JsonTaggedAdt
 import org.http4s.circe.accumulatingJsonOf
 import org.http4s.circe.jsonEncoderOf
 import org.http4s.EntityDecoder

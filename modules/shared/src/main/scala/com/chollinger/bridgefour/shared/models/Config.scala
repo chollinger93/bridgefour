@@ -3,12 +3,13 @@ package com.chollinger.bridgefour.shared.models
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.duration.FiniteDuration
 import scala.language.postfixOps
+
 import com.chollinger.bridgefour.shared.models.IDs.WorkerId
 import io.circe.Decoder
 import io.circe.Encoder
 import org.http4s.Uri
-import pureconfig.*
-import pureconfig.generic.derivation.default.*
+import pureconfig._
+import pureconfig.generic.derivation.default._
 
 object Config {
 

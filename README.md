@@ -16,7 +16,8 @@ This is a work in progress, missing key features. It is, however, surprisingly [
 
 - Single leader, multi-worker
 - Eventually consistent
-- Redundant workers, SPOF in the leader
+- Redundant workers w/ rebalancing
+- Leaders are redundant and run a Raft election; leaders do not replicate state yet but forward requests to the active leader
 - "Self"-healing (workers can be killed and re-started during execution, the leader will recover)
 
 ### Terminology
@@ -68,9 +69,9 @@ Lastly, please check the last section for a retrofit of Partitioning into Bridge
 - **Worker Stages**: Jobs start and complete, the leader only checks their state, not intermediate *stages* (i.e., we can't build a shuffle stage like `Map/Reduce` right now)
 - **Global leader locks**: The `BackgroundWorker` is concurrency-safe, but you can start two jobs that work on the same data, causing races - the leader job controller uses a simple `Mutex[F]` to compensate
 - **Atomic** operations / 2 Phase Commits
-- **Consensus**: Leader is a Single Point of Failure
 - I've been very heavy handed with `Sync[F].blocking`, which often isn't the correct effect
 - **File System Abstraction**: This assumes a UNIX-like + something like NFS to be available, which isn't ideal and has it's own locking problems
+- **Raft Log Replication**: Currently, this system implements Raft only to elect a leader, not to replicate state
 
 ## Run application
 
