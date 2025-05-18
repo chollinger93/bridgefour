@@ -16,21 +16,12 @@ import com.chollinger.bridgefour.shared.models.Config.RaftConfig
 import com.chollinger.bridgefour.shared.models.RaftState.Candidate
 import com.chollinger.bridgefour.shared.models.RaftState.Follower
 import com.chollinger.bridgefour.shared.models.RaftState.Leader
-import com.chollinger.bridgefour.shared.models.HeartbeatRequest
-import com.chollinger.bridgefour.shared.models.RaftState
-import com.chollinger.bridgefour.shared.models.RequestVote
-import com.chollinger.bridgefour.shared.models.RequestVoteResponse
+import com.chollinger.bridgefour.shared.models.*
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
-import io.circe.Decoder
-import io.circe.Encoder
-import org.http4s.EntityDecoder
-import org.http4s.EntityEncoder
 import org.http4s.Method
 import org.http4s.Request
 import org.http4s.Status
 import org.http4s.Uri
-import org.http4s.circe.accumulatingJsonOf
-import org.http4s.circe.jsonEncoderOf
 import org.http4s.client.Client
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -40,6 +31,7 @@ import scala.concurrent.duration.FiniteDuration
 
 trait RaftService[F[_]] {
 
+  // Runs the loop for sending heartbeats as a leader and checking if we need an election as a follower/candidate
   def runFibers(): F[Unit]
 
   // Handles a vote request from other Candidates
@@ -48,27 +40,8 @@ trait RaftService[F[_]] {
   // Handle a heartbeat from the leader; this is used to reset the election timer
   def handleHeartbeat(req: HeartbeatRequest): F[Unit]
 
-// Returns the current view of the world
+  // Returns the current view of the world
   def getState: F[RaftElectionState]
-
-}
-
-case class RaftElectionState(
-    ownId: Int,
-    term: Int = 0,
-    ownState: RaftState = Follower,
-    votedFor: Option[Int] = None,
-    lastElectionEpoch: Option[Long] = None,
-    lastHeartbeatEpoch: Option[Long] = None,
-    currentLeader: Option[Int] = None,
-    peers: List[LeaderConfig] = List.empty
-) derives Encoder.AsObject,
-      Decoder
-
-object RaftElectionState {
-
-  def apply(ownId: Int, peers: List[LeaderConfig]): RaftElectionState =
-    RaftElectionState(ownId = ownId).copy(peers = peers)
 
 }
 
@@ -83,26 +56,20 @@ object RaftService {
       state: AtomicCell[F, RaftElectionState],
       cfg: RaftConfig = RaftConfig()
   ): RaftService[F] =
-    new RaftService[F] {
-      given EntityDecoder[F, RequestVote]         = accumulatingJsonOf[F, RequestVote]
-      given EntityEncoder[F, RequestVote]         = jsonEncoderOf[F, RequestVote]
-      given EntityEncoder[F, HeartbeatRequest]    = jsonEncoderOf[F, HeartbeatRequest]
-      given EntityEncoder[F, RequestVoteResponse] = jsonEncoderOf[F, RequestVoteResponse]
-      given EntityDecoder[F, RequestVoteResponse] = accumulatingJsonOf[F, RequestVoteResponse]
+    new RaftService[F] with RaftEncoders[F] {
 
       given logger: Logger[F]                 = Slf4jLogger.getLogger[F]
       private val err: ThrowableMonadError[F] = implicitly[ThrowableMonadError[F]]
 
       override def runFibers(): F[Unit] =
         for {
-          _ <- Logger[F].debug("Starting raft election handler")
-          _ <- sendHeartbeatLoop().start
-          _ <- bgThread().start
-          _ <- Async[F].never
+          _     <- Logger[F].info("Starting Raft service")
+          hbFib <- heartbeatLoop().start
+          elFib <- electionLoop().start
         } yield ()
 
-      // Handles elections and heartbeats, recursively
-      private def bgThread(): F[Unit] = {
+      // Handles elections, recursively
+      private def electionLoop(): F[Unit] = {
         val nextDelay = Temporal[F].realTime.map { now =>
           val jitter = scala.util.Random.between(cfg.minTimeout.toMillis, cfg.maxTimeout.toMillis).millis
           now -> jitter
@@ -115,15 +82,16 @@ object RaftService {
           lastHb        = s.lastHeartbeatEpoch.getOrElse(0L)
           lastElection  = s.lastElectionEpoch.getOrElse(0L)
           _ <- s.ownState match {
-                 case Leader => sendHeartbeatToFollowers(now)
+                 case Leader => Async[F].unit // as a leader, we won't start an election
                  case _      => prepElection(now, delay)
                }
           // Recursive
-          _ <- bgThread()
+          _ <- electionLoop()
         } yield ()
       }
 
-      private def sendHeartbeatLoop(): F[Unit] = {
+      // Sends heartbeats to followers, if we're a leader
+      private def heartbeatLoop(): F[Unit] = {
 
         for {
           now <- Temporal[F].realTime
@@ -133,7 +101,7 @@ object RaftService {
                  case _      => Async[F].unit
                }
           _ <- Temporal[F].sleep(cfg.heartbeatInterval)
-          _ <- sendHeartbeatLoop()
+          _ <- heartbeatLoop()
         } yield ()
       }
 
@@ -165,6 +133,25 @@ object RaftService {
       }
 
       @FullyLocked
+      override def handleHeartbeat(req: HeartbeatRequest): F[Unit] = {
+        lock.lock.surround {
+          for {
+            s <- state.get
+            _ <- if (req.term > s.term || (req.term == s.term && s.ownState != Leader)) {
+                   state.update(
+                     _.copy(
+                       term = req.term,
+                       ownState = Follower,
+                       lastHeartbeatEpoch = Some(req.ts),
+                       currentLeader = Some(req.currentLeader)
+                     )
+                   )
+                 } else Async[F].unit
+          } yield ()
+        }
+      }
+
+      @FullyLocked
       private def prepElection(now: FiniteDuration, delay: FiniteDuration): F[Unit] = {
         lock.lock.surround {
           for {
@@ -184,7 +171,7 @@ object RaftService {
                    timeSinceHb >= timeoutMs &&
                    timeSinceEl >= timeoutMs
                  ) {
-                   Logger[F].info(
+                   Logger[F].debug(
                      s"Election timeout reached, starting election, timeSinceHeartbeat: $timeSinceHb, timeSinceElection: $timeSinceEl"
                    ) >>
                      startElection
@@ -217,12 +204,12 @@ object RaftService {
                       term = s.term,
                       candidateId = s.ownId
                     )
-          _ <- Logger[F].info(s"Requesting vote $voteReq from peers: ${s.peers}")
+          _ <- Logger[F].debug(s"Requesting vote $voteReq from peers: ${s.peers}")
           res <- s.peers.parTraverse { lCfg =>
                    val req =
                      Request[F](method = Method.POST, uri = Uri.unsafeFromString(s"${lCfg.uri()}/raft/requestVote"))
                        .withEntity(voteReq)
-                   Logger[F].info(s"Requesting election on $lCfg") >> err
+                   Logger[F].debug(s"Requesting election on $lCfg") >> err
                      .handleErrorWith(client.expect[RequestVoteResponse](req))(e =>
                        Logger[F].error(e)(s"Election on leader ${lCfg.id} failed") >>
                          Async[F].blocking(
@@ -240,7 +227,7 @@ object RaftService {
                    Logger[F].info(s"Received majority of votes, becoming leader") >>
                      state.update(_.copy(ownState = Leader, currentLeader = Some(s.ownId)))
                  case _ =>
-                   Logger[F].info(s"Did not receive majority of votes, remaining candidate")
+                   Logger[F].debug(s"Did not receive majority of votes, remaining candidate")
                }
           s <- state.get
           _ <- Logger[F].debug(s"State after vote: $s")
@@ -250,13 +237,13 @@ object RaftService {
       @PartiallyLocked
       override def handleVote(req: RequestVote): F[RequestVoteResponse] = {
         for {
-          _  <- logger.info(s"Received vote request from ${req.candidateId} for term ${req.term}")
+          _  <- logger.debug(s"Received vote request from ${req.candidateId} for term ${req.term}")
           s  <- state.get
           ts <- Temporal[F].realTime
 
           // Update state in case we became a follower
           s <- if (req.term > s.term) {
-                 logger.info(
+                 logger.debug(
                    s"Candidate ${req.candidateId} has a higher term than us (${req.term}/${s.term}, accepting leader"
                  )
                    >> state.update(
@@ -271,7 +258,7 @@ object RaftService {
           ourTerm           = s.term
           voteGranted       = req.term == ourTerm && (votedForCandidate.isEmpty || votedForCandidate.get == req.candidateId)
           _ <-
-            logger.info(s"Our vote for ${req.candidateId}: $voteGranted, ourTerm: $ourTerm, theirTerm: ${req.term}, votedForCandidate: $votedForCandidate")
+            logger.debug(s"Our vote for ${req.candidateId}: $voteGranted, ourTerm: $ourTerm, theirTerm: ${req.term}, votedForCandidate: $votedForCandidate")
           term <- if (voteGranted) {
                     lock.lock.surround {
                       state.update(
@@ -290,25 +277,6 @@ object RaftService {
           term = term,
           voteGranted = voteGranted
         )
-      }
-
-      @FullyLocked
-      override def handleHeartbeat(req: HeartbeatRequest): F[Unit] = {
-        lock.lock.surround {
-          for {
-            s <- state.get
-            _ <- if (req.term > s.term || (req.term == s.term && s.ownState != Leader)) {
-                   state.update(
-                     _.copy(
-                       term = req.term,
-                       ownState = Follower,
-                       lastHeartbeatEpoch = Some(req.ts),
-                       currentLeader = Some(req.currentLeader)
-                     )
-                   )
-                 } else Async[F].unit
-          } yield ()
-        }
       }
 
       override def getState: F[RaftElectionState] = state.get

@@ -31,7 +31,8 @@ import org.http4s.HttpApp
 import org.http4s.Request
 import org.http4s.Response
 import org.typelevel.log4cats.Logger
-import cats.syntax.semigroupk.* // for <+>
+import cats.syntax.semigroupk.*
+import com.chollinger.bridgefour.shared.models.RaftElectionState // for <+>
 
 object Server {
 
