@@ -19,8 +19,7 @@ ThisBuild / scalacOptions ++= Seq(
   "-feature",          // Warn about feature usage
   "-new-syntax:false", // Prevents rewriting braces to indentation syntax
   "-Wunused:all",      // Warn about unused imports
-  "-source:3.4-migration", "-rewrite",
-  "-Xmax-inlines:128"
+  "-source:3.4-migration", "-rewrite", "-Xmax-inlines:128"
 )
 
 lazy val commonSettings = Seq(
@@ -39,24 +38,31 @@ lazy val dockerSettings = Seq(
 lazy val root = Project(id = "bridgefour", base = file("."))
   .aggregate(shared, leader, worker)
 
-lazy val shared = (project in file("modules/shared")).settings(
-  commonSettings,
-  name := "shared"
-)
+lazy val shared = (project in file("modules/shared"))
+  .settings(
+    commonSettings,
+    Defaults.itSettings,
+    name := "shared"
+  )
+  .configs(IntegrationTest)
 
 lazy val leader = (project in file("modules/kaladin"))
   .settings(
     commonSettings ++ dockerSettings,
     name := "kaladin",
+    Defaults.itSettings
   )
+  .configs(IntegrationTest)
   .dependsOn(shared)
   .enablePlugins(JavaAppPackaging, DockerPlugin)
 
 lazy val worker = (project in file("modules/spren"))
   .settings(
     commonSettings ++ dockerSettings,
-    name := "spren"
+    name := "spren",
+    Defaults.itSettings
   )
+  .configs(IntegrationTest)
   .dependsOn(shared)
   .enablePlugins(JavaAppPackaging, DockerPlugin)
 
