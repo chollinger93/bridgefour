@@ -1,5 +1,6 @@
 package com.chollinger.bridgefour.kaladin.services
 
+import cats.data.OptionT
 import cats.effect.Clock
 import cats.effect.Concurrent
 import cats.effect.implicits.*
@@ -18,11 +19,15 @@ import com.chollinger.bridgefour.shared.models.RaftState.Follower
 import com.chollinger.bridgefour.shared.models.RaftState.Leader
 import com.chollinger.bridgefour.shared.models.*
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
+import org.http4s.Header
+import org.http4s.HttpRoutes
 import org.http4s.Method
 import org.http4s.Request
+import org.http4s.Response
 import org.http4s.Status
 import org.http4s.Uri
 import org.http4s.client.Client
+import org.typelevel.ci.CIStringSyntax
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
@@ -42,6 +47,9 @@ trait RaftService[F[_]] {
 
   // Returns the current view of the world
   def getState: F[RaftElectionState]
+
+  // Handles HTTP requests
+  def withLeaderRedirect(routes: HttpRoutes[F]): HttpRoutes[F]
 
 }
 
@@ -280,6 +288,38 @@ object RaftService {
       }
 
       override def getState: F[RaftElectionState] = state.get
+
+      def withLeaderRedirect(routes: HttpRoutes[F]): HttpRoutes[F] = HttpRoutes.of[F] { req =>
+        state.get.flatMap {
+          case s if s.ownState == Leader =>
+            routes(req).value.flatMap {
+              case Some(response) => response.pure[F]
+              case None           => Response[F](Status.NotFound).pure[F]
+            }
+          case s =>
+            s.currentLeader match {
+              case Some(leaderId) =>
+                s.peers.find(_.id == leaderId) match {
+                  case Some(leaderCfg) =>
+                    val redirectUri =
+                      Uri.unsafeFromString(
+                        s"${leaderCfg.schema}://${leaderCfg.host}:${leaderCfg.port}${req.uri.path.renderString}"
+                      )
+                    Response[F](Status.TemporaryRedirect)
+                      .putHeaders(Header.Raw(ci"Location", redirectUri.renderString))
+                      .pure[F]
+                  case None =>
+                    Response[F](Status.ServiceUnavailable)
+                      .withEntity("Leader config missing")
+                      .pure[F]
+                }
+              case None =>
+                Response[F](Status.ServiceUnavailable)
+                  .withEntity("No known leader")
+                  .pure[F]
+            }
+        }
+      }
     }
 
 }

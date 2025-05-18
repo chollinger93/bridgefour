@@ -43,27 +43,29 @@ object Server {
       cfgParser    = JobConfigParserService.make[F]()
       splitter     = JobSplitterService.make()
       stateMachine = JobDetailsStateMachine.make(ids, cfgParser, splitter)
-      jState      <- Resource.make(InMemoryPersistence.makeF[F, JobId, JobDetails]())(_ => Async[F].unit)
-      cState      <- Resource.make(InMemoryPersistence.makeF[F, ClusterId, ClusterState]())(_ => Async[F].unit)
+      jState      <- Resource.eval(InMemoryPersistence.makeF[F, JobId, JobDetails]())
+      cState      <- Resource.eval(InMemoryPersistence.makeF[F, ClusterId, ClusterState]())
       // TODO: ref
-      wState       <- Resource.make(InMemoryPersistence.makeF[F, WorkerId, WorkerConfig]())(_ => Async[F].unit)
-      wCache       <- Resource.make(WorkerCache.makeF[F](cfg, wState))(_ => Async[F].unit)
+      wState       <- Resource.eval(InMemoryPersistence.makeF[F, WorkerId, WorkerConfig]())
+      wCache       <- Resource.eval(WorkerCache.makeF[F](cfg, wState))
       leader        = LeaderCreatorService.make[F]()
-      lock         <- Resource.make(Mutex[F])(_ => Async[F].unit)
+      lock         <- Resource.eval(Mutex[F])
       healthMonitor = ClusterOverseer.make[F](wCache, client)
       jobController = JobControllerService(client, jState, stateMachine, leader, cfg)
       clusterController =
         ClusterControllerImpl(client, healthMonitor, splitter, jState, cState, wCache, ids, stateMachine, lock, cfg)
       // Kaladin's main threads
-      _ <- Resource.make(clusterController.startFibers())(_ => Async[F].unit).start
+      _ <- Resource.eval(clusterController.startFibers()).start
       // Raft
-      raftLock  <- Resource.make(Mutex[F])(_ => Async[F].unit)
-      raftState <- Resource.make(AtomicCell[F].of(RaftElectionState(cfg.self.id, cfg.leaders)))(_ => Async[F].unit)
+      raftLock  <- Resource.eval(Mutex[F])
+      raftState <- Resource.eval(AtomicCell[F].of(RaftElectionState(cfg.self.id, cfg.leaders)))
       raftSvc    = RaftService.make[F](client, raftLock, raftState)
-      _         <- Resource.make(raftSvc.runFibers())(_ => Async[F].unit).start
+      _         <- Resource.eval(raftSvc.runFibers()).start
       // External interface
       httpApp: Kleisli[F, Request[F], Response[F]] =
-        (LeaderRoutes[F](jobController, healthMonitor).routes <+> RaftRoutes[F](raftSvc).routes).orNotFound
+        // Ensure Raft wraps the main routes, i.e. we always talk to the leader
+        (raftSvc.withLeaderRedirect(LeaderRoutes[F](jobController, healthMonitor).routes)
+          <+> RaftRoutes[F](raftSvc).routes).orNotFound
 
       // With Middlewares in place
       finalHttpApp: HttpApp[F] = Http4sLogger.httpApp(true, true)(httpApp)

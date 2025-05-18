@@ -7,10 +7,7 @@ import com.chollinger.bridgefour.shared.http.Route
 import com.chollinger.bridgefour.shared.models.HeartbeatRequest
 import com.chollinger.bridgefour.shared.models.RaftEncoders
 import com.chollinger.bridgefour.shared.models.RequestVote
-import com.chollinger.bridgefour.shared.models.RequestVoteResponse
 import org.http4s.*
-import org.http4s.circe.accumulatingJsonOf
-import org.http4s.circe.jsonEncoderOf
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 
@@ -18,7 +15,7 @@ case class RaftRoutes[F[_]: Concurrent](svc: RaftService[F]) extends Http4sDsl[F
 
   protected val prefixPath: String = "/raft/"
 
-  protected def httpRoutes(): HttpRoutes[F] = {
+  protected def httpRoutes(): HttpRoutes[F] =
     HttpRoutes.of[F] {
       case req @ POST -> Root / "requestVote" =>
         Ok(for {
@@ -36,7 +33,6 @@ case class RaftRoutes[F[_]: Concurrent](svc: RaftService[F]) extends Http4sDsl[F
       case GET -> Root / "state" =>
         Ok(svc.getState)
     }
-  }
 
   def routes: HttpRoutes[F] = Router(
     prefixPath -> httpRoutes()
