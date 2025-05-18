@@ -1,7 +1,7 @@
 package com.chollinger.bridgefour.kaladin.http
 
 import cats.effect.Concurrent
-import cats.syntax.all.*
+import cats.syntax.all._
 import com.chollinger.bridgefour.kaladin.programs.JobController
 import com.chollinger.bridgefour.kaladin.services.ClusterOverseer
 import com.chollinger.bridgefour.shared.http.Route
@@ -11,12 +11,12 @@ import com.chollinger.bridgefour.shared.models.IDs.WorkerId
 import com.chollinger.bridgefour.shared.models.Job.JobDetails
 import com.chollinger.bridgefour.shared.models.Job.UserJobConfig
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
-import com.chollinger.bridgefour.shared.models.Job
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
+import com.chollinger.bridgefour.shared.models.Job
 import com.chollinger.bridgefour.shared.models.WorkerStatus
 import io.circe.Json
 import io.circe.disjunctionCodecs.encodeEither
-import org.http4s.*
+import org.http4s._
 import org.http4s.circe.accumulatingJsonOf
 import org.http4s.circe.jsonEncoderOf
 import org.http4s.dsl.Http4sDsl

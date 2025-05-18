@@ -1,15 +1,14 @@
 package com.chollinger.bridgefour.kaladin.services
 
 import cats.effect.Async
-import cats.effect.kernel.Async
-import cats.implicits.*
+import cats.implicits._
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
 import com.chollinger.bridgefour.shared.models.Config.WorkerConfig
 import com.chollinger.bridgefour.shared.models.IDs.WorkerId
 import com.chollinger.bridgefour.shared.persistence.Persistence
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.SelfAwareStructuredLogger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 sealed trait WorkerCache[F[_]] {
 

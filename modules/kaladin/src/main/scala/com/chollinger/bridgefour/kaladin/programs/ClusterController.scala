@@ -1,26 +1,25 @@
 package com.chollinger.bridgefour.kaladin.programs
 
+import scala.collection.immutable
 import scala.concurrent.duration.DurationDouble
 import scala.language.postfixOps
-import cats.*
-import cats.effect.implicits.*
+
+import cats._
+import cats.effect.implicits._
 import cats.effect.std.Mutex
 import cats.effect.Async
 import cats.effect.Concurrent
 import cats.effect.Sync
-import cats.implicits.*
+import cats.implicits._
 import com.chollinger.bridgefour.kaladin.models.Config.ServiceConfig
-import com.chollinger.bridgefour.kaladin.services.ClusterOverseer
-import com.chollinger.bridgefour.kaladin.services.IdMaker
-import com.chollinger.bridgefour.kaladin.services.JobSplitter
-import com.chollinger.bridgefour.kaladin.services.WorkerCache
+import com.chollinger.bridgefour.kaladin.services._
 import com.chollinger.bridgefour.kaladin.state.JobDetailsStateMachine
 import com.chollinger.bridgefour.shared.exceptions.Exceptions.InvalidWorkerConfigException
 import com.chollinger.bridgefour.shared.exceptions.Exceptions.OrphanTaskException
 import com.chollinger.bridgefour.shared.extensions.StronglyConsistent
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
 import com.chollinger.bridgefour.shared.models.Config.WorkerConfig
-import com.chollinger.bridgefour.shared.models.IDs.*
+import com.chollinger.bridgefour.shared.models.IDs._
 import com.chollinger.bridgefour.shared.models.Job.JobDetails
 import com.chollinger.bridgefour.shared.models.Status.ExecutionStatus
 import com.chollinger.bridgefour.shared.models.Task.AssignedTaskConfig
@@ -28,13 +27,11 @@ import com.chollinger.bridgefour.shared.models.Task.AssignmentStatus
 import com.chollinger.bridgefour.shared.models.Worker.WorkerState
 import com.chollinger.bridgefour.shared.persistence.Persistence
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
-import org.http4s.*
+import org.http4s._
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.circe.accumulatingJsonOf
 import org.http4s.client.Client
 import org.typelevel.log4cats.Logger
-
-import scala.collection.immutable
 
 sealed trait ClusterController[F[_]] {
 

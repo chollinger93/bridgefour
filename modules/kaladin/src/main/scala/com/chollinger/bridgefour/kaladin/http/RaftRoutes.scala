@@ -1,13 +1,13 @@
 package com.chollinger.bridgefour.kaladin.http
 
 import cats.effect.Concurrent
-import cats.syntax.all.*
+import cats.syntax.all._
 import com.chollinger.bridgefour.kaladin.services.RaftService
 import com.chollinger.bridgefour.shared.http.Route
 import com.chollinger.bridgefour.shared.models.HeartbeatRequest
 import com.chollinger.bridgefour.shared.models.RaftEncoders
 import com.chollinger.bridgefour.shared.models.RequestVote
-import org.http4s.*
+import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 

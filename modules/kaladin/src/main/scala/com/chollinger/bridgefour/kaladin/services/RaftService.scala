@@ -1,14 +1,16 @@
 package com.chollinger.bridgefour.kaladin.services
 
-import cats.data.OptionT
-import cats.effect.Clock
-import cats.effect.Concurrent
-import cats.effect.implicits.*
+import scala.concurrent.duration.DurationLong
+import scala.concurrent.duration.FiniteDuration
+
+import cats.effect.implicits._
 import cats.effect.kernel.Async
 import cats.effect.kernel.Temporal
 import cats.effect.std.AtomicCell
 import cats.effect.std.Mutex
-import cats.implicits.*
+import cats.effect.Clock
+import cats.effect.Concurrent
+import cats.implicits._
 import com.chollinger.bridgefour.shared.extensions.CalledLocked
 import com.chollinger.bridgefour.shared.extensions.FullyLocked
 import com.chollinger.bridgefour.shared.extensions.PartiallyLocked
@@ -17,22 +19,13 @@ import com.chollinger.bridgefour.shared.models.Config.RaftConfig
 import com.chollinger.bridgefour.shared.models.RaftState.Candidate
 import com.chollinger.bridgefour.shared.models.RaftState.Follower
 import com.chollinger.bridgefour.shared.models.RaftState.Leader
-import com.chollinger.bridgefour.shared.models.*
+import com.chollinger.bridgefour.shared.models._
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
-import org.http4s.Header
-import org.http4s.HttpRoutes
-import org.http4s.Method
-import org.http4s.Request
-import org.http4s.Response
-import org.http4s.Status
-import org.http4s.Uri
+import org.http4s._
 import org.http4s.client.Client
 import org.typelevel.ci.CIStringSyntax
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-
-import scala.concurrent.duration.DurationLong
-import scala.concurrent.duration.FiniteDuration
 
 trait RaftService[F[_]] {
 
@@ -72,9 +65,9 @@ object RaftService {
 
       override def runFibers(): F[Unit] =
         for {
-          _     <- Logger[F].info("Starting Raft service")
-          hbFib <- heartbeatLoop().start
-          elFib <- electionLoop().start
+          _ <- Logger[F].info("Starting Raft service")
+          _ <- heartbeatLoop().start
+          _ <- electionLoop().start
         } yield ()
 
       // Handles elections, recursively
@@ -101,7 +94,6 @@ object RaftService {
 
       // Sends heartbeats to followers, if we're a leader
       private def heartbeatLoop(): F[Unit] = {
-
         for {
           now <- Temporal[F].realTime
           s   <- state.get
@@ -114,7 +106,6 @@ object RaftService {
         } yield ()
       }
 
-      @FullyLocked
       private def sendHeartbeatToFollowers(now: FiniteDuration): F[Unit] = lock.lock.surround {
         for {
           s <- state.get
@@ -233,10 +224,10 @@ object RaftService {
           // One vote for ourselves
           _ <- res.map(_.voteGranted).count(_ == true) + 1 match {
                  case count if count > s.peers.size / 2 =>
-                   Logger[F].info(s"Received majority of votes, becoming leader") >>
+                   Logger[F].info("Received majority of votes, becoming leader") >>
                      state.update(_.copy(ownState = Leader, currentLeader = Some(s.ownId)))
                  case _ =>
-                   Logger[F].debug(s"Did not receive majority of votes, remaining candidate")
+                   Logger[F].debug("Did not receive majority of votes, remaining candidate")
                }
           s <- state.get
           _ <- Logger[F].debug(s"State after vote: $s")
