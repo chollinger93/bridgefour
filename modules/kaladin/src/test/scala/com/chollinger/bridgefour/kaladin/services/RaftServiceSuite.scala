@@ -1,23 +1,23 @@
 package com.chollinger.bridgefour.kaladin.services
 
-import cats.effect.*
+import scala.collection.immutable.List
+import scala.concurrent.duration.DurationLong
+import scala.language.postfixOps
+
+import cats.effect._
 import cats.effect.kernel.Resource
 import cats.effect.std.AtomicCell
 import cats.effect.std.Mutex
 import com.chollinger.bridgefour.shared.models.Config.LeaderConfig
 import com.chollinger.bridgefour.shared.models.Config.RaftConfig
+import com.chollinger.bridgefour.shared.models.RaftState.Follower
 import com.chollinger.bridgefour.shared.models.HeartbeatRequest
 import com.chollinger.bridgefour.shared.models.RaftElectionState
-import com.chollinger.bridgefour.shared.models.RaftState.Follower
 import munit.CatsEffectSuite
-import org.http4s.*
+import org.http4s._
 import org.http4s.ember.client.EmberClientBuilder
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-
-import scala.collection.immutable.List
-import scala.concurrent.duration.DurationLong
-import scala.language.postfixOps
 
 class RaftServiceSuite extends CatsEffectSuite {
 
