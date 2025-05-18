@@ -62,10 +62,11 @@ object Server {
       raftSvc    = RaftService.make[F](client, raftLock, raftState)
       _         <- Resource.eval(raftSvc.runFibers()).start
       // External interface
+      leaderRoutes = LeaderRoutes[F](jobController, healthMonitor).routes
+      ratftRoutes  = RaftRoutes[F](raftSvc).routes
+      // Ensure Raft wraps the main routes, i.e. we always talk to the leader
       httpApp: Kleisli[F, Request[F], Response[F]] =
-        // Ensure Raft wraps the main routes, i.e. we always talk to the leader
-        (raftSvc.withLeaderRedirect(LeaderRoutes[F](jobController, healthMonitor).routes)
-          <+> RaftRoutes[F](raftSvc).routes).orNotFound
+        raftSvc.withLeaderRedirect(leaderRoutes <+> ratftRoutes).orNotFound
 
       // With Middlewares in place
       finalHttpApp: HttpApp[F] = Http4sLogger.httpApp(true, true)(httpApp)
