@@ -9,7 +9,6 @@ import com.chollinger.bridgefour.shared.exceptions.Exceptions.MisconfiguredClust
 import com.chollinger.bridgefour.shared.models.Cluster.ClusterState
 import com.chollinger.bridgefour.shared.models.Cluster.SlotCountOverview
 import com.chollinger.bridgefour.shared.models.ClusterStatus
-import com.chollinger.bridgefour.shared.models.WorkerStatus
 import com.chollinger.bridgefour.shared.models.Config.WorkerConfig
 import com.chollinger.bridgefour.shared.models.IDs.WorkerId
 import com.chollinger.bridgefour.shared.models.States.SlotState
@@ -19,7 +18,7 @@ import com.chollinger.bridgefour.shared.persistence.InMemoryPersistence
 import munit.CatsEffectSuite
 import org.http4s.HttpRoutes
 import org.http4s.client.Client
-import org.http4s.dsl.io.*
+import org.http4s.dsl.io._
 class ClusterOverseerSuite extends CatsEffectSuite {
 
   test("checkClusterStatus reports valid status if cluster is up") {

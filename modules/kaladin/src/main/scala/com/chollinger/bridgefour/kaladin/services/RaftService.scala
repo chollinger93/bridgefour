@@ -22,6 +22,7 @@ import com.chollinger.bridgefour.shared.models.RaftState.Leader
 import com.chollinger.bridgefour.shared.models._
 import com.chollinger.bridgefour.shared.types.Typeclasses.ThrowableMonadError
 import org.http4s._
+import org.http4s.{Status => HttpStatus}
 import org.http4s.client.Client
 import org.typelevel.ci.CIStringSyntax
 import org.typelevel.log4cats.Logger
@@ -121,8 +122,8 @@ object RaftService {
                  Logger[F].debug(s"Sending heartbeat to $fCfg") >>
                    err.handleErrorWith(
                      client.status(req).flatMap {
-                       case Status.Ok => Async[F].unit
-                       case s         => err.raiseError(new Exception(s"Failed to send heartbeat to $fCfg, status: $s"))
+                       case HttpStatus.Ok => Async[F].unit
+                       case s             => err.raiseError(new Exception(s"Failed to send heartbeat to $fCfg, status: $s"))
                      }
                    )(e =>
                      Logger[F].error(e)(s"Sending heartbeat to follower ${fCfg.id} failed with $e") >>
@@ -286,14 +287,14 @@ object RaftService {
           logger.debug(s"Request: ${req.uri.path.renderString}") >>
             routes(req).value.flatMap {
               case Some(response) => response.pure[F]
-              case None           => Response[F](Status.NotFound).pure[F]
+              case None           => Response[F](HttpStatus.NotFound).pure[F]
             }
         } else {
           state.get.flatMap {
             case s if s.ownState == Leader =>
               routes(req).value.flatMap {
                 case Some(response) => response.pure[F]
-                case None           => Response[F](Status.NotFound).pure[F]
+                case None           => Response[F](HttpStatus.NotFound).pure[F]
               }
             case s =>
               s.currentLeader match {
@@ -309,16 +310,16 @@ object RaftService {
                           s"${leaderCfg.schema}://localhost:${leaderCfg.port}${req.uri.path.renderString}"
                         )
                       }
-                      Response[F](Status.TemporaryRedirect)
+                      Response[F](HttpStatus.TemporaryRedirect)
                         .putHeaders(Header.Raw(ci"Location", redirectUri.renderString))
                         .pure[F]
                     case None =>
-                      Response[F](Status.ServiceUnavailable)
+                      Response[F](HttpStatus.ServiceUnavailable)
                         .withEntity("Leader config missing")
                         .pure[F]
                   }
                 case None =>
-                  Response[F](Status.ServiceUnavailable)
+                  Response[F](HttpStatus.ServiceUnavailable)
                     .withEntity("No known leader")
                     .pure[F]
               }
